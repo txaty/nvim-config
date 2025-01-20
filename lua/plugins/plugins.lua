@@ -14,10 +14,7 @@ return {
   {
     "LazyVim/LazyVim",
     opts = {
-      colorscheme = "gruvbox",
-      -- colorscheme = "catppuccin",
-      -- colorscheme = "ayu",
-      -- colorsheme = "cyberdream",
+      -- colorscheme = "gruvbox",
       },
   },
 
@@ -165,28 +162,32 @@ return {
     end,
   },
 
-  -- the opts function can also be used to change the default opts:
-  {
-    "nvim-lualine/lualine.nvim",
-    event = "VeryLazy",
-    opts = function(_, opts)
-      table.insert(opts.sections.lualine_x, {
-        function()
-          return "😄"
-        end,
-      })
-    end,
-  },
+  -- the opts function can also be used to change the default orts:
+  -- {
+  --   "nvim-lualine/lualine.nvim",
+  --   event = "VeryLazy",
+  --   opts = function(_, opts)
+  --     table.insert(opts.sections.lualine_x, {
+  --       function()
+  --         return "😄"
+  --       end,
+  --     })
+  --   end,
+  -- },
 
   -- or you can return new options to override all the defaults
+  -- {
+  --   "nvim-lualine/lualine.nvim",
+  --   event = "VeryLazy",
+  --   opts = function()
+  --     return {
+  --       --[[add your custom lualine config here]]
+  --     }
+  --   end,
+  -- },
   {
-    "nvim-lualine/lualine.nvim",
-    event = "VeryLazy",
-    opts = function()
-      return {
-        --[[add your custom lualine config here]]
-      }
-    end,
+    'nvim-lualine/lualine.nvim',
+    dependencies = { 'nvim-tree/nvim-web-devicons' }
   },
 
   -- use mini.starter instead of alpha
@@ -207,4 +208,56 @@ return {
       },
     },
   },
-}
+
+  {
+    "farmergreg/vim-lastplace",
+    event = "BufReadPost",
+    config = function()
+      -- No additional configuration needed; uses default settings
+    end,
+  },
+
+  {
+    "rmagatti/auto-session",
+    lazy = false,
+    config = function()
+      vim.o.sessionoptions="blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal,localoptions"
+      require("auto-session").setup {
+        log_level = "info",
+        auto_session_enable_last_session = true,
+        auto_session_root_dir = vim.fn.stdpath("data") .. "/sessions/",
+        auto_session_enabled = true,
+        auto_save_enabled = true,
+        auto_restore_enabled = true,
+        auto_session_suppress_dirs = { "~/", "~/Projects", "~/Downloads", "/" },
+      }
+    end,
+  },
+
+  {
+    "HiPhish/rainbow-delimiters.nvim",
+    event = "BufReadPre",  -- Load the plugin before reading a buffer
+    config = function()
+      local rainbow_delimiters = require 'rainbow-delimiters'
+      vim.g.rainbow_delimiters = {
+        strategy = {
+          [''] = rainbow_delimiters.strategy['global'],
+          vim = rainbow_delimiters.strategy['local'],
+        },
+        query = {
+          [''] = 'rainbow-delimiters',
+          lua = 'rainbow-blocks',
+        },
+        highlight = {
+          'RainbowDelimiterYellow',
+          'RainbowDelimiterBlue',
+          'RainbowDelimiterOrange',
+          'RainbowDelimiterGreen',
+          'RainbowDelimiterViolet',
+          'RainbowDelimiterCyan',
+        },
+        blacklist = {'c', 'cpp'},
+      }
+    end
+  }
+ }

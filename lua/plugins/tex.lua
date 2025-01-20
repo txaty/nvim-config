@@ -2,9 +2,11 @@ return {
   {
     "lervag/vimtex",
     ft = "tex",
+    lazy = false,
     config = function()
-      vim.g.vimtex_view_method = "zathura" -- or 'skim', 'okular', etc.
-      vim.g.vimtex_compiler_progname = "nvr"
+      vim.g.vimtex_view_method = "sioyek"
+      vim.g.vimtex_view_general_viewer = "sioyek"
+      vim.g.vimtex_syntax_conceal_disable = 1
       vim.g.vimtex_compiler_method = "latexmk"
       vim.g.vimtex_compiler_latexmk_engines = {
         ["_"] = "-xelatex",
@@ -37,44 +39,53 @@ return {
     end,
   },
   {
-    "neovim/nvim-lspconfig",
+    "stevearc/conform.nvim",
     optional = true,
     opts = {
-      servers = {
-        texlab = {
-          settings = {
-            texlab = {
-              diagnostics = {
-                ignoredPatterns = { "Unused label", "Undefined reference" },
-              },
-              build = {
-                executable = "latexmk",
-                args = {
-                  "-xelatex",
-                  "-synctex=1",
-                  "-interaction=nonstopmode",
-                  "-file-line-error",
-                  "-aux-directory=out",
-                  "-output-directory=out",
-                  "main.tex",
-                },
-                -- onSave = true,
-              },
-              forwardSearch = {
-                executable = "sioyek",
-                args = {
-                  "--reuse-instance",
-                  "--forward-search",
-                  "%f:%l",
-                  "%p",
-                  "--inverse-search",
-                  "nvim --headless -c 'e %f' -c 'call cursor(%l, 1)'",
-                },
-              },
-            },
-          },
-        },
+      formatters_by_ft = {
+        ["tex"] = { "tex-fmt" },
       },
     },
   },
+  -- {
+  --   "neovim/nvim-lspconfig",
+  --   optional = true,
+  --   opts = {
+  --     servers = {
+  --       texlab = {
+  --         settings = {
+  --           texlab = {
+  --             diagnostics = {
+  --               ignoredPatterns = { "Unused label", "Undefined reference" },
+  --             },
+  --             build = {
+  --               executable = "latexmk",
+  --               args = {
+  --                 "-xelatex",
+  --                 "-synctex=1",
+  --                 "-interaction=nonstopmode",
+  --                 "-file-line-error",
+  --                 "-aux-directory=out",
+  --                 "-output-directory=out",
+  --                 "main.tex",
+  --               },
+  --               -- onSave = true,
+  --             },
+  --             forwardSearch = {
+  --               executable = "sioyek",
+  --               args = {
+  --                 "--reuse-instance",
+  --                 "--forward-search",
+  --                 "%f:%l",
+  --                 "%p",
+  --                 "--inverse-search",
+  --                 "nvim --headless -c 'e %f' -c 'call cursor(%l, 1)'",
+  --               },
+  --             },
+  --           },
+  --         },
+  --       },
+  --     },
+  --   },
+  -- },
 }

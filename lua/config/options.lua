@@ -16,7 +16,7 @@ vim.api.nvim_create_autocmd("FileType", {
 require("lazyvim.util").on_load("neo-tree.nvim", function()
   require("neo-tree").setup({
     window = {
-      width = 30, -- Set desired width
+      width = 26, -- Set desired width
     },
   })
 end)
