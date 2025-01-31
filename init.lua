@@ -35,3 +35,5 @@ require "nvchad.autocmds"
 vim.schedule(function()
   require "mappings"
 end)
+
+vim.g.python3_host_prog = "/opt/homebrew/Caskroom/miniconda/base/bin/python"
