@@ -124,3 +124,26 @@ lspconfig.lua_ls.setup {
     },
   },
 }
+
+-- Specific configuration for pyright.
+lspconfig.pyright.setup {
+  on_attach = function(client, bufnr)
+    -- Example: Disable formatting to defer to another tool like black.
+    client.server_capabilities.documentFormattingProvider = false
+    client.server_capabilities.documentRangeFormattingProvider = false
+    on_attach(client, bufnr)
+  end,
+  on_init = on_init,
+  capabilities = capabilities,
+  settings = {
+    python = {
+      analysis = {
+        typeCheckingMode = "strict", -- Enforce strict type checking
+        autoSearchPaths = true,
+        useLibraryCodeForTypes = true,
+        typeHints = true,
+        autoImportCompletions = true, -- Enable auto-import suggestions
+      },
+    },
+  },
+}

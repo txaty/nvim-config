@@ -24,6 +24,7 @@ local options = {
   },
 
   indent = { enable = true },
+  auto_install = true,
 }
 
 require("nvim-treesitter.configs").setup(options)
