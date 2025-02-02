@@ -5,6 +5,7 @@ local options = {
     html = { "prettier" },
     python = { "black" },
     go = { "goimports", "gofmt" },
+    tex = { "tex-fmt" },
   },
 
   format_on_save = {

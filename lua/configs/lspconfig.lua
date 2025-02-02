@@ -38,6 +38,7 @@ lspconfig.servers = {
   -- "hls",
   -- "ols",
   "pyright",
+  "texlab",
 }
 
 -- list of servers configured with default config.
@@ -143,6 +144,36 @@ lspconfig.pyright.setup {
         useLibraryCodeForTypes = true,
         typeHints = true,
         autoImportCompletions = true, -- Enable auto-import suggestions
+      },
+    },
+  },
+}
+
+lspconfig.texlab.setup {
+  on_attach = on_attach,
+  on_init = on_init,
+  capabilities = capabilities,
+  settings = {
+    texlab = {
+      -- Disable build (compilation is handled by vimtex)
+      build = {
+        executable = "",
+        args = {},
+        onSave = false,
+        forwardSearchAfter = false,
+      },
+      -- Disable formatting (handled by tex-fmt via conform)
+      latexFormatter = "none",
+      bibtexFormatter = "none",
+      -- Forward search disabled (vimtex handles it)
+      forwardSearch = {
+        executable = "",
+        args = {},
+      },
+      -- Disable ChkTeX linting if not needed
+      chktex = {
+        onEdit = false,
+        onOpenAndSave = false,
       },
     },
   },
