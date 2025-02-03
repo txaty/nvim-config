@@ -40,6 +40,7 @@ lspconfig.servers = {
   "pyright",
   "texlab",
   -- "ltex",
+  "tinymist",
 }
 
 -- list of servers configured with default config.
@@ -202,3 +203,12 @@ lspconfig.texlab.setup {
 --     },
 --   },
 -- }
+
+lspconfig.tinymist.setup {
+  on_attach = on_attach,
+  on_init = on_init,
+  capabilities = capabilities,
+  settings = {
+    exportPdf = "onSave",
+  },
+}

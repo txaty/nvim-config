@@ -35,6 +35,7 @@
   "plenary.nvim": { "branch": "master", "commit": "3707cdb1e43f5cea73afb6037e6494e7ce847a66" },
   "rustaceanvim": { "branch": "master", "commit": "66d688fc6934dde2f1c4b0139682fe7b3935f154" },
   "telescope.nvim": { "branch": "0.1.x", "commit": "415af52339215926d705cccc08145f3782c4d132" },
+  "typst-preview.nvim": { "branch": "master", "commit": "c1100e8788baabe8ca8f8cd7fd63d3d479e49e36" },
   "ui": { "branch": "v3.0", "commit": "e196e36b088e12b7082e2665a58be15f7d709460" },
   "venv-selector.nvim": { "branch": "regexp", "commit": "f212a424fb29949cb5e683928bdd4038bbe0062d" },
   "vimtex": { "branch": "master", "commit": "3a9f47ce6e42c4a3c9a92a254f1f611a8d374fc9" },
