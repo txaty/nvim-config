@@ -39,6 +39,7 @@ lspconfig.servers = {
   -- "ols",
   "pyright",
   "texlab",
+  -- "ltex",
 }
 
 -- list of servers configured with default config.
@@ -178,3 +179,26 @@ lspconfig.texlab.setup {
     },
   },
 }
+
+-- lspconfig.ltex.setup {
+--   on_attach = on_attach,
+--   on_init = on_init,
+--   capabilities = capabilities,
+--   cmd = { "ltex-ls" },
+--   filetypes = { "tex", "bib", "markdown" },
+--   settings = {
+--     ltex = {
+--       language = "en-US",
+--       diagnosticSeverity = "information",
+--       setenceCacheSize = 2000,
+--       additionalRules = {
+--         enablePickyRules = true,
+--         motherTongue = "en-US",
+--       },
+--       trace = { server = "verbose" },
+--       dictionary = {},
+--       disabledRules = {},
+--       hiddenFalsePositives = {},
+--     },
+--   },
+-- }

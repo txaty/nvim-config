@@ -6,7 +6,9 @@
 local M = {}
 
 M.base46 = {
-  theme = "ayu_dark",
+  theme = "chadracula",
+  transparency = true,
+  theme_toggle = { "chadracula", "flexoki-light" },
 
   hl_override = {
     Comment = { italic = true },
