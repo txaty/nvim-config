@@ -20,12 +20,15 @@ return {
         dap = {
           adapter = cfg.get_codelldb_adapter(codelldb_path, liblldb_path),
         },
+        server = {
+          on_attach = require("nvchad.configs.lspconfig").on_attach,
+        },
       }
     end,
   },
   {
     "saecki/crates.nvim",
-    ft = { "toml", "rust" },
+    ft = { "toml" },
     config = function()
       require("crates").setup {
         completion = { cmp = { enabled = true } },
