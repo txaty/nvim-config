@@ -1,214 +1,90 @@
--- -- load defaults i.e lua_lsp
--- require("nvchad.configs.lspconfig").defaults()
---
--- local lspconfig = require "lspconfig"
---
--- -- EXAMPLE
--- local servers = { "html", "cssls", "pyright" }
--- local nvlsp = require "nvchad.configs.lspconfig"
---
--- -- lsps with default config
--- for _, lsp in ipairs(servers) do
---   lspconfig[lsp].setup {
---     on_attach = nvlsp.on_attach,
---     on_init = nvlsp.on_init,
---     capabilities = nvlsp.capabilities,
---   }
--- end
---
--- -- configuring single server, example: typescript
--- -- lspconfig.ts_ls.setup {
--- --   on_attach = nvlsp.on_attach,
--- --   on_init = nvlsp.on_init,
--- --   capabilities = nvlsp.capabilities,
--- -- }
+local servers = {
+  lua_ls = {
+    settings = {
+      Lua = {
+        diagnostics = { enable = false },
+        workspace = {
+          library = {
+            vim.fn.expand "$VIMRUNTIME/lua",
+            vim.fn.expand "$VIMRUNTIME/lua/vim/lsp",
+            vim.fn.stdpath "data" .. "/lazy/ui/nvchad_types",
+            vim.fn.stdpath "data" .. "/lazy/lazy.nvim/lua/lazy",
+          },
+          maxPreload = 100000,
+          preloadFileSize = 10000,
+        },
+      },
+    },
+  },
+  gopls = {
+    cmd = { "gopls" },
+    filetypes = { "go", "gomod", "gotmpl", "gowork" },
+    root_dir = require("lspconfig").util.root_pattern("go.work", "go.mod", ".git"),
+    settings = {
+      gopls = {
+        analyses = { unusedparams = true },
+        completeUnimported = true,
+        usePlaceholders = true,
+        staticcheck = true,
+      },
+    },
+  },
+  pyright = {
+    settings = {
+      python = {
+        analysis = {
+          typeCheckingMode = "strict",
+          autoSearchPaths = true,
+          useLibraryCodeForTypes = true,
+          typeHints = true,
+          autoImportCompletions = true,
+        },
+      },
+    },
+  },
+  texlab = {
+    settings = {
+      texlab = {
+        build = { executable = "", args = {}, onSave = false },
+        latexFormatter = "none",
+        bibtexFormatter = "none",
+        chktex = { onEdit = false, onOpenAndSave = false },
+      },
+    },
+  },
+  tinymist = {
+    settings = { exportPdf = "onSave" },
+  },
+  ts_ls = {
+    filetypes = { "javascript", "javascriptreact", "typescript", "typescriptreact" },
+    root_dir = require("lspconfig").util.root_pattern("package.json", "tsconfig.json", ".git"),
+    settings = { completions = { completeFunctionCalls = true } },
+  },
+  clangd = {
+    cmd = { "clangd", "--background-index", "--clang-tidy" },
+    filetypes = { "c", "cpp", "objc", "objcpp" },
+    root_dir = require("lspconfig").util.root_pattern("compile_commands.json", ".git"),
+  },
+}
 
--- Import the functions from NvChad config.
-local on_attach = require("nvchad.configs.lspconfig").on_attach
-local on_init = require("nvchad.configs.lspconfig").on_init
-local capabilities = require("nvchad.configs.lspconfig").capabilities
-
+-- Import NVChad’s default LSP functions
+local nvlsp = require "nvchad.configs.lspconfig"
 local lspconfig = require "lspconfig"
 
--- list of all servers configured.
-lspconfig.servers = {
-  "lua_ls",
-  -- "clangd",
-  "gopls",
-  -- "hls",
-  -- "ols",
-  "pyright",
-  "texlab",
-  -- "ltex",
-  "tinymist",
-}
-
--- list of servers configured with default config.
-local default_servers = {
-  -- "ols",
-  -- "pyright",
-}
-
--- lsps with default config
-for _, lsp in ipairs(default_servers) do
-  lspconfig[lsp].setup {
-    on_attach = on_attach,
-    on_init = on_init,
-    capabilities = capabilities,
-  }
+for server, config in pairs(servers) do
+  local ok, _ = pcall(function()
+    lspconfig[server].setup(vim.tbl_extend("force", {
+      on_attach = nvlsp.on_attach,
+      on_init = nvlsp.on_init,
+      capabilities = nvlsp.capabilities,
+    }, config))
+  end)
+  if not ok then
+    vim.notify("Failed to load LSP: " .. server, vim.log.levels.WARN)
+  end
 end
 
--- lspconfig.clangd.setup({
---     on_attach = function(client, bufnr)
---         client.server_capabilities.documentFormattingProvider = false
---         client.server_capabilities.documentRangeFormattingProvider = false
---         on_attach(client, bufnr)
---     end,
---     on_init = on_init,
---     capabilities = capabilities,
--- })
-
-lspconfig.gopls.setup {
-  on_attach = function(client, bufnr)
-    client.server_capabilities.documentFormattingProvider = false
-    client.server_capabilities.documentRangeFormattingProvider = false
-    on_attach(client, bufnr)
-  end,
-  on_init = on_init,
-  capabilities = capabilities,
-  cmd = { "gopls" },
-  filetypes = { "go", "gomod", "gotmpl", "gowork" },
-  root_dir = lspconfig.util.root_pattern("go.work", "go.mod", ".git"),
-  settings = {
-    gopls = {
-      analyses = {
-        unusedparams = true,
-      },
-      completeUnimported = true,
-      usePlaceholders = true,
-      staticcheck = true,
-    },
-  },
-}
-
--- lspconfig.hls.setup({
---     on_attach = function(client, bufnr)
---         client.server_capabilities.documentFormattingProvider = false
---         client.server_capabilities.documentRangeFormattingProvider = false
---         on_attach(client, bufnr)
---     end,
---
---     on_init = on_init,
---     capabilities = capabilities,
--- })
-
-lspconfig.lua_ls.setup {
-  on_attach = on_attach,
-  on_init = on_init,
-  capabilities = capabilities,
-
-  settings = {
-    Lua = {
-      diagnostics = {
-        enable = false, -- Disable all diagnostics from lua_ls
-        -- globals = { "vim" },
-      },
-      workspace = {
-        library = {
-          vim.fn.expand "$VIMRUNTIME/lua",
-          vim.fn.expand "$VIMRUNTIME/lua/vim/lsp",
-          vim.fn.stdpath "data" .. "/lazy/ui/nvchad_types",
-          vim.fn.stdpath "data" .. "/lazy/lazy.nvim/lua/lazy",
-          "${3rd}/love2d/library",
-        },
-        maxPreload = 100000,
-        preloadFileSize = 10000,
-      },
-    },
-  },
-}
-
--- Specific configuration for pyright.
-lspconfig.pyright.setup {
-  on_attach = function(client, bufnr)
-    -- Example: Disable formatting to defer to another tool like black.
-    client.server_capabilities.documentFormattingProvider = false
-    client.server_capabilities.documentRangeFormattingProvider = false
-    on_attach(client, bufnr)
-  end,
-  on_init = on_init,
-  capabilities = capabilities,
-  settings = {
-    python = {
-      analysis = {
-        typeCheckingMode = "strict", -- Enforce strict type checking
-        autoSearchPaths = true,
-        useLibraryCodeForTypes = true,
-        typeHints = true,
-        autoImportCompletions = true, -- Enable auto-import suggestions
-      },
-    },
-  },
-}
-
-lspconfig.texlab.setup {
-  on_attach = on_attach,
-  on_init = on_init,
-  capabilities = capabilities,
-  settings = {
-    texlab = {
-      -- Disable build (compilation is handled by vimtex)
-      build = {
-        executable = "",
-        args = {},
-        onSave = false,
-        forwardSearchAfter = false,
-      },
-      -- Disable formatting (handled by tex-fmt via conform)
-      latexFormatter = "none",
-      bibtexFormatter = "none",
-      -- Forward search disabled (vimtex handles it)
-      forwardSearch = {
-        executable = "",
-        args = {},
-      },
-      -- Disable ChkTeX linting if not needed
-      chktex = {
-        onEdit = false,
-        onOpenAndSave = false,
-      },
-    },
-  },
-}
-
--- lspconfig.ltex.setup {
---   on_attach = on_attach,
---   on_init = on_init,
---   capabilities = capabilities,
---   cmd = { "ltex-ls" },
---   filetypes = { "tex", "bib", "markdown" },
---   settings = {
---     ltex = {
---       language = "en-US",
---       diagnosticSeverity = "information",
---       setenceCacheSize = 2000,
---       additionalRules = {
---         enablePickyRules = true,
---         motherTongue = "en-US",
---       },
---       trace = { server = "verbose" },
---       dictionary = {},
---       disabledRules = {},
---       hiddenFalsePositives = {},
---     },
---   },
--- }
-
-lspconfig.tinymist.setup {
-  on_attach = on_attach,
-  on_init = on_init,
-  capabilities = capabilities,
-  settings = {
-    exportPdf = "onSave",
-  },
-}
+lspconfig.servers = {}
+for server, _ in pairs(servers) do
+  table.insert(lspconfig.servers, server)
+end

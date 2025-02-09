@@ -11,7 +11,7 @@ return {
       local events = {}
 
       for _, vault in ipairs(vaults) do
-        table.insert(events, "BufReadPre " .. obsidian_base .. "/" .. vault .. "/**.md")
+        table.insert(events, obsidian_base .. "/" .. vault .. "/**.md")
       end
 
       vim.api.nvim_create_autocmd("BufReadPre", {
@@ -28,7 +28,7 @@ return {
         { name = "financial-accounting", path = obsidian_base .. "/financial-accounting" },
         { name = "learn-rust", path = obsidian_base .. "/learn-rust" },
       },
-      daily_notes = { folder = "Daily" },
+      daily_notes = { folder = "diary" },
       completion = { nvim_cmp = true },
     },
 
@@ -42,6 +42,7 @@ return {
           end)
         end,
       })
+      vim.o.conceallevel = 2
     end,
   },
 }

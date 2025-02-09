@@ -37,3 +37,6 @@ vim.schedule(function()
 end)
 
 vim.g.python3_host_prog = "/opt/homebrew/Caskroom/miniconda/base/bin/python"
+
+require "configs.wrap"
+require "configs.spell"

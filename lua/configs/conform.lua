@@ -3,9 +3,15 @@ local options = {
     lua = { "stylua" },
     css = { "prettier" },
     html = { "prettier" },
-    python = { "black" },
+    python = { "black", "isort" },
     go = { "goimports", "gofmt" },
     tex = { "tex-fmt" },
+    javascript = { "eslint_d" },
+    javascriptreact = { "eslint_d" },
+    typescript = { "eslint_d" },
+    typescriptreact = { "eslint_d" },
+    c = { "clang_format" },
+    cpp = { "clang_format" },
   },
 
   format_on_save = {

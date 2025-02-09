@@ -1,7 +1,7 @@
 return {
+  -- Common Plugins
   {
     "stevearc/conform.nvim",
-    -- event = 'BufWritePre', -- uncomment for format on save
     opts = require "configs.conform",
   },
 
@@ -10,14 +10,25 @@ return {
     opts = {
       ensure_installed = {
         "pyright", -- Python LSP
-        "black", -- Formatter
-        "ruff", -- Linter
-        "mypy", -- Type checker
-        "gopls",
-        "golangci-lint",
+        "black", -- Python formatter
+        "ruff", -- Python linter
+        "mypy", -- Python type checker
+        "gopls", -- Golang LSP
+        "golangci-lint", -- Golang linter
         "delve", -- Golang debugger
+        "tsserver",
+        "eslint_d",
+        "prettier",
       },
     },
+  },
+
+  {
+    "nvim-treesitter/nvim-treesitter",
+    event = { "BufReadPre", "BufNewFile" },
+    config = function()
+      require "configs.treesitter"
+    end,
   },
 
   -- These are some examples, uncomment them if you want to see them work!
@@ -52,31 +63,6 @@ return {
     dependencies = { "mfussenegger/nvim-dap", "nvim-neotest/nvim-nio" },
     config = function()
       require("dapui").setup()
-    end,
-  },
-
-  {
-    "saecki/crates.nvim",
-    ft = { "toml" },
-    config = function()
-      require("crates").setup {
-        completion = {
-          cmp = {
-            enabled = true,
-          },
-        },
-      }
-      require("cmp").setup.buffer {
-        sources = { { name = "crates" } },
-      }
-    end,
-  },
-
-  {
-    "nvim-treesitter/nvim-treesitter",
-    event = { "BufReadPre", "BufNewFile" },
-    config = function()
-      require "configs.treesitter"
     end,
   },
 
