@@ -71,10 +71,22 @@ local servers = {
 local nvlsp = require "nvchad.configs.lspconfig"
 local lspconfig = require "lspconfig"
 
+local function on_attach(client, bufnr)
+  -- Call NVChad’s default on_attach
+  if nvlsp.on_attach then
+    nvlsp.on_attach(client, bufnr)
+  end
+
+  -- Attach vim-illuminate
+  if client.server_capabilities.documentHighlightProvider then
+    require("illuminate").on_attach(client)
+  end
+end
+
 for server, config in pairs(servers) do
   local ok, _ = pcall(function()
     lspconfig[server].setup(vim.tbl_extend("force", {
-      on_attach = nvlsp.on_attach,
+      on_attach = on_attach,
       on_init = nvlsp.on_init,
       capabilities = nvlsp.capabilities,
     }, config))

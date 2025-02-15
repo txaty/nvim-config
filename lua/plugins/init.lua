@@ -100,4 +100,17 @@ return {
       require "configs.mason-lspconfig"
     end,
   },
+
+  {
+    "RRethy/vim-illuminate",
+    config = function()
+      require("illuminate").configure {
+        -- Configuration options go here:
+        -- delay = 100,
+        -- filetypes_denylist = {'NvimTree', 'packer'},
+        -- modes_denylist = {'i', 'v'},
+        -- providers = {'lsp', 'treesitter', 'regex'},
+      }
+    end,
+  },
 }
