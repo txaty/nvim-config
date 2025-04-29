@@ -22,6 +22,13 @@ return {
         },
         server = {
           on_attach = require("nvchad.configs.lspconfig").on_attach,
+          settings = {
+            ["rust-analyzer"] = {
+              cargo = {
+                allFeatures = true,
+              },
+            },
+          },
         },
       }
     end,
