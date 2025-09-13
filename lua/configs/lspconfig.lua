@@ -2,7 +2,9 @@ local servers = {
   lua_ls = {
     settings = {
       Lua = {
-        diagnostics = { enable = false },
+        diagnostics = {
+          globals = { "vim" },
+        },
         workspace = {
           library = {
             vim.fn.expand "$VIMRUNTIME/lua",

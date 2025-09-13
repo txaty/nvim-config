@@ -12,21 +12,9 @@ return {
     end,
   },
 
-  -- Prettier for formatting
-  {
-    "MunifTanjim/prettier.nvim",
-    cond = is_web_project,
-    config = function()
-      require("prettier").setup {
-        bin = "prettier",
-        filetypes = { "javascript", "javascriptreact", "typescript", "typescriptreact", "css", "html", "json" },
-      }
-    end,
-  },
-
   -- Colorizer for inline CSS/JSX color preview
   {
-    "norcalli/nvim-colorizer.lua",
+    "NvChad/nvim-colorizer.lua",
     cond = is_web_project,
     config = function()
       require("colorizer").setup()

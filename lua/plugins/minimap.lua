@@ -4,7 +4,8 @@ return {
     "Isrothy/neominimap.nvim",
     version = "v3.*.*",
     enabled = true,
-    lazy = false, -- NOTE: NO NEED to Lazy load
+    lazy = true,
+    cmd = "Neominimap",
     -- Optional
     keys = {
       -- Global Minimap Controls
@@ -44,7 +45,7 @@ return {
       --- Put your configuration here
       ---@type Neominimap.UserConfig
       vim.g.neominimap = {
-        auto_enable = true,
+        auto_enable = false,
       }
     end,
   },

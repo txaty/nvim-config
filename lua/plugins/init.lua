@@ -9,16 +9,18 @@ return {
     "williamboman/mason.nvim",
     opts = {
       ensure_installed = {
-        "pyright", -- Python LSP
-        "black", -- Python formatter
-        "ruff", -- Python linter
-        "mypy", -- Python type checker
-        "gopls", -- Golang LSP
-        "golangci-lint", -- Golang linter
-        "delve", -- Golang debugger
-        "tsserver",
-        "eslint_d",
-        "prettier",
+        -- Lua
+        "lua-language-server", "stylua",
+        -- Python
+        "pyright", "ruff", "mypy", "black", "isort",
+        -- Go
+        "gopls", "golangci-lint", "delve",
+        -- Web / TS
+        "typescript-language-server", "eslint_d", "prettierd", "prettier",
+        -- C/C++
+        "clangd", "clang-format",
+        -- TeX / Typst
+        "texlab", "latexindent", "tinymist",
       },
     },
   },
@@ -56,6 +58,16 @@ return {
         dapui.close()
       end
     end,
+  },
+
+  {
+    "jay-babu/mason-nvim-dap.nvim",
+    event = "VeryLazy",
+    dependencies = { "williamboman/mason.nvim", "mfussenegger/nvim-dap" },
+    opts = {
+      ensure_installed = { "js-debug-adapter", "codelldb", "python" },
+      automatic_installation = true,
+    },
   },
 
   {
