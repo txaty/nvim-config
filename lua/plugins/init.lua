@@ -10,17 +10,30 @@ return {
     opts = {
       ensure_installed = {
         -- Lua
-        "lua-language-server", "stylua",
+        "lua-language-server",
+        "stylua",
         -- Python
-        "pyright", "ruff", "mypy", "black", "isort",
+        "pyright",
+        "ruff",
+        "mypy",
+        "black",
+        "isort",
         -- Go
-        "gopls", "golangci-lint", "delve",
+        "gopls",
+        "golangci-lint",
+        "delve",
         -- Web / TS
-        "typescript-language-server", "eslint_d", "prettierd", "prettier",
+        "typescript-language-server",
+        "eslint_d",
+        "prettierd",
+        "prettier",
         -- C/C++
-        "clangd", "clang-format",
+        "clangd",
+        "clang-format",
         -- TeX / Typst
-        "texlab", "latexindent", "tinymist",
+        "texlab",
+        "latexindent",
+        "tinymist",
       },
     },
   },
@@ -43,6 +56,7 @@ return {
 
   {
     "mfussenegger/nvim-dap",
+    lazy = false,
     config = function()
       local dap, dapui = require "dap", require "dapui"
       dap.listeners.before.attach.dapui_config = function()

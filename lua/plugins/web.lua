@@ -23,14 +23,14 @@ return {
 
   -- DAP for JS/TS debugging (vscode-js adapter)
   {
-    "mfussenegger/nvim-dap",
+    "mxsdev/nvim-dap-vscode-js",
     cond = is_web_project,
-    dependencies = { "mxsdev/nvim-dap-vscode-js" },
+    dependencies = { "mfussenegger/nvim-dap", "rcarriga/nvim-dap-ui" },
     config = function()
       local dap = require "dap"
       local dapui = require "dapui"
       require("dap-vscode-js").setup {
-        adapters = { "node", "chrome", "pwa-node" },
+        adapters = { "pwa-node", "pwa-chrome", "node", "chrome" },
       }
 
       dap.listeners.before.attach.dapui_config = function()
