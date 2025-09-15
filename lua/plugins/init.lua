@@ -8,6 +8,9 @@ return {
   {
     "williamboman/mason.nvim",
     opts = {
+      registries = {
+        "github:mason-org/mason-registry",
+      },
       ensure_installed = {
         -- Lua
         "lua-language-server",
@@ -22,6 +25,7 @@ return {
         "gopls",
         "golangci-lint",
         "delve",
+        "goimports",
         -- Web / TS
         "typescript-language-server",
         "eslint_d",
@@ -34,6 +38,8 @@ return {
         "texlab",
         "latexindent",
         "tinymist",
+        -- Rust
+        "rust-analyzer",
       },
     },
   },
@@ -79,7 +85,7 @@ return {
     event = "VeryLazy",
     dependencies = { "williamboman/mason.nvim", "mfussenegger/nvim-dap" },
     opts = {
-      ensure_installed = { "js-debug-adapter", "codelldb", "python" },
+      ensure_installed = { "js-debug-adapter", "codelldb", "python", "delve" },
       automatic_installation = true,
     },
   },

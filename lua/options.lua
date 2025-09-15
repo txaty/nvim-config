@@ -32,6 +32,16 @@ vim.api.nvim_create_autocmd({ "BufWinEnter" }, {
   end,
 })
 
+-- For Python files, avoid automatic folding so content doesn't collapse on save
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "python",
+  callback = function()
+    vim.opt_local.foldenable = false
+    -- If any plugin resets foldenable, also ensure manual method as a guard
+    vim.opt_local.foldmethod = "manual"
+  end,
+})
+
 -- Open nvim-tree automatically when starting nvim in a directory
 vim.api.nvim_create_autocmd("VimEnter", {
   callback = function(data)

@@ -6,6 +6,7 @@ local options = {
     python = { "black", "isort" },
     go = { "goimports", "gofmt" },
     tex = { "latexindent" },
+    rust = { "rustfmt" },
     javascript = { "prettierd", "prettier" },
     javascriptreact = { "prettierd", "prettier" },
     typescript = { "prettierd", "prettier" },

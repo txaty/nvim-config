@@ -6,9 +6,9 @@
 local M = {}
 
 M.base46 = {
-  theme = "github_dark",
+  theme = "ayu_dark",
   transparency = false,
-  theme_toggle = { "github_dark", "flexoki-light" },
+  theme_toggle = { "ayu_dark", "flexoki-light" },
 
   hl_override = {
     Comment = { italic = true },
