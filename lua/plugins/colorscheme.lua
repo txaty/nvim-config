@@ -1,5 +1,5 @@
 return {
-  -- Catppuccin
+  -- Dark themes
   {
     "catppuccin/nvim",
     name = "catppuccin",
@@ -21,14 +21,11 @@ return {
     end,
   },
 
-  -- Tokyonight
   {
     "folke/tokyonight.nvim",
     lazy = true,
-    opts = { style = "storm" },
   },
 
-  -- Kanagawa
   {
     "rebelot/kanagawa.nvim",
     lazy = true,
@@ -39,45 +36,101 @@ return {
     },
   },
 
-  -- Cyberdream
   {
     "scottmckendry/cyberdream.nvim",
     lazy = true,
     opts = {
-      transparent = true,
+      transparent = false,
       italic_comments = true,
     },
   },
 
-  -- Rose Pine
   {
     "rose-pine/neovim",
     name = "rose-pine",
     lazy = true,
   },
 
-  -- Nightfox
   {
     "EdenEast/nightfox.nvim",
     lazy = true,
   },
 
-  -- OneDark
   {
     "navarasu/onedark.nvim",
     lazy = true,
   },
 
-  -- Meta-plugin to load the colorscheme of choice
+  -- Additional dark themes for programming
   {
-    "LazyVim/LazyVim", -- Placeholder name, we are just using the init logic
+    "morhetz/gruvbox",
+    lazy = true,
+  },
+
+  {
+    "arcticicestudio/nord-vim",
+    name = "nord",
+    lazy = true,
+  },
+
+  {
+    "dracula/vim",
+    name = "dracula",
+    lazy = true,
+  },
+
+  -- Light themes for daytime coding
+  {
+    "yonlu/omni.vim",
+    name = "omni",
+    lazy = true,
+  },
+
+  {
+    "NLKNguyen/papercolor-theme",
+    name = "papercolor",
+    lazy = true,
+  },
+
+  {
+    "ayu-theme/ayu-vim",
+    name = "ayu",
+    lazy = true,
+  },
+
+  {
+    "altercation/vim-colors-solarized",
+    name = "solarized",
+    lazy = true,
+  },
+
+  {
+    "nanotech/jellybeans.vim",
+    name = "jellybeans",
+    lazy = true,
+  },
+
+  -- Colorscheme loader and switcher
+  {
+    "nvim-telescope/telescope.nvim",
+    optional = true,
+  },
+
+  {
+    "echasnovski/mini.nvim",
+    optional = true,
     name = "colorscheme-loader",
-    lazy = false, -- Load immediately
-    priority = 1000, -- Load first
+    lazy = false,
+    priority = 1000,
     config = function()
-      -- Change this line to switch themes!
-      -- Options: "catppuccin", "tokyonight", "kanagawa", "cyberdream", "rose-pine", "nightfox", "onedark"
-      vim.cmd.colorscheme "catppuccin"
+      local theme = require "core.theme"
+
+      -- Load last saved theme or default to "catppuccin"
+      local saved_theme = theme.load_saved_theme()
+      local default_theme = saved_theme or "catppuccin"
+
+      -- Apply the theme
+      theme.apply_theme(default_theme)
     end,
   },
 }

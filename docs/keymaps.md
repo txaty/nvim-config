@@ -10,6 +10,7 @@
 |-----------|---------|---------|
 | `<leader>a*` | **AI & Copilot** | `<leader>aa` = AI Chat toggle |
 | `<leader>b*` | **Buffers** | `<leader>bd` = delete buffer |
+| `<leader>c*` | **Color/Colorscheme** | `<leader>cc` = choose theme |
 | `<leader>d*` | **Debug** (DAP) | `<leader>db` = toggle breakpoint |
 | `<leader>f*` | **Files & Finding** | `<leader>ff` = find files |
 | `<leader>F*` | **Flutter** (language) | `<leader>FR` = run Flutter app |
@@ -304,6 +305,51 @@
 
 ---
 
+## Color/Colorscheme (`<leader>c*`)
+
+**Note:** Theme preference is automatically saved and restored on next startup
+
+### Theme Selection
+| Keybinding | Description |
+|---|---|
+| `<leader>cc` | Choose theme from Telescope picker (all 20+ themes) |
+| `<leader>cd` | Switch to first dark theme |
+| `<leader>cl` | Switch to first light theme |
+| `<leader>cp` | Switch to custom "txaty" theme (low-saturation, pure dark, ergonomic) |
+| `<leader>cn` | Cycle to next theme in rotation |
+| `<leader>cN` | Cycle to previous theme in rotation |
+
+### Available Themes
+
+**Dark Themes (10):**
+- `tokyonight` — Modern Tokyo night with vibrant colors
+- `kanagawa` — Japanese-inspired wave aesthetic
+- `catppuccin` — Soothing pastel colors
+- `rose-pine` — Soft, elegant rose pine theme
+- `nightfox` — Clean dark theme with excellent contrast
+- `onedark` — Atom-inspired one dark theme
+- `cyberdream` — Neon cyberpunk aesthetic
+- `gruvbox` — Retro groove with warm colors
+- `nord` — Arctic, north-bluish theme (cool and calm)
+- `dracula` — High contrast dark theme
+
+**Light Themes (10):**
+- `tokyonight-day` — Tokyo day - modern light variant
+- `rose-pine-dawn` — Rose pine dawn - soft light variant
+- `kanagawa-lotus` — Kanagawa lotus - minimal light variant
+- `onelight` — Atom one light theme
+- `ayu-light` — Ayu light - minimalist design
+- `solarized-light` — Solarized light - scientifically-derived colors
+- `papercolor` — PaperColor - clean paper-like appearance
+- `omni` — Omni - modern light theme
+- `jellybeans-light` — Jellybeans light - colorful light variant
+- `dayfox` — Day fox - light fox variant
+
+**Custom Theme:**
+- `txaty` — Low-saturation, pure dark ergonomic theme designed for reduced eye strain and improved code readability during long sessions
+
+---
+
 ## Navigation & Motion
 
 ### Flash (Super-Speed Navigation)
@@ -417,6 +463,7 @@
 | Namespace | Reason |
 |-----------|--------|
 | `<leader>a*` | "A" for AI - clear mnemonic, resolves Copilot/Flutter conflicts |
+| `<leader>c*` | "C" for Color/Colorscheme - theme switching and UI color management |
 | `<leader>F*` | Capital F for Flutter - language-specific like Python, easy distinction from file ops |
 | `<leader>M*` | Capital M for Minimap - less frequent UI feature, prioritizes lowercase `m*` for bookmarks |
 | `<leader>l*` | "L" for LSP - consolidates all language server operations including Mason |
