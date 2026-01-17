@@ -15,6 +15,8 @@ This repository contains a user's Neovim configuration, built on top of [NvChad]
 *   **Todo Highlighting**: `todo-comments.nvim`
 *   **Search & Replace**: `nvim-spectre`
 *   **Git TUI**: `lazygit.nvim`
+*   **AI**: `copilot.lua` + `CopilotChat.nvim`
+*   **Mobile**: `flutter-tools.nvim`
 *   **File Explorer**: `nvim-tree`
 *   **Fuzzy Finder**: `telescope.nvim`
 *   **Git**: `gitsigns.nvim`
@@ -64,6 +66,13 @@ Tools (LSP, Formatters) are generally managed by Mason.
 *   **Comments**: Use `todo-comments.nvim` keywords (`TODO`, `FIXME`, `HACK`, `NOTE`) to mark technical debt. Use `<leader>ft` to search them.
 *   **Refactoring**: Use `nvim-spectre` (`<leader>S`) for project-wide find and replace.
 *   **Git**: Use `lazygit` (`<leader>gg`) for complex git operations (staging, amending, rebase).
+*   **AI**:
+    *   Completion: GitHub Copilot (ghost text). Accept with `<C-l>`.
+    *   Chat: `<leader>cc` to toggle chat. `<leader>ce` to explain, `<leader>cf` to fix.
+*   **Flutter**:
+    *   Run: `<leader>cF`
+    *   Hot Reload/Restart: `<leader>cR` / `<leader>cr`
+    *   Emulators: `<leader>ce`
 
 ### Configuration Pattern
 *   **Plugin Specs**: Define new plugins in `lua/plugins/*.lua`. Use the `opts` or `config` fields to point to configuration files in `lua/configs/`.
