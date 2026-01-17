@@ -1,26 +1,54 @@
-local web_ft = { "javascript", "javascriptreact", "typescript", "typescriptreact", "vue" }
-
 return {
   {
-    "windwp/nvim-ts-autotag",
-    ft = web_ft,
-    config = function()
-      require("nvim-ts-autotag").setup()
+    "nvim-treesitter/nvim-treesitter",
+    opts = function(_, opts)
+      if opts.ensure_installed ~= "all" then
+        opts.ensure_installed = opts.ensure_installed or {}
+        vim.list_extend(opts.ensure_installed, { "javascript", "typescript", "tsx", "html", "css", "json" })
+      end
     end,
   },
+
   {
-    "NvChad/nvim-colorizer.lua",
-    ft = web_ft,
-    config = function()
-      require("colorizer").setup()
+    "williamboman/mason.nvim",
+    opts = function(_, opts)
+      opts.ensure_installed = opts.ensure_installed or {}
+      vim.list_extend(opts.ensure_installed, {
+        "typescript-language-server",
+        "css-lsp",
+        "html-lsp",
+        "json-lsp",
+        "prettier",
+        "eslint_d",
+      })
     end,
   },
+
   {
-    "mxsdev/nvim-dap-vscode-js",
-    ft = web_ft,
-    dependencies = { "mfussenegger/nvim-dap" },
-    config = function()
-      require "dap.web"
-    end,
+    "stevearc/conform.nvim",
+    opts = {
+      formatters_by_ft = {
+        javascript = { "prettier" },
+        typescript = { "prettier" },
+        javascriptreact = { "prettier" },
+        typescriptreact = { "prettier" },
+        json = { "prettier" },
+        html = { "prettier" },
+        css = { "prettier" },
+        scss = { "prettier" },
+      },
+    },
+  },
+
+  {
+    "neovim/nvim-lspconfig",
+    opts = {
+      servers = {
+        ts_ls = {},
+        html = {},
+        cssls = {},
+        jsonls = {},
+      },
+    },
   },
 }

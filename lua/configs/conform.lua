@@ -1,18 +1,7 @@
 local options = {
   formatters_by_ft = {
     lua = { "stylua" },
-    css = { "prettierd", "prettier" },
-    html = { "prettierd", "prettier" },
-    python = { "black", "isort" },
-    go = { "goimports", "gofmt" },
-    tex = { "latexindent" },
-    rust = { "rustfmt" },
-    javascript = { "prettierd", "prettier" },
-    javascriptreact = { "prettierd", "prettier" },
-    typescript = { "prettierd", "prettier" },
-    typescriptreact = { "prettierd", "prettier" },
-    c = { "clang_format" },
-    cpp = { "clang_format" },
+    -- Other languages are defined in plugins/lang/*.lua
   },
 
   format_on_save = {
