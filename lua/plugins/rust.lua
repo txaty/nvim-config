@@ -55,10 +55,6 @@ return {
           adapter = cfg.get_codelldb_adapter(codelldb_path, liblldb_path),
         },
         server = {
-          on_attach = function(client, bufnr)
-            -- Use the common on_attach setup
-            require("configs.lspconfig").on_attach(client, bufnr)
-          end,
           default_settings = {
             -- rust-analyzer language server configuration
             ["rust-analyzer"] = {

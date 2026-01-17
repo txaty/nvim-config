@@ -6,7 +6,45 @@ return {
       "MunifTanjim/nui.nvim",
       "rcarriga/nvim-notify",
     },
-    opts = require "configs.noice",
+    opts = {
+      lsp = {
+        -- override markdown rendering so that **cmp** and other plugins use Treesitter
+        override = {
+          ["vim.lsp.util.convert_input_to_markdown_lines"] = true,
+          ["vim.lsp.util.stylize_markdown"] = true,
+          ["cmp.entry.get_documentation"] = true,
+        },
+        signature = {
+          enabled = true,
+          auto_open = {
+            enabled = true,
+            trigger = true,
+            luasnip = true,
+            throttle = 50,
+          },
+        },
+      },
+      presets = {
+        bottom_search = true, 
+        command_palette = true,
+        long_message_to_split = true,
+        inc_rename = false, 
+        lsp_doc_border = true,
+      },
+      popupmenu = {
+        enabled = false,
+      },
+      routes = {
+        {
+          filter = {
+            event = "msg_show",
+            kind = "",
+            find = "written",
+          },
+          opts = { skip = true },
+        },
+      },
+    },
     keys = {
       {
         "<leader>nl",
