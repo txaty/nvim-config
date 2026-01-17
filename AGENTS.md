@@ -53,7 +53,8 @@
 - Commit `lazy-lock.json` when plugin versions change.
 - If you modify tool matrices (Mason, Treesitter, Conform, Lint, DAP), note them in the PR.
 - PRs should include: summary, validation steps, and screenshots/GIFs for UI changes.
-- End commit messages with `Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>` when applicable.
+- **Do NOT add co-author lines or self-identify as an AI agent in commits.**
+- Always run `stylua lua/` for formatting and use `luacheck lua/` or equivalent static analysis before committing to catch issues early.
 
 ## Security & Configuration Tips
 - Don't commit secrets (DAP/API keys, tokens). Prefer env vars or local files.
