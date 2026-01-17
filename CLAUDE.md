@@ -327,8 +327,11 @@ See `docs/keymaps.md` for complete reference.
 
 - Use Conventional Commits: `feat:`, `fix:`, `refactor:`, `chore:`
 - Always commit `lazy-lock.json` when plugins change
-- End commits with: `Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>`
+- **Do NOT add co-author lines or self-identify as an AI agent in commits**
 - Note tool changes (Mason, Treesitter, formatters) in commit messages
+- Before committing: run `stylua lua/` for code formatting
+- Use `luacheck lua/` (or `$HOME/.luarocks/bin/luacheck`) to validate Lua code before committing
+- Address any legitimate warnings from static analysis tools before committing
 
 ## Troubleshooting
 
