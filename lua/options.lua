@@ -55,7 +55,17 @@ vim.api.nvim_create_autocmd("VimEnter", {
     -- Change to the directory
     vim.cmd.cd(data.file)
 
-    -- Open nvim-tree
-    require("nvim-tree.api").tree.open()
+    -- Create a new empty buffer first, then close the directory buffer
+    -- This ensures we always have a valid window
+    local dir_buf = vim.api.nvim_get_current_buf()
+    vim.cmd "enew"
+    if vim.api.nvim_buf_is_valid(dir_buf) then
+      pcall(vim.api.nvim_buf_delete, dir_buf, { force = true })
+    end
+
+    -- Schedule nvim-tree opening after everything is initialized
+    vim.schedule(function()
+      require("nvim-tree.api").tree.open()
+    end)
   end,
 })

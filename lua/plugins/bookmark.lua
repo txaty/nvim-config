@@ -1,27 +1,29 @@
 return {
   {
     "tomasky/bookmarks.nvim",
-    event = "VimEnter",
+    event = "VeryLazy",
     config = function()
-      require("bookmarks").setup {
-        -- sign_priority = 8,  --set bookmark sign priority to cover other sign
-        save_file = vim.fn.expand "$HOME/.bookmarks", -- bookmarks save file path
+      local bookmarks = require "bookmarks"
+      bookmarks.setup {
+        save_file = vim.fn.expand "$HOME/.bookmarks",
         keywords = {
-          ["@t"] = "☑️ ", -- mark annotation startswith @t ,signs this icon as `Todo`
-          ["@w"] = "⚠️ ", -- mark annotation startswith @w ,signs this icon as `Warn`
-          ["@f"] = "⛏ ", -- mark annotation startswith @f ,signs this icon as `Fix`
-          ["@n"] = " ", -- mark annotation startswith @n ,signs this icon as `Note`
+          ["@t"] = "[TODO]",
+          ["@w"] = "[WARN]",
+          ["@f"] = "[FIX]",
+          ["@n"] = "[NOTE]",
         },
-        on_attach = function(_)
-          local bm = require "bookmarks"
-          local map = vim.keymap.set
-          map("n", "mm", bm.bookmark_toggle) -- add or remove bookmark at current line
-          map("n", "mi", bm.bookmark_ann) -- add or edit mark annotation at current line
-          map("n", "mc", bm.bookmark_clean) -- clean all marks in local buffer
-          map("n", "mn", bm.bookmark_next) -- jump to next mark in local buffer
-          map("n", "mp", bm.bookmark_prev) -- jump to previous mark in local buffer
-          map("n", "ml", bm.bookmark_list) -- show marked file list in quickfix window
-          map("n", "mx", bm.bookmark_clear_all) -- removes all bookmarks
+        on_attach = function(bufnr)
+          local map = function(lhs, rhs, desc)
+            vim.keymap.set("n", lhs, rhs, { buffer = bufnr, desc = desc })
+          end
+
+          map("<leader>ma", bookmarks.bookmark_toggle, "Bookmark: toggle")
+          map("<leader>mn", bookmarks.bookmark_next, "Bookmark: next")
+          map("<leader>mp", bookmarks.bookmark_prev, "Bookmark: previous")
+          map("<leader>mc", bookmarks.bookmark_clean, "Bookmark: clean buffer")
+          map("<leader>mC", bookmarks.bookmark_clear_all, "Bookmark: clear all")
+          map("<leader>ml", bookmarks.bookmark_list, "Bookmark: list")
+          map("<leader>mi", bookmarks.bookmark_ann, "Bookmark: annotate")
         end,
       }
     end,

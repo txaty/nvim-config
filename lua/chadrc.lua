@@ -16,7 +16,18 @@ M.base46 = {
   },
 }
 
-M.nvdash = { load_on_startup = true }
+-- Conditionally disable nvdash when starting with a directory
+-- This prevents window conflicts when opening nvim-tree
+local function should_load_nvdash()
+  -- Check if we're starting with a directory argument
+  local args = vim.fn.argv()
+  if #args > 0 then
+    return vim.fn.isdirectory(args[1]) ~= 1
+  end
+  return true
+end
+
+M.nvdash = { load_on_startup = should_load_nvdash() }
 
 M.ui = {
   tabufline = {

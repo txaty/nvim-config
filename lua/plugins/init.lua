@@ -26,6 +26,8 @@ return {
         "golangci-lint",
         "delve",
         "goimports",
+        "gomodifytags",
+        "impl",
         -- Web / TS
         "typescript-language-server",
         "eslint_d",
@@ -40,12 +42,15 @@ return {
         "tinymist",
         -- Rust
         "rust-analyzer",
+        "codelldb",
+        "debugpy",
       },
     },
   },
 
   {
     "nvim-treesitter/nvim-treesitter",
+    build = ":TSUpdate",
     event = { "BufReadPre", "BufNewFile" },
     config = function()
       require "configs.treesitter"
@@ -57,44 +62,6 @@ return {
     "neovim/nvim-lspconfig",
     config = function()
       require "configs.lspconfig"
-    end,
-  },
-
-  {
-    "mfussenegger/nvim-dap",
-    lazy = false,
-    config = function()
-      local dap, dapui = require "dap", require "dapui"
-      dap.listeners.before.attach.dapui_config = function()
-        dapui.open()
-      end
-      dap.listeners.before.launch.dapui_config = function()
-        dapui.open()
-      end
-      dap.listeners.before.event_terminated.dapui_config = function()
-        dapui.close()
-      end
-      dap.listeners.before.event_exited.dapui_config = function()
-        dapui.close()
-      end
-    end,
-  },
-
-  {
-    "jay-babu/mason-nvim-dap.nvim",
-    event = "VeryLazy",
-    dependencies = { "williamboman/mason.nvim", "mfussenegger/nvim-dap" },
-    opts = {
-      ensure_installed = { "js-debug-adapter", "codelldb", "python", "delve" },
-      automatic_installation = true,
-    },
-  },
-
-  {
-    "rcarriga/nvim-dap-ui",
-    dependencies = { "mfussenegger/nvim-dap", "nvim-neotest/nvim-nio" },
-    config = function()
-      require("dapui").setup()
     end,
   },
 
@@ -135,13 +102,11 @@ return {
 
   {
     "RRethy/vim-illuminate",
+    event = "BufReadPost",
     config = function()
       require("illuminate").configure {
-        -- Configuration options go here:
-        -- delay = 100,
-        -- filetypes_denylist = {'NvimTree', 'packer'},
-        -- modes_denylist = {'i', 'v'},
-        -- providers = {'lsp', 'treesitter', 'regex'},
+        delay = 120,
+        modes_denylist = { "i" },
       }
     end,
   },

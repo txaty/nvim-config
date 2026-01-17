@@ -1,74 +1,26 @@
-local function is_web_project()
-  local cwd = vim.fn.getcwd()
-  return vim.fn.filereadable(cwd .. "/package.json") == 1 or vim.fn.filereadable(cwd .. "/tsconfig.json") == 1
-end
+local web_ft = { "javascript", "javascriptreact", "typescript", "typescriptreact", "vue" }
 
 return {
   {
     "windwp/nvim-ts-autotag",
-    cond = is_web_project,
+    ft = web_ft,
     config = function()
-      require("nvim-ts-autotag").setup {}
+      require("nvim-ts-autotag").setup()
     end,
   },
-
-  -- Colorizer for inline CSS/JSX color preview
   {
     "NvChad/nvim-colorizer.lua",
-    cond = is_web_project,
+    ft = web_ft,
     config = function()
       require("colorizer").setup()
     end,
   },
-
-  -- DAP for JS/TS debugging (vscode-js adapter)
   {
     "mxsdev/nvim-dap-vscode-js",
-    cond = is_web_project,
-    dependencies = { "mfussenegger/nvim-dap", "rcarriga/nvim-dap-ui" },
+    ft = web_ft,
+    dependencies = { "mfussenegger/nvim-dap" },
     config = function()
-      local dap = require "dap"
-      local dapui = require "dapui"
-      require("dap-vscode-js").setup {
-        adapters = { "pwa-node", "pwa-chrome", "node", "chrome" },
-      }
-
-      dap.listeners.before.attach.dapui_config = function()
-        dapui.open()
-      end
-      dap.listeners.before.launch.dapui_config = function()
-        dapui.open()
-      end
-      dap.listeners.before.event_terminated.dapui_config = function()
-        dapui.close()
-      end
-      dap.listeners.before.event_exited.dapui_config = function()
-        dapui.close()
-      end
-
-      dap.configurations.javascript = {
-        {
-          type = "pwa-node",
-          request = "launch",
-          name = "Launch Node",
-          program = "${file}",
-          cwd = vim.fn.getcwd(),
-          sourceMaps = true,
-          protocol = "inspector",
-        },
-        {
-          type = "pwa-node",
-          request = "attach",
-          name = "Attach to Process",
-          processId = require("dap.utils").pick_process,
-          cwd = vim.fn.getcwd(),
-          sourceMaps = true,
-          protocol = "inspector",
-        },
-      }
-      dap.configurations.typescript = dap.configurations.javascript
-      dap.configurations.javascriptreact = dap.configurations.javascript
-      dap.configurations.typescriptreact = dap.configurations.javascript
+      require "dap.web"
     end,
   },
 }

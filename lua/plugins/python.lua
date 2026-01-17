@@ -3,20 +3,27 @@ return {
     "linux-cultist/venv-selector.nvim",
     dependencies = {
       "neovim/nvim-lspconfig",
-      "mfussenegger/nvim-dap",
-      "mfussenegger/nvim-dap-python", -- debugging for Python
-      { "nvim-telescope/telescope.nvim", dependencies = { "nvim-lua/plenary.nvim" } },
+      "nvim-telescope/telescope.nvim",
+      "mfussenegger/nvim-dap-python",
     },
-    lazy = false,
-    config = function()
-      require("venv-selector").setup {}
-      -- DAP Python uses the current Python on PATH; integrates well with venv-selector
+    cmd = "VenvSelect",
+    keys = {
+      { "<leader>pv", "<cmd>VenvSelect<cr>", desc = "Python: select virtualenv" },
+    },
+    opts = {
+      name = "venv",
+      stay_on_window = true,
+    },
+    config = function(_, opts)
+      local selector = require "venv-selector"
+      selector.setup(opts)
+
+      local mason_debugpy = vim.fn.stdpath "data" .. "/mason/packages/debugpy/venv/bin/python"
+      local python = vim.loop.fs_stat(mason_debugpy) and mason_debugpy or "python3"
+
       pcall(function()
-        require("dap-python").setup "python"
+        require("dap-python").setup(python)
       end)
     end,
-    keys = {
-      { ",v", "<cmd>VenvSelect<cr>" },
-    },
   },
 }

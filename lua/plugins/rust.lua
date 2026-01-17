@@ -44,7 +44,10 @@ return {
       require("crates").setup {
         completion = { cmp = { enabled = true } },
       }
-      require("cmp").setup.buffer { sources = { { name = "crates" } } }
+      local ok, cmp = pcall(require, "cmp")
+      if ok then
+        cmp.setup.buffer { sources = { { name = "crates" } } }
+      end
     end,
   },
 }
