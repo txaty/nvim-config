@@ -24,10 +24,11 @@ return {
 
   {
     "neovim/nvim-lspconfig",
-    event = { "BufReadPre", "BufNewFile" },
+    event = "VeryLazy",
     dependencies = {
       "williamboman/mason.nvim",
       "williamboman/mason-lspconfig.nvim",
+      "hrsh7th/cmp-nvim-lsp",
     },
     config = function()
       local lspconfig = require "lspconfig"
@@ -37,7 +38,10 @@ return {
 
       -- Exporting capabilities for completion
       local capabilities = vim.lsp.protocol.make_client_capabilities()
-      capabilities = require("cmp_nvim_lsp").default_capabilities(capabilities)
+      local cmp_nvim_lsp_ok, cmp_nvim_lsp = pcall(require, "cmp_nvim_lsp")
+      if cmp_nvim_lsp_ok then
+        capabilities = cmp_nvim_lsp.default_capabilities(capabilities)
+      end
 
       -- LspAttach Autocmd for Keymaps
       vim.api.nvim_create_autocmd("LspAttach", {
@@ -74,31 +78,26 @@ return {
         end,
       })
 
-      -- setup mason-lspconfig
+      -- Setup mason-lspconfig
+      -- This will automatically enable installed servers (automatic_enable is true by default)
       mason_lspconfig.setup {
         ensure_installed = { "lua_ls", "bashls", "pyright" },
+        -- Don't add rust_analyzer here - let rustaceanvim manage it
       }
 
-      mason_lspconfig.setup_handlers {
-        -- Default handler
-        function(server_name)
-          lspconfig[server_name].setup {
-            capabilities = capabilities,
-          }
-        end,
-
-        -- Specific overrides example
-        ["lua_ls"] = function()
-          lspconfig.lua_ls.setup {
-            capabilities = capabilities,
-            settings = {
-              Lua = {
-                diagnostics = { globals = { "vim" } },
-              },
-            },
-          }
-        end,
+      -- Manually setup specific servers with custom settings
+      -- Lua
+      lspconfig.lua_ls.setup {
+        capabilities = capabilities,
+        settings = {
+          Lua = {
+            diagnostics = { globals = { "vim" } },
+          },
+        },
       }
+
+      -- IMPORTANT: rust-analyzer is handled exclusively by rustaceanvim
+      -- (in lua/plugins/rust.lua). We skip it here to avoid conflicts.
     end,
   },
 }
