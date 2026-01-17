@@ -13,6 +13,8 @@ This repository contains a user's Neovim configuration, built on top of [NvChad]
 *   **Linting**: `nvim-lint`
 *   **Diagnostics UI**: `trouble.nvim`
 *   **Todo Highlighting**: `todo-comments.nvim`
+*   **Search & Replace**: `nvim-spectre`
+*   **Git TUI**: `lazygit.nvim`
 *   **File Explorer**: `nvim-tree`
 *   **Fuzzy Finder**: `telescope.nvim`
 *   **Git**: `gitsigns.nvim`
@@ -60,6 +62,8 @@ Tools (LSP, Formatters) are generally managed by Mason.
     *   TeX: `latexindent`
 *   **Diagnostics**: Use `trouble.nvim` (`<leader>xx`) to view and filter project-wide diagnostics.
 *   **Comments**: Use `todo-comments.nvim` keywords (`TODO`, `FIXME`, `HACK`, `NOTE`) to mark technical debt. Use `<leader>ft` to search them.
+*   **Refactoring**: Use `nvim-spectre` (`<leader>S`) for project-wide find and replace.
+*   **Git**: Use `lazygit` (`<leader>gg`) for complex git operations (staging, amending, rebase).
 
 ### Configuration Pattern
 *   **Plugin Specs**: Define new plugins in `lua/plugins/*.lua`. Use the `opts` or `config` fields to point to configuration files in `lua/configs/`.
