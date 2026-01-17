@@ -19,6 +19,7 @@ This repository contains a user's Neovim configuration, built on top of [NvChad]
 *   **UI Polish**: `noice.nvim` + `dressing.nvim`
 *   **Navigation**: `flash.nvim`
 *   **Mobile**: `flutter-tools.nvim`
+*   **Markdown**: `render-markdown.nvim`
 *   **File Explorer**: `nvim-tree`
 *   **Fuzzy Finder**: `telescope.nvim`
 *   **Git**: `gitsigns.nvim`
@@ -76,6 +77,7 @@ Tools (LSP, Formatters) are generally managed by Mason.
 *   **UI**:
     *   Noice History: `<leader>nh`
     *   Dismiss Notifications: `<leader>nd`
+*   **Markdown**: Automatic rendering of headings, tables, and checkboxes (Obsidian-style).
 *   **Flutter**:
     *   Run: `<leader>cF`
     *   Hot Reload/Restart: `<leader>cR` / `<leader>cr`
