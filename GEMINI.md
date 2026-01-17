@@ -16,6 +16,8 @@ This repository contains a user's Neovim configuration, built on top of [NvChad]
 *   **Search & Replace**: `nvim-spectre`
 *   **Git TUI**: `lazygit.nvim`
 *   **AI**: `copilot.lua` + `CopilotChat.nvim`
+*   **UI Polish**: `noice.nvim` + `dressing.nvim`
+*   **Navigation**: `flash.nvim`
 *   **Mobile**: `flutter-tools.nvim`
 *   **File Explorer**: `nvim-tree`
 *   **Fuzzy Finder**: `telescope.nvim`
@@ -69,6 +71,11 @@ Tools (LSP, Formatters) are generally managed by Mason.
 *   **AI**:
     *   Completion: GitHub Copilot (ghost text). Accept with `<C-l>`.
     *   Chat: `<leader>cc` to toggle chat. `<leader>ce` to explain, `<leader>cf` to fix.
+*   **Navigation**:
+    *   Flash: Press `s` to jump anywhere. Press `S` to select Treesitter nodes.
+*   **UI**:
+    *   Noice History: `<leader>nh`
+    *   Dismiss Notifications: `<leader>nd`
 *   **Flutter**:
     *   Run: `<leader>cF`
     *   Hot Reload/Restart: `<leader>cR` / `<leader>cr`
