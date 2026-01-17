@@ -226,9 +226,7 @@ return {
     config = function()
       local crates = require "crates"
       crates.setup {
-        completion = {
-          cmp = { enabled = true },
-        },
+        -- Use the in-process language server for completion (replaces cmp integration)
         lsp = {
           enabled = true,
           on_attach = function(_client, bufnr)
@@ -243,12 +241,6 @@ return {
           end,
         },
       }
-
-      -- Setup cmp integration
-      local ok, cmp = pcall(require, "cmp")
-      if ok then
-        cmp.setup.buffer { sources = { { name = "crates" } } }
-      end
     end,
   },
 
