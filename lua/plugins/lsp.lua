@@ -31,7 +31,6 @@ return {
       "hrsh7th/cmp-nvim-lsp",
     },
     config = function()
-      local lspconfig = require "lspconfig"
       local mason_lspconfig = require "mason-lspconfig"
 
       local map = vim.keymap.set
@@ -85,16 +84,16 @@ return {
         -- Don't add rust_analyzer here - let rustaceanvim manage it
       }
 
-      -- Manually setup specific servers with custom settings
-      -- Lua
-      lspconfig.lua_ls.setup {
+      -- Configure servers using new vim.lsp.config API (Neovim 0.11+)
+      -- This replaces the deprecated require('lspconfig') framework
+      vim.lsp.config("lua_ls", {
         capabilities = capabilities,
         settings = {
           Lua = {
             diagnostics = { globals = { "vim" } },
           },
         },
-      }
+      })
 
       -- IMPORTANT: rust-analyzer is handled exclusively by rustaceanvim
       -- (in lua/plugins/rust.lua). We skip it here to avoid conflicts.
