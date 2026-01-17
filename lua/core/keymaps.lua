@@ -1,4 +1,3 @@
-
 local map = vim.keymap.set
 
 -- General Mappings
@@ -19,7 +18,7 @@ map("n", "<C-s>", "<cmd>w<CR>", { desc = "General Save file" })
 map("n", "<C-c>", "<cmd>%y+<CR>", { desc = "General Copy whole file" })
 
 map("n", "<leader>n", "<cmd>set nu!<CR>", { desc = "Toggle Line number" })
-map("n", "<leader>rn", "<cmd>set rnu!<CR>", { desc = "Toggle Relative number" })
+map("n", "<leader>nr", "<cmd>set rnu!<CR>", { desc = "Toggle Relative number" })
 
 -- User Mappings from mappings.lua
 map("n", ";", ":", { desc = "Command mode" })
@@ -30,6 +29,17 @@ map("n", "<leader>sc", "<cmd>nohlsearch<cr>", { desc = "Search: clear highlights
 map("n", "<leader>fs", "<cmd>w<cr>", { desc = "Files: save" })
 map("n", "<leader>qq", "<cmd>q<cr>", { desc = "Quit window" })
 map("n", "<leader>qQ", "<cmd>qa!<cr>", { desc = "Quit all" })
+
+-- Files & Finding (Telescope)
+map("n", "<leader>ff", "<cmd>Telescope find_files<cr>", { desc = "Files: find files" })
+map("n", "<leader>fg", "<cmd>Telescope live_grep<cr>", { desc = "Files: live grep" })
+map("n", "<leader>fb", "<cmd>Telescope buffers<cr>", { desc = "Files: find buffers" })
+map("n", "<leader>fr", "<cmd>Telescope oldfiles<cr>", { desc = "Files: recent files" })
+map("n", "<leader>fh", "<cmd>Telescope help_tags<cr>", { desc = "Files: help tags" })
+
+-- File Explorer (NvimTree)
+map("n", "<leader>fe", "<cmd>NvimTreeToggle<cr>", { desc = "Files: toggle explorer" })
+map("n", "<C-n>", "<cmd>NvimTreeToggle<cr>", { desc = "Files: toggle explorer" })
 
 -- Window Split
 map("n", "<leader>ws", "<cmd>split<cr>", { desc = "Window: horizontal split" })

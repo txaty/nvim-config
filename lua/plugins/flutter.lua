@@ -7,7 +7,7 @@ return {
     },
     ft = "dart",
     config = function()
-      require("flutter-tools").setup({
+      require("flutter-tools").setup {
         ui = {
           border = "rounded",
           notification_style = "plugin",
@@ -22,7 +22,7 @@ return {
           enabled = true,
           run_via_dap = true,
           register_configurations = function(paths)
-            local dap = require("dap")
+            local dap = require "dap"
             dap.configurations.dart = {
               {
                 type = "dart",
@@ -47,23 +47,23 @@ return {
             showTodos = true,
             completeFunctionCalls = true,
             analysisExcludedFolders = {
-              vim.fn.expand("$HOME/.pub-cache"),
-              vim.fn.expand("/opt/homebrew/"),
-              vim.fn.expand("$HOME/snap/"),
+              vim.fn.expand "$HOME/.pub-cache",
+              vim.fn.expand "/opt/homebrew/",
+              vim.fn.expand "$HOME/snap/",
             },
           },
         },
-      })
+      }
     end,
     keys = {
-      { "<leader>cF", "<cmd>FlutterRun<cr>", desc = "Flutter: run" },
-      { "<leader>cq", "<cmd>FlutterQuit<cr>", desc = "Flutter: quit" },
-      { "<leader>cr", "<cmd>FlutterRestart<cr>", desc = "Flutter: hot restart" },
-      { "<leader>cR", "<cmd>FlutterReload<cr>", desc = "Flutter: hot reload" },
-      { "<leader>cd", "<cmd>FlutterDevices<cr>", desc = "Flutter: devices" },
-      { "<leader>ce", "<cmd>FlutterEmulators<cr>", desc = "Flutter: emulators" },
-      { "<leader>co", "<cmd>FlutterOutlineToggle<cr>", desc = "Flutter: outline" },
-      { "<leader>cl", "<cmd>FlutterLogToggle<cr>", desc = "Flutter: log" },
+      { "<leader>FR", "<cmd>FlutterRun<cr>", desc = "Flutter: Run app" },
+      { "<leader>Fq", "<cmd>FlutterQuit<cr>", desc = "Flutter: Quit app" },
+      { "<leader>Fr", "<cmd>FlutterRestart<cr>", desc = "Flutter: Hot restart" },
+      { "<leader>Fl", "<cmd>FlutterReload<cr>", desc = "Flutter: Hot reload" },
+      { "<leader>Fd", "<cmd>FlutterDevices<cr>", desc = "Flutter: Select device" },
+      { "<leader>Fe", "<cmd>FlutterEmulators<cr>", desc = "Flutter: Launch emulator" },
+      { "<leader>Fo", "<cmd>FlutterOutlineToggle<cr>", desc = "Flutter: Toggle outline" },
+      { "<leader>FL", "<cmd>FlutterLogToggle<cr>", desc = "Flutter: Toggle logs" },
     },
   },
 }

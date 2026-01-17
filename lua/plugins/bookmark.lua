@@ -20,7 +20,7 @@ return {
           map("<leader>ma", bookmarks.bookmark_toggle, "Bookmark: toggle")
           map("<leader>mn", bookmarks.bookmark_next, "Bookmark: next")
           map("<leader>mp", bookmarks.bookmark_prev, "Bookmark: previous")
-          map("<leader>mc", bookmarks.bookmark_clean, "Bookmark: clean buffer")
+          map("<leader>md", bookmarks.bookmark_clean, "Bookmark: clean buffer")
           map("<leader>mC", bookmarks.bookmark_clear_all, "Bookmark: clear all")
           map("<leader>ml", bookmarks.bookmark_list, "Bookmark: list")
           map("<leader>mi", bookmarks.bookmark_ann, "Bookmark: annotate")

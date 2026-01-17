@@ -1,4 +1,3 @@
-
 return {
   -- File Explorer
   {

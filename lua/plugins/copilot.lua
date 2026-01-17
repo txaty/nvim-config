@@ -68,12 +68,12 @@ return {
       "CopilotChatAgents",
     },
     keys = {
-      { "<leader>cc", "<cmd>CopilotChatToggle<cr>", desc = "Copilot Chat" },
-      { "<leader>cq", "<cmd>CopilotChatQuick<cr>", desc = "Copilot Chat Quick" },
-      { "<leader>ce", "<cmd>CopilotChatExplain<cr>", desc = "Copilot Explain Code" },
-      { "<leader>ct", "<cmd>CopilotChatTests<cr>", desc = "Copilot Generate Tests" },
-      { "<leader>cf", "<cmd>CopilotChatFix<cr>", desc = "Copilot Fix Code" },
-      { "<leader>cr", "<cmd>CopilotChatReview<cr>", desc = "Copilot Review Code" },
+      { "<leader>aa", "<cmd>CopilotChatToggle<cr>", desc = "AI: Toggle chat" },
+      { "<leader>aq", "<cmd>CopilotChatQuick<cr>", desc = "AI: Quick chat" },
+      { "<leader>ae", "<cmd>CopilotChatExplain<cr>", desc = "AI: Explain code" },
+      { "<leader>at", "<cmd>CopilotChatTests<cr>", desc = "AI: Generate tests" },
+      { "<leader>af", "<cmd>CopilotChatFix<cr>", desc = "AI: Fix code" },
+      { "<leader>ar", "<cmd>CopilotChatReview<cr>", desc = "AI: Review code" },
     },
     opts = {
       debug = false, -- Enable debug logging

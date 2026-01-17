@@ -1,4 +1,3 @@
-
 return {
   -- Catppuccin
   {
@@ -6,7 +5,7 @@ return {
     name = "catppuccin",
     lazy = true,
     config = function()
-      require("catppuccin").setup({
+      require("catppuccin").setup {
         flavour = "mocha",
         integrations = {
           cmp = true,
@@ -18,7 +17,7 @@ return {
           telescope = { enabled = true },
           which_key = true,
         },
-      })
+      }
     end,
   },
 

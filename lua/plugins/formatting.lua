@@ -1,4 +1,3 @@
-
 return {
   {
     "stevearc/conform.nvim",
@@ -7,12 +6,12 @@ return {
     cmd = "ConformInfo",
     keys = {
       {
-        "<leader>cf",
+        "<leader>lF",
         function()
-          require("conform").format({ formatters = { "injected" }, timeout_ms = 3000 })
+          require("conform").format { formatters = { "injected" }, timeout_ms = 3000 }
         end,
         mode = { "n", "v" },
-        desc = "Format Injected Langs",
+        desc = "LSP: Format injected languages",
       },
     },
     opts = {

@@ -1,4 +1,3 @@
-
 return {
   {
     "mfussenegger/nvim-dap",
@@ -8,8 +7,8 @@ return {
       "nvim-neotest/nvim-nio",
     },
     config = function()
-      local dap = require("dap")
-      local dapui = require("dapui")
+      local dap = require "dap"
+      local dapui = require "dapui"
 
       -- Signs
       local signs = {
@@ -23,7 +22,7 @@ return {
       end
 
       -- DAP UI Setup
-      dapui.setup({
+      dapui.setup {
         floating = { border = "rounded" },
         layouts = {
           {
@@ -44,18 +43,28 @@ return {
             size = 12,
           },
         },
-      })
+      }
 
       -- Listeners
-      dap.listeners.before.attach.dapui_config = function() dapui.open() end
-      dap.listeners.before.launch.dapui_config = function() dapui.open() end
-      dap.listeners.before.event_terminated.dapui_config = function() dapui.close() end
-      dap.listeners.before.event_exited.dapui_config = function() dapui.close() end
+      dap.listeners.before.attach.dapui_config = function()
+        dapui.open()
+      end
+      dap.listeners.before.launch.dapui_config = function()
+        dapui.open()
+      end
+      dap.listeners.before.event_terminated.dapui_config = function()
+        dapui.close()
+      end
+      dap.listeners.before.event_exited.dapui_config = function()
+        dapui.close()
+      end
 
       -- Keymaps
       local map = vim.keymap.set
       map("n", "<leader>db", dap.toggle_breakpoint, { desc = "Toggle breakpoint" })
-      map("n", "<leader>dB", function() dap.set_breakpoint(vim.fn.input "Breakpoint condition: ") end, { desc = "Conditional breakpoint" })
+      map("n", "<leader>dB", function()
+        dap.set_breakpoint(vim.fn.input "Breakpoint condition: ")
+      end, { desc = "Conditional breakpoint" })
       map("n", "<leader>dc", dap.continue, { desc = "Continue / run" })
       map("n", "<leader>dl", dap.run_last, { desc = "Run last" })
       map("n", "<leader>di", dap.step_into, { desc = "Step into" })
@@ -63,7 +72,10 @@ return {
       map("n", "<leader>dO", dap.step_out, { desc = "Step out" })
       map("n", "<leader>dr", dap.repl.toggle, { desc = "Toggle REPL" })
       map("n", "<leader>du", dapui.toggle, { desc = "Toggle UI" })
-      map("n", "<leader>dx", function() dap.terminate(); dapui.close() end, { desc = "Terminate" })
+      map("n", "<leader>dx", function()
+        dap.terminate()
+        dapui.close()
+      end, { desc = "Terminate" })
 
       -- Preload cpp if available (optional)
       pcall(require, "dap.cpp")

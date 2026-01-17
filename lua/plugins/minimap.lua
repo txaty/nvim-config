@@ -9,10 +9,10 @@ return {
     -- Optional
     keys = {
       -- Global Minimap Controls
-      { "<leader>mm", "<cmd>Neominimap toggle<cr>", desc = "Minimap: toggle" },
-      { "<leader>mo", "<cmd>Neominimap on<cr>", desc = "Minimap: on" },
-      { "<leader>mc", "<cmd>Neominimap off<cr>", desc = "Minimap: off" },
-      { "<leader>mr", "<cmd>Neominimap refresh<cr>", desc = "Minimap: refresh" },
+      { "<leader>MM", "<cmd>Neominimap toggle<cr>", desc = "Minimap: Toggle" },
+      { "<leader>Mo", "<cmd>Neominimap on<cr>", desc = "Minimap: Enable" },
+      { "<leader>Mc", "<cmd>Neominimap off<cr>", desc = "Minimap: Disable" },
+      { "<leader>Mr", "<cmd>Neominimap refresh<cr>", desc = "Minimap: Refresh" },
     },
     init = function()
       -- The following options are recommended when layout == "float"
