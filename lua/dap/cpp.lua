@@ -2,13 +2,6 @@ local dap = require "dap"
 
 local mason_root = vim.fn.stdpath "data" .. "/mason/packages/codelldb/extension/"
 local codelldb_path = mason_root .. "adapter/codelldb"
-local liblldb_path = mason_root .. "lldb/lib/liblldb.dylib"
-
-if vim.loop.os_uname().sysname == "Linux" then
-  liblldb_path = mason_root .. "lldb/lib/liblldb.so"
-elseif vim.loop.os_uname().sysname:find "Windows" then
-  liblldb_path = mason_root .. "lldb/bin/liblldb.dll"
-end
 
 if not vim.loop.fs_stat(codelldb_path) then
   codelldb_path = "/opt/homebrew/opt/llvm/bin/lldb-vscode"
