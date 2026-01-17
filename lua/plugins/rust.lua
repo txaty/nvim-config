@@ -52,7 +52,7 @@ return {
       vim.g.rustaceanvim = {
         -- LSP configuration
         server = {
-          on_attach = function(client, bufnr)
+          on_attach = function(client, _bufnr)
             -- Let rustaceanvim handle most settings, but we can add custom logic here
             require("cmp_nvim_lsp").default_capabilities(client.server_capabilities)
           end,
@@ -231,7 +231,7 @@ return {
         },
         lsp = {
           enabled = true,
-          on_attach = function(client, bufnr)
+          on_attach = function(_client, bufnr)
             local map = vim.keymap.set
             local opts = { noremap = true, silent = true, buffer = bufnr }
             map("n", "<leader>Cv", crates.show_versions_popup, opts)
