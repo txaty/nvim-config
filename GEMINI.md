@@ -136,6 +136,16 @@ Tools (LSP, Formatters, Linters, DAP) are managed by Mason.
     *   Completion: trigger with `<C-Space>`
 *   Run headless health check: `nvim --headless '+checkhealth' +qa`
 
+## Commit & Code Quality Guidelines
+
+*   **Commit Style**: Use Conventional Commits (`feat:`, `fix:`, `refactor:`, `chore:`)
+*   **Plugin Lockfile**: Always commit `lazy-lock.json` when plugin versions change
+*   **Do NOT Self-Identify in Commits**: Do not add co-author lines or self-identify as an AI agent in commit messages
+*   **Tool Changes**: Note any changes to Mason packages, Treesitter parsers, formatters, or DAP adapters in commit messages
+*   **Code Formatting**: Run `stylua lua/` before committing to ensure consistent Lua formatting
+*   **Static Analysis**: Use `luacheck lua/` (or `$HOME/.luarocks/bin/luacheck`) to validate Lua syntax
+*   **Fix Warnings**: Address legitimate warnings from static analysis tools before committing
+
 ## Architecture Notes
 *   **No NvChad Dependencies**: This config has completely removed all NvChad files and dependencies. Do not reference or recreate `chadrc.lua`, `base46`, `nvchad.ui`, `nvchad.core`, `lua/configs/`, or `custom/` directory.
 *   **Self-Maintained Core**: All core settings (options, keymaps, autocmds) are explicitly defined in `lua/core/`. No external configuration framework dependencies.
