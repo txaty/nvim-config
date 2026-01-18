@@ -1,3 +1,40 @@
+-- Create autocmd for markdown file opener at top level
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "markdown",
+  callback = function(args)
+    vim.keymap.set("n", "<leader>mo", function()
+      local filepath = vim.fn.expand "%:p"
+      local cmd
+      if vim.fn.has "mac" == 1 then
+        -- macOS: try Typora specifically, fallback to default app
+        if vim.fn.executable "typora" == 1 then
+          cmd = string.format("typora '%s' &", filepath)
+        else
+          cmd = string.format("open -a Typora '%s' 2>/dev/null || open '%s'", filepath, filepath)
+        end
+      elseif vim.fn.has "unix" == 1 then
+        -- Linux
+        if vim.fn.executable "typora" == 1 then
+          cmd = string.format("typora '%s' &", filepath)
+        else
+          cmd = string.format("xdg-open '%s' &", filepath)
+        end
+      elseif vim.fn.has "win32" == 1 then
+        -- Windows
+        cmd = string.format('start "" "%s"', filepath)
+      end
+
+      if cmd then
+        vim.fn.system(cmd)
+        vim.notify("Opened " .. vim.fn.expand "%:t" .. " in external reader", vim.log.levels.INFO)
+      else
+        vim.notify("Could not determine command to open file", vim.log.levels.ERROR)
+      end
+    end, { buffer = args.buf, desc = "Markdown: Open in external reader" })
+  end,
+  group = vim.api.nvim_create_augroup("MarkdownExternalOpener", { clear = true }),
+})
+
 return {
   {
     "MeanderingProgrammer/render-markdown.nvim",
