@@ -1,7 +1,7 @@
 return {
   {
     "tomasky/bookmarks.nvim",
-    event = "VeryLazy",
+    event = { "BufReadPost", "BufNewFile" },
     config = function()
       local bookmarks = require "bookmarks"
       bookmarks.setup {
@@ -17,13 +17,13 @@ return {
             vim.keymap.set("n", lhs, rhs, { buffer = bufnr, desc = desc })
           end
 
-          map("<leader>ma", bookmarks.bookmark_toggle, "Bookmark: toggle")
-          map("<leader>mn", bookmarks.bookmark_next, "Bookmark: next")
-          map("<leader>mp", bookmarks.bookmark_prev, "Bookmark: previous")
-          map("<leader>md", bookmarks.bookmark_clean, "Bookmark: clean buffer")
-          map("<leader>mC", bookmarks.bookmark_clear_all, "Bookmark: clear all")
-          map("<leader>ml", bookmarks.bookmark_list, "Bookmark: list")
-          map("<leader>mi", bookmarks.bookmark_ann, "Bookmark: annotate")
+          map("<leader>ma", bookmarks.bookmark_toggle, "Bookmark: Toggle")
+          map("<leader>mn", bookmarks.bookmark_next, "Bookmark: Next")
+          map("<leader>mp", bookmarks.bookmark_prev, "Bookmark: Previous")
+          map("<leader>md", bookmarks.bookmark_clean, "Bookmark: Clean buffer")
+          map("<leader>mC", bookmarks.bookmark_clear_all, "Bookmark: Clear all")
+          map("<leader>ml", bookmarks.bookmark_list, "Bookmark: List")
+          map("<leader>mi", bookmarks.bookmark_ann, "Bookmark: Annotate")
         end,
       }
     end,
