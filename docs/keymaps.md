@@ -16,7 +16,7 @@
 | `<leader>F*` | **Flutter** (language) | `<leader>FR` = run Flutter app |
 | `<leader>g*` | **Git** | `<leader>gs` = stage hunk |
 | `<leader>l*` | **LSP & Language** | `<leader>lr` = rename symbol |
-| `<leader>m*` | **Bookmarks** | `<leader>ma` = toggle bookmark |
+| `<leader>m*` | **Bookmarks & Markdown** | `<leader>ma` = toggle bookmark, `<leader>mo` = open in Typora |
 | `<leader>M*` | **Minimap** | `<leader>MM` = toggle minimap |
 | `<leader>n*` | **Notifications** | `<leader>nl` = show last message |
 | `<leader>p*` | **Python** (venv) | `<leader>pv` = select virtualenv |
@@ -377,6 +377,21 @@
 
 ---
 
+## Markdown (`<leader>mo`)
+
+**Note:** Only available in `.md` (markdown) files
+
+| Keybinding | Description |
+|---|---|
+| `<leader>mo` | Open current markdown file in external reader (Typora or system default) |
+
+**How it works:**
+- On macOS: Tries to open in Typora specifically, falls back to default markdown app
+- On Linux: Uses Typora if available, otherwise uses `xdg-open`
+- On Windows: Uses system default application
+
+---
+
 ## Bookmarks (`<leader>m*`)
 
 | Keybinding | Description |
@@ -469,7 +484,7 @@
 | `<leader>l*` | "L" for LSP - consolidates all language server operations including Mason |
 | `<leader>f*` | "F" for Files - includes Telescope discovery + file explorer |
 | `<leader>g*` | "G" for Git - includes hunk operations + diffview + lazygit |
-| `<leader>m*` | "M" for Markers - bookmarks are more frequently used than minimap |
+| `<leader>m*` | "M" for Markers/Markdown - includes bookmarks and markdown file operations |
 | `<leader>x*` | "X" for eXtensions - diagnostics, trouble, quickfix management |
 | `<leader>d*` | "D" for Debug - DAP operations for all supported languages |
 | `<leader>t*` | "T" for Testing - test runner operations across all languages |
