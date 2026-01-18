@@ -41,7 +41,7 @@ stylua lua/
 ### 1. No NvChad Dependencies
 - **NEVER** reference or use NvChad plugins (base46, ui, nvchad.core)
 - All functionality is explicitly implemented in `lua/core/` and `lua/plugins/`
-- **IMPORTANT**: The README.md mentions NvChad for historical context only; this is now a fully independent config
+- This is now a fully independent configuration with no NvChad dependencies
 - NvChad files and directories have been completely removed from the codebase
 - Do not create any NvChad-specific files (chadrc.lua, custom/, etc.)
 
@@ -70,10 +70,13 @@ init.lua (entry point)
 
 ### Directory Structure
 - `lua/core/` — Fundamental Neovim settings and lazy.nvim bootstrap
+  - `theme.lua` — Theme switching module with JSON persistence
+  - `theme_txaty.lua` — Custom low-saturation ergonomic dark theme
 - `lua/plugins/` — Self-contained plugin specifications (all `.lua` files auto-imported)
 - `lua/dap/` — Language-specific debug adapter configurations
 - `docs/` — User documentation (keymaps reference)
-- `.stylua.toml` — Lua formatter configuration
+- `.stylua.toml` — Lua formatter configuration (120 column width, 2-space indent)
+- `.luacheckrc` — Lua linter configuration (Lua 5.1 std, vim globals)
 - `lazy-lock.json` — Plugin version lockfile (always commit when plugins change)
 
 ## Plugin Development Patterns
@@ -155,22 +158,34 @@ Each language gets its own plugin file that extends shared tooling:
 - **Update documentation**: Modify `docs/keymaps.md`
 
 ### LSP Server Configuration
-All LSP servers are configured in `lua/plugins/lsp.lua` via mason-lspconfig handlers:
+All LSP servers are configured in `lua/plugins/lsp.lua` using the **new vim.lsp.config API** (Neovim 0.11+):
+
+```lua
+-- New API (migrated from deprecated require('lspconfig'))
+vim.lsp.config("lua_ls", {
+  capabilities = capabilities,
+  settings = {
+    Lua = {
+      diagnostics = { globals = { "vim" } }
+    }
+  }
+})
+```
+
+For servers managed by mason-lspconfig, use the setup_handlers pattern with auto-enable:
 
 ```lua
 require("mason-lspconfig").setup_handlers {
   function(server_name)
-    require("lspconfig")[server_name].setup {}
-  end,
-  ["lua_ls"] = function()
-    require("lspconfig").lua_ls.setup {
-      settings = { Lua = { ... } }
-    }
+    vim.lsp.enable(server_name)
   end,
 }
 ```
 
-**NEVER** set `cmd` or `root_dir` fields manually (causes conflicts with Mason).
+**CRITICAL**:
+- Use `vim.lsp.config()` instead of `require('lspconfig')[server].setup()`
+- **NEVER** set `cmd` or `root_dir` fields manually (causes conflicts with Mason)
+- Rust is handled exclusively by `rustaceanvim` (not included in lspconfig)
 
 ## Testing and Validation
 
@@ -224,14 +239,88 @@ stylua lua/
 - `<leader>d*` — Debug (breakpoints, step, REPL)
 - `<leader>t*` — Testing (nearest, file, suite)
 - `<leader>p*` — Python (venv selector)
-- `<leader>c*` — Code/Copilot (AI chat, Flutter commands)
+- `<leader>c*` — Theme/Code (theme switching, AI chat, Flutter commands)
+  - `<leader>cc` — Choose theme (Telescope picker)
+  - `<leader>cd` — Switch to dark theme
+  - `<leader>cl` — Switch to light theme
+  - `<leader>cp` — Switch to txaty custom theme
+  - `<leader>cn/cN` — Next/Previous theme
 - `<leader>q*` — Session/Quit (save, load, quit)
 - `<leader>x*` — Diagnostics/Trouble
 - `<leader>S` — Spectre (project-wide search and replace)
+- `<leader>M*` — Minimap (toggle, enable, disable, refresh)
 - `s/S` — Flash navigation (jump to location/Treesitter node)
 - `<C-n>` — Toggle nvim-tree file explorer
 
 See `docs/keymaps.md` for complete reference.
+
+## Theme System
+
+### Architecture
+The configuration features a seamless theme switching system with 21+ themes:
+
+**Components:**
+1. **Theme Module** (`lua/core/theme.lua`)
+   - Manages theme switching and persistence
+   - Saves preference to `$XDG_DATA_HOME/theme_config.json`
+   - Supports 10 dark themes + 10 light themes + 1 custom theme
+   - Commands: `:ThemeSwitch`, `:ThemeDark`, `:ThemeLight`, `:ThemeTxaty`
+
+2. **Custom txaty Theme** (`lua/core/theme_txaty.lua`)
+   - Low-saturation, ergonomic dark theme (#0f1419 background)
+   - Based on research: "Too many colors impairs code reading"
+   - Muted color palette for sustained focus
+   - Comprehensive highlight groups for all plugins (LSP, Treesitter, UI, git, bufferline, etc.)
+
+3. **Theme Switcher** (`lua/plugins/theme_switcher.lua`)
+   - Telescope-based interactive theme picker
+   - Navigation: `<leader>cn` (next), `<leader>cN` (previous)
+   - Quick switching: `<leader>cd` (dark), `<leader>cl` (light), `<leader>cp` (txaty)
+
+**Available Themes:**
+- Dark: tokyonight, kanagawa, catppuccin, rose-pine, nightfox, onedark, cyberdream, gruvbox, nord, dracula
+- Light: tokyonight-day, rose-pine-dawn, kanagawa-lotus, onelight, ayu-light, solarized-light, papercolor, omni, jellybeans-light, dayfox
+- Custom: txaty (low-saturation ergonomic dark)
+
+### Usage
+```vim
+:ThemeSwitch      " Open Telescope picker
+<leader>cc        " Choose theme interactively
+<leader>cd        " Switch to first dark theme
+<leader>cl        " Switch to first light theme
+<leader>cp        " Switch to txaty custom theme
+<leader>cn        " Next theme
+<leader>cN        " Previous theme
+```
+
+## Session Management
+
+### Auto-Save and Auto-Restore
+The configuration uses `persistence.nvim` with automatic session management:
+
+**Behavior:**
+- **Auto-save**: Sessions are automatically saved when exiting Neovim (VimLeavePre)
+- **Auto-restore**: Sessions are automatically restored when opening Neovim without arguments
+- **Smart logic**: Only restores if `nvim` is run with no files (prevents unwanted restore when opening specific files)
+- **Per-directory**: Each workspace maintains its own session state
+
+**Session Contents:**
+- Open buffers and their positions
+- Window layouts and splits
+- Tab pages
+- Current working directory
+- Window sizes
+- Global variables
+- Help windows
+
+**Manual Controls:**
+- `<leader>qs` — Restore/save current session
+- `<leader>qS` — Select session from list
+- `<leader>ql` — Restore last session
+- `<leader>qd` — Don't save current session on exit
+
+**Integration with nvim-tree:**
+The nvim-tree auto-open logic is session-aware: if a session exists for the current directory, it won't auto-open nvim-tree, allowing the session to restore the workspace state instead.
 
 ## Language-Specific Notes
 
@@ -254,8 +343,8 @@ See `docs/keymaps.md` for complete reference.
 
 ### Flutter
 - Uses flutter-tools.nvim for development workflow
-- Run with `<leader>cF`, hot reload `<leader>cr`, hot restart `<leader>cR`
-- Emulator management via `<leader>ce`
+- Run: `<leader>FR`, Hot reload: `<leader>Fr`, Hot restart: `<leader>FR`
+- Emulator management and device selection available
 
 ### LaTeX (TeX)
 - Uses vimtex for LaTeX editing
@@ -301,9 +390,9 @@ See `docs/keymaps.md` for complete reference.
 ### Other Tools
 - **nvim-surround** — Add/change/delete surrounding delimiters
 - **comment.nvim** — Smart commenting with `gc` motion
-- **auto-session** or **persistence.nvim** — Session management
+- **persistence.nvim** — Session management with auto-save/restore
 - **bookmark.nvim** — Enhanced bookmark functionality
-- **minimap.vim** — Code minimap sidebar
+- **neominimap.nvim** — Code minimap sidebar (`<leader>MM` to toggle)
 
 ## Formatting & Linting
 
@@ -322,6 +411,20 @@ See `docs/keymaps.md` for complete reference.
 - Configured in `lua/plugins/linting.lua`
 - Runs on `BufEnter`, `BufWritePost`, `InsertLeave`
 - Language mappings managed via Mason
+
+**Luacheck Configuration** (`.luacheckrc`):
+```lua
+-- Lua 5.1 standard (Neovim uses LuaJIT)
+-- Max line length: 120
+-- Recognizes vim global
+-- Unused argument checking enabled
+```
+
+**Command:**
+```bash
+luacheck lua/              # Lint all Lua config files
+$HOME/.luarocks/bin/luacheck lua/  # If installed via luarocks
+```
 
 ## Commit Guidelines
 
@@ -374,3 +477,17 @@ See `docs/keymaps.md` for complete reference.
 1. Ensure `lazygit` CLI is installed separately: `brew install lazygit` or equivalent
 2. Check gitsigns configuration in `lua/plugins/git.lua`
 3. Verify git is available in PATH
+
+### Theme or UI Glitches
+1. Verify colorscheme loaded: `:echo g:colors_name`
+2. Check theme file exists: `lua/core/theme_txaty.lua` for custom theme
+3. Reload theme: `:lua require('core.theme_txaty').apply()`
+4. For bufferline glitches: ensure theme includes bufferline highlight groups
+5. Clear theme cache: delete `$XDG_DATA_HOME/theme_config.json` and restart
+
+### Session Not Restoring
+1. Check session file exists: `ls ~/.local/state/nvim/sessions/`
+2. Verify you're opening Neovim without arguments (just `nvim`)
+3. Check persistence autocmds: `:autocmd PersistenceAutoRestore`
+4. Test manual restore: `<leader>qs` or `<leader>ql`
+5. Check nvim-tree isn't interfering with session restoration
