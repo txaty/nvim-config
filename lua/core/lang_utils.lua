@@ -1,0 +1,78 @@
+-- Language utilities for reducing boilerplate in language-specific plugin files
+-- This module provides helpers for extending shared tooling plugins:
+-- treesitter, mason, conform, and lspconfig
+
+local M = {}
+
+-- Extend treesitter parsers
+-- @param parsers table: List of parser names to install
+-- @return table: Plugin spec for nvim-treesitter
+function M.extend_treesitter(parsers)
+  return {
+    "nvim-treesitter/nvim-treesitter",
+    opts = function(_, opts)
+      if opts.ensure_installed ~= "all" then
+        opts.ensure_installed = opts.ensure_installed or {}
+        vim.list_extend(opts.ensure_installed, parsers)
+      end
+    end,
+  }
+end
+
+-- Extend mason tools
+-- @param tools table: List of tool names to install via Mason
+-- @return table: Plugin spec for mason.nvim
+function M.extend_mason(tools)
+  return {
+    "williamboman/mason.nvim",
+    opts = function(_, opts)
+      opts.ensure_installed = opts.ensure_installed or {}
+      vim.list_extend(opts.ensure_installed, tools)
+    end,
+  }
+end
+
+-- Extend conform formatters
+-- @param formatters_map table: Map of filetype to formatter list
+-- @return table: Plugin spec for conform.nvim
+function M.extend_conform(formatters_map)
+  return {
+    "stevearc/conform.nvim",
+    opts = function(_, opts)
+      opts.formatters_by_ft = opts.formatters_by_ft or {}
+      for ft, formatters in pairs(formatters_map) do
+        opts.formatters_by_ft[ft] = formatters
+      end
+    end,
+  }
+end
+
+-- Configure LSP servers
+-- @param servers_map table: Map of server name to server config
+-- @return table: Plugin spec for nvim-lspconfig
+function M.extend_lspconfig(servers_map)
+  return {
+    "neovim/nvim-lspconfig",
+    opts = function(_, opts)
+      opts.servers = opts.servers or {}
+      for server, config in pairs(servers_map) do
+        opts.servers[server] = config
+      end
+    end,
+  }
+end
+
+-- Create keymaps helper for reducing boilerplate
+-- @param prefix string: Keymap prefix (e.g., "<leader>r")
+-- @param mappings table: Map of key suffix to {rhs, desc}
+-- @param base_opts table: Base options for all keymaps
+function M.create_keymaps(prefix, mappings, base_opts)
+  base_opts = base_opts or { noremap = true, silent = true }
+  for key, spec in pairs(mappings) do
+    local lhs = prefix .. key
+    local rhs, desc = spec[1], spec[2]
+    vim.keymap.set("n", lhs, rhs, vim.tbl_extend("force", base_opts, { desc = desc }))
+  end
+end
+
+return M
