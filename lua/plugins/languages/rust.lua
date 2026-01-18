@@ -1,37 +1,10 @@
+-- Rust language support
+local lang = require "core.lang_utils"
+
 return {
-  -- Treesitter support for Rust and TOML
-  {
-    "nvim-treesitter/nvim-treesitter",
-    opts = function(_, opts)
-      if opts.ensure_installed ~= "all" then
-        opts.ensure_installed = opts.ensure_installed or {}
-        vim.list_extend(opts.ensure_installed, { "rust", "toml" })
-      end
-    end,
-  },
-
-  -- Ensure Mason tools for Rust
-  {
-    "williamboman/mason.nvim",
-    opts = function(_, opts)
-      opts.ensure_installed = opts.ensure_installed or {}
-      vim.list_extend(opts.ensure_installed, {
-        "rust-analyzer", -- LSP server
-        "rustfmt", -- Formatter
-        "clippy", -- Linter
-        "codelldb", -- Debugger
-      })
-    end,
-  },
-
-  -- Formatting: rustfmt
-  {
-    "stevearc/conform.nvim",
-    opts = function(_, opts)
-      opts.formatters_by_ft = opts.formatters_by_ft or {}
-      opts.formatters_by_ft.rust = { "rustfmt" }
-    end,
-  },
+  lang.extend_treesitter { "rust", "toml" },
+  lang.extend_mason { "rust-analyzer", "rustfmt", "clippy", "codelldb" },
+  lang.extend_conform { rust = { "rustfmt" } },
 
   -- Note: Clippy linting is integrated into rust-analyzer via checkOnSave
   -- configuration (see rustaceanvim settings). No separate nvim-lint needed.
@@ -165,56 +138,25 @@ return {
     end,
     config = function()
       -- Keymaps specific to Rust
-      local map = vim.keymap.set
-      local opts = { noremap = true, silent = true }
-
-      map("n", "<leader>rr", function()
-        vim.cmd.RustRun()
-      end, vim.tbl_extend("force", opts, { desc = "Rust: Run" }))
-
-      map("n", "<leader>rR", function()
-        vim.cmd.RustRun "release"
-      end, vim.tbl_extend("force", opts, { desc = "Rust: Run (release)" }))
-
-      map("n", "<leader>rt", function()
-        vim.cmd.RustTest()
-      end, vim.tbl_extend("force", opts, { desc = "Rust: Test" }))
-
-      map("n", "<leader>rT", function()
-        vim.cmd.RustTest { args = "--release" }
-      end, vim.tbl_extend("force", opts, { desc = "Rust: Test (release)" }))
-
-      map("n", "<leader>rc", function()
-        vim.cmd.RustCheck()
-      end, vim.tbl_extend("force", opts, { desc = "Rust: Check" }))
-
-      map("n", "<leader>rb", function()
-        vim.cmd.RustBuild()
-      end, vim.tbl_extend("force", opts, { desc = "Rust: Build" }))
-
-      map("n", "<leader>ra", function()
-        vim.cmd.RustExpandMacro()
-      end, vim.tbl_extend("force", opts, { desc = "Rust: Expand macro" }))
-
-      map("n", "<leader>rx", function()
-        vim.cmd.RustExplainError()
-      end, vim.tbl_extend("force", opts, { desc = "Rust: Explain error" }))
-
-      map("n", "<leader>rD", function()
-        vim.cmd.RustDebuggables()
-      end, vim.tbl_extend("force", opts, { desc = "Rust: Debuggables" }))
-
-      map("n", "<leader>rH", function()
-        vim.cmd.RustHoverAction()
-      end, vim.tbl_extend("force", opts, { desc = "Rust: Hover action" }))
-
-      map("n", "<leader>rl", function()
-        vim.cmd.RustLint()
-      end, vim.tbl_extend("force", opts, { desc = "Rust: Lint (clippy)" }))
-
-      map("n", "<leader>rd", function()
-        vim.cmd.RustToggleInlayHints()
-      end, vim.tbl_extend("force", opts, { desc = "Rust: Toggle inlay hints" }))
+      lang.create_keymaps("<leader>r", {
+        r = { "<cmd>RustRun<cr>", "Rust: Run" },
+        R = { "<cmd>RustRun release<cr>", "Rust: Run (release)" },
+        t = { "<cmd>RustTest<cr>", "Rust: Test" },
+        T = {
+          function()
+            vim.cmd.RustTest { args = "--release" }
+          end,
+          "Rust: Test (release)",
+        },
+        c = { "<cmd>RustCheck<cr>", "Rust: Check" },
+        b = { "<cmd>RustBuild<cr>", "Rust: Build" },
+        a = { "<cmd>RustExpandMacro<cr>", "Rust: Expand macro" },
+        x = { "<cmd>RustExplainError<cr>", "Rust: Explain error" },
+        D = { "<cmd>RustDebuggables<cr>", "Rust: Debuggables" },
+        H = { "<cmd>RustHoverAction<cr>", "Rust: Hover action" },
+        l = { "<cmd>RustLint<cr>", "Rust: Lint (clippy)" },
+        d = { "<cmd>RustToggleInlayHints<cr>", "Rust: Toggle inlay hints" },
+      })
     end,
   },
 
@@ -242,18 +184,5 @@ return {
         },
       }
     end,
-  },
-
-  -- Testing support
-  {
-    "nvim-neotest/neotest",
-    optional = true, -- Will be loaded by test.lua if neotest is present
-    opts = {
-      adapters = {
-        ["neotest-rust"] = {
-          args = { "--all-targets", "--all-features" },
-        },
-      },
-    },
   },
 }

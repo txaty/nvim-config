@@ -34,7 +34,7 @@ return {
         local finders = require "telescope.finders"
         local actions = require "telescope.actions"
         local action_state = require "telescope.actions.state"
-        local conf = require "telescope.config".values
+        local conf = require("telescope.config").values
 
         local picker = pickers.new(picker_opts, {
           finder = finders.new_table {
@@ -92,12 +92,7 @@ return {
       local map = vim.keymap.set
 
       -- Theme switching keymaps (using <leader>c* for colorscheme)
-      map(
-        "n",
-        "<leader>cc",
-        open_theme_picker,
-        { desc = "Color: choose colorscheme", noremap = true, silent = true }
-      )
+      map("n", "<leader>cc", open_theme_picker, { desc = "Color: choose colorscheme", noremap = true, silent = true })
 
       map("n", "<leader>cd", function()
         local dark = theme.get_themes_by_variant "dark"
