@@ -72,7 +72,9 @@ init.lua (entry point)
 - `lua/core/` — Fundamental Neovim settings and lazy.nvim bootstrap
   - `theme.lua` — Theme switching module with JSON persistence
   - `theme_txaty.lua` — Custom low-saturation ergonomic dark theme
+  - `lang_utils.lua` — Shared utilities for language support (reduces boilerplate)
 - `lua/plugins/` — Self-contained plugin specifications (all `.lua` files auto-imported)
+  - `languages/` — Language-specific configurations (python, rust, go, web, flutter)
 - `lua/dap/` — Language-specific debug adapter configurations
 - `docs/` — User documentation (keymaps reference)
 - `.stylua.toml` — Lua formatter configuration (120 column width, 2-space indent)
@@ -81,11 +83,27 @@ init.lua (entry point)
 
 ## Plugin Development Patterns
 
-### Pattern 1: Extending Parent Plugin Options
-Language-specific plugins extend shared plugins (treesitter, mason, conform, lspconfig):
+### Pattern 1: Using Language Utilities (Recommended)
+Language-specific plugins use `lang_utils` helpers to reduce boilerplate:
 
 ```lua
--- In lua/plugins/python.lua
+-- In lua/plugins/languages/python.lua
+local lang = require "core.lang_utils"
+
+return {
+  lang.extend_treesitter { "python", "toml" },
+  lang.extend_mason { "pyright", "ruff", "black", "isort" },
+  lang.extend_conform { python = { "black", "isort" } },
+  lang.extend_lspconfig {
+    pyright = { settings = { ... } },
+    ruff = {},
+  },
+  -- Additional language-specific plugins...
+}
+```
+
+Legacy pattern (for manual extension):
+```lua
 {
   "nvim-treesitter/nvim-treesitter",
   opts = function(_, opts)
@@ -126,23 +144,37 @@ Plugins declare dependencies to ensure load order:
 ```
 
 ### Pattern 4: Language-Specific Modules
-Each language gets its own plugin file that extends shared tooling:
-- `python.lua` — extends treesitter, mason, conform, lspconfig; adds venv-selector
-- `rust.lua` — adds rustaceanvim, crates.nvim
-- `go.lua` — configures gopls, goimports, delve
-- `web.lua` — JS/TS/HTML/CSS support
-- `flutter.lua` — Flutter development tools and hot reload
-- `tex.lua` — LaTeX support with vimtex
-- `typst.lua` — Typst document support
+Each language gets its own plugin file in `lua/plugins/languages/` that uses `lang_utils`:
+- `languages/python.lua` — Python support with venv-selector
+- `languages/rust.lua` — Rust support with rustaceanvim and crates.nvim
+- `languages/go.lua` — Go support with gopls, goimports, delve
+- `languages/web.lua` — JS/TS/HTML/CSS support
+- `languages/flutter.lua` — Flutter development tools and hot reload
+- `documents.lua` — LaTeX (vimtex) and Typst support (merged file)
 - `test.lua` — Testing framework integration (neotest)
 
 ## Common Development Workflows
 
 ### Adding Language Support
-1. Create `lua/plugins/<language>.lua`
-2. Extend treesitter parsers, mason tools, formatters, and LSP servers
+1. Create `lua/plugins/languages/<language>.lua`
+2. Use `lang_utils` helpers to extend treesitter, mason, conform, and lspconfig
 3. Add language-specific plugins with `ft = "<language>"` lazy-loading
 4. If needed, create DAP config in `lua/dap/<language>.lua`
+
+Example:
+```lua
+-- lua/plugins/languages/newlang.lua
+local lang = require "core.lang_utils"
+
+return {
+  lang.extend_treesitter { "newlang" },
+  lang.extend_mason { "newlang-lsp", "newlang-formatter" },
+  lang.extend_conform { newlang = { "newlang-formatter" } },
+  lang.extend_lspconfig {
+    newlang_lsp = { settings = { ... } },
+  },
+}
+```
 
 ### Adding/Modifying Plugins
 1. Create or edit file in `lua/plugins/`
@@ -172,13 +204,16 @@ vim.lsp.config("lua_ls", {
 })
 ```
 
-For servers managed by mason-lspconfig, use the setup_handlers pattern with auto-enable:
+For servers managed by mason-lspconfig, pass handlers to setup():
 
 ```lua
-require("mason-lspconfig").setup_handlers {
-  function(server_name)
-    vim.lsp.enable(server_name)
-  end,
+require("mason-lspconfig").setup {
+  ensure_installed = { "lua_ls", "pyright" },
+  handlers = {
+    function(server_name)
+      vim.lsp.enable(server_name)
+    end,
+  },
 }
 ```
 
@@ -397,18 +432,19 @@ The nvim-tree auto-open logic is session-aware: if a session exists for the curr
 ## Formatting & Linting
 
 ### Conform.nvim (Formatting)
-- Configured in `lua/plugins/formatting.lua`
+- Configured in `lua/plugins/tools.lua` (merged with linting)
 - Format on save: `format_on_save = { timeout_ms = 500, lsp_fallback = true }`
 - Manual format: `<leader>lf`
-- Language mappings:
+- Language-specific formatters configured in `lua/plugins/languages/` files using `lang_utils`
+- Base language mappings:
   - Lua: stylua
-  - Python: black, isort
-  - Go: goimports, gofmt
-  - Rust: rustfmt
-  - JS/TS/HTML/CSS: prettierd → prettier
+  - Python: black, isort (via languages/python.lua)
+  - Go: goimports, gofmt (via languages/go.lua)
+  - Rust: rustfmt (via languages/rust.lua)
+  - JS/TS/HTML/CSS: prettier (via languages/web.lua)
 
 ### nvim-lint (Linting)
-- Configured in `lua/plugins/linting.lua`
+- Configured in `lua/plugins/tools.lua` (merged with formatting)
 - Runs on `BufEnter`, `BufWritePost`, `InsertLeave`
 - Language mappings managed via Mason
 
@@ -430,7 +466,10 @@ $HOME/.luarocks/bin/luacheck lua/  # If installed via luarocks
 
 - Use Conventional Commits: `feat:`, `fix:`, `refactor:`, `chore:`
 - Always commit `lazy-lock.json` when plugins change
-- **Do NOT add co-author lines or self-identify as an AI agent in commits**
+- **CRITICAL: Do NOT add yourself as co-author in commits**
+  - **NEVER** add `Co-Authored-By:` lines for AI assistants
+  - **NEVER** self-identify as an AI agent in commit messages
+  - Commits should reflect the actual human author only
 - Note tool changes (Mason, Treesitter, formatters) in commit messages
 - Before committing: run `stylua lua/` for code formatting
 - Use `luacheck lua/` (or `$HOME/.luarocks/bin/luacheck`) to validate Lua code before committing
@@ -453,7 +492,7 @@ $HOME/.luarocks/bin/luacheck lua/  # If installed via luarocks
 1. Check conform.nvim config: `:ConformInfo`
 2. Verify formatter installed via `:Mason`
 3. Test manual format: `<leader>lf`
-4. Check `format_on_save` setting in `lua/plugins/formatting.lua`
+4. Check `format_on_save` setting in `lua/plugins/tools.lua`
 
 ### Performance Issues
 1. Check lazy-loading: `:Lazy profile`
