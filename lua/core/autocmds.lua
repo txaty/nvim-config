@@ -67,9 +67,17 @@ autocmd("VimEnter", {
     end
 
     -- Fallback: open tree if no args provided (dashboard replacement)
-    -- Session restore is available via <leader>ql
+    -- Skip if session is being auto-restored
     if data.file == "" and vim.bo.buftype == "" then
-      require("nvim-tree.api").tree.open()
+      -- Check if a session exists for this directory
+      local session_dir = vim.fn.stdpath "state" .. "/sessions/"
+      local session_file = session_dir .. vim.fn.getcwd():gsub("/", "%%") .. ".vim"
+      local has_session = vim.fn.filereadable(session_file) == 1
+
+      -- Only open nvim-tree if no session exists
+      if not has_session then
+        require("nvim-tree.api").tree.open()
+      end
     end
   end,
 })
