@@ -11,23 +11,26 @@
     - `lazy.lua` — lazy.nvim bootstrap with custom performance settings.
     - `theme.lua` — theme switching module with JSON persistence.
     - `theme_txaty.lua` — custom low-saturation ergonomic dark theme.
+    - `lang_utils.lua` — shared utilities for language support (reduces boilerplate).
   - `plugins/` — modular plugin specs with inlined configurations:
-    - `init.lua` — core plugins (telescope, which-key, git).
     - `lsp.lua` — Mason + vim.lsp.config (new Neovim 0.11+ API) with LspAttach autocmd.
-    - `formatting.lua` — conform.nvim setup.
-    - `linting.lua` — nvim-lint configuration.
+    - `tools.lua` — conform.nvim (formatting) + nvim-lint (merged file).
     - `cmp.lua` — nvim-cmp completion setup.
     - `treesitter.lua` — syntax highlighting and parsing.
-    - `ui.lua` — nvim-tree, lualine, bufferline.
+    - `ui.lua` — nvim-tree, lualine, bufferline, vim-illuminate.
     - `colorscheme.lua` — theme options (21+ themes: dark, light, custom).
     - `theme_switcher.lua` — Telescope-based theme picker.
     - `session.lua` — persistence.nvim with auto-save/auto-restore.
+    - `bookmark.lua` — bookmarks.nvim with telescope extension.
+    - `documents.lua` — vimtex (LaTeX) + typst-preview (merged file).
     - `noice.lua`, `flash.lua`, `trouble.lua`, `todo.lua`, `spectre.lua` — UI/UX enhancements.
     - `copilot.lua` — GitHub Copilot integration.
     - `dap.lua` — debug adapter protocol setup.
-    - Language-specific: `python.lua`, `go.lua`, `rust.lua`, `flutter.lua`, `web.lua`, `tex.lua`, `typst.lua`, `test.lua`.
+    - `test.lua` — neotest testing framework.
     - `minimap.lua` — neominimap.nvim code minimap.
-  - `dap/` — language-specific DAP configurations (`web.lua`, `cpp.lua`).
+    - `languages/` — language-specific configurations using lang_utils:
+      - `python.lua`, `go.lua`, `rust.lua`, `flutter.lua`, `web.lua`.
+  - `dap/` — language-specific DAP configurations (`web.lua`, `cpp.lua`, `python.lua`, `flutter.lua`).
 - **Note**: `lua/configs/` and other NvChad directories have been completely removed. All configuration is inlined into plugin specs.
 
 ## Build, Test, and Development Commands
@@ -58,9 +61,12 @@
 ## Commit & Pull Request Guidelines
 - Use Conventional Commits (e.g., `feat: …`, `fix: …`, `refactor: …`, `chore: …`).
 - Commit `lazy-lock.json` when plugin versions change.
+- **CRITICAL: Do NOT add yourself as co-author in commits**
+  - **NEVER** add `Co-Authored-By:` lines for AI assistants
+  - **NEVER** self-identify as an AI agent in commit messages
+  - Commits should reflect the actual human author only
 - If you modify tool matrices (Mason, Treesitter, Conform, Lint, DAP), note them in the PR.
 - PRs should include: summary, validation steps, and screenshots/GIFs for UI changes.
-- **Do NOT add co-author lines or self-identify as an AI agent in commits.**
 - Always run `stylua lua/` for formatting and use `luacheck lua/` or equivalent static analysis before committing to catch issues early.
 
 ## Security & Configuration Tips
