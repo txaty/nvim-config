@@ -30,7 +30,8 @@ return {
       "williamboman/mason-lspconfig.nvim",
       "hrsh7th/cmp-nvim-lsp",
     },
-    config = function()
+    opts = {},
+    config = function(_, opts)
       local mason_lspconfig = require "mason-lspconfig"
 
       local map = vim.keymap.set
@@ -78,10 +79,16 @@ return {
       })
 
       -- Setup mason-lspconfig
-      -- This will automatically enable installed servers (automatic_enable is true by default)
+      -- This will automatically enable installed servers
       mason_lspconfig.setup {
         ensure_installed = { "lua_ls", "bashls", "pyright" },
         -- Don't add rust_analyzer here - let rustaceanvim manage it
+        handlers = {
+          -- Default handler: auto-enable all servers
+          function(server_name)
+            vim.lsp.enable(server_name)
+          end,
+        },
       }
 
       -- Configure servers using new vim.lsp.config API (Neovim 0.11+)
@@ -94,6 +101,17 @@ return {
           },
         },
       })
+
+      -- Process language-specific server configs from opts.servers
+      -- (set by language files via lang_utils.extend_lspconfig)
+      if opts.servers then
+        for server_name, server_config in pairs(opts.servers) do
+          local config = vim.tbl_deep_extend("force", {
+            capabilities = capabilities,
+          }, server_config)
+          vim.lsp.config(server_name, config)
+        end
+      end
 
       -- IMPORTANT: rust-analyzer is handled exclusively by rustaceanvim
       -- (in lua/plugins/rust.lua). We skip it here to avoid conflicts.
