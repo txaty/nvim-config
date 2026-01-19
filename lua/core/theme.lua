@@ -15,6 +15,15 @@ M.themes = {
     "gruvbox",
     "nord",
     "dracula",
+    "ayu",
+    "solarized",
+    "jellybeans",
+    "github_dark",
+    "github_dark_default",
+    "github_dark_dimmed",
+    "github_dark_high_contrast",
+    "github_dark_colorblind",
+    "github_dark_tritanopia",
   },
   -- Light themes (optimized for coding)
   light = {
@@ -25,9 +34,15 @@ M.themes = {
     "ayu-light",
     "solarized-light",
     "papercolor",
+    "papercolor-light",
     "omni",
     "jellybeans-light",
     "dayfox",
+    "gruvbox-light",
+    "github_light",
+    "github_light_default",
+    "github_light_high_contrast",
+    "github_light_colorblind",
   },
 }
 
@@ -43,6 +58,15 @@ M.theme_info = {
   gruvbox = { variant = "dark", description = "Retro groove with warm colors" },
   nord = { variant = "dark", description = "Arctic, north-bluish theme" },
   dracula = { variant = "dark", description = "High contrast dark theme" },
+  ayu = { variant = "dark", description = "Ayu dark - minimalist dark theme" },
+  solarized = { variant = "dark", description = "Solarized dark - scientific color palette" },
+  jellybeans = { variant = "dark", description = "Jellybeans dark - colorful dark theme" },
+  github_dark = { variant = "dark", description = "GitHub Dark - official GitHub theme" },
+  github_dark_default = { variant = "dark", description = "GitHub Dark Default - official default dark" },
+  github_dark_dimmed = { variant = "dark", description = "GitHub Dark Dimmed - softer dark variant" },
+  github_dark_high_contrast = { variant = "dark", description = "GitHub Dark High Contrast - enhanced visibility" },
+  github_dark_colorblind = { variant = "dark", description = "GitHub Dark Colorblind - protanopia/deuteranopia" },
+  github_dark_tritanopia = { variant = "dark", description = "GitHub Dark Tritanopia - tritanopia accessible" },
 
   -- Light themes
   ["tokyonight-day"] = { variant = "light", description = "Tokyo day - modern light theme" },
@@ -52,9 +76,15 @@ M.theme_info = {
   ["ayu-light"] = { variant = "light", description = "Ayu light - minimalist light theme" },
   ["solarized-light"] = { variant = "light", description = "Solarized light - scientific color palette" },
   papercolor = { variant = "light", description = "PaperColor - clean paper-like appearance" },
+  ["papercolor-light"] = { variant = "light", description = "PaperColor light - clean paper-like appearance" },
   omni = { variant = "light", description = "Omni - modern light theme" },
   ["jellybeans-light"] = { variant = "light", description = "Jellybeans light - colorful light variant" },
   dayfox = { variant = "light", description = "Day fox - light fox variant" },
+  ["gruvbox-light"] = { variant = "light", description = "Retro groove light - warm light colors" },
+  github_light = { variant = "light", description = "GitHub Light - official GitHub theme" },
+  github_light_default = { variant = "light", description = "GitHub Light Default - official default light" },
+  github_light_high_contrast = { variant = "light", description = "GitHub Light High Contrast - enhanced visibility" },
+  github_light_colorblind = { variant = "light", description = "GitHub Light Colorblind - protanopia/deuteranopia" },
 
   -- Custom theme
   txaty = { variant = "dark", description = "Custom: Low-saturation pure dark ergonomic theme" },
@@ -88,67 +118,151 @@ function M.apply_theme(theme_name)
     return false
   end
 
+  -- Clear any previous colorscheme state to prevent conflicts
+  vim.cmd "highlight clear"
+  if vim.fn.exists "syntax_on" then
+    vim.cmd "syntax reset"
+  end
+
   -- Special handling for different theme engines
   if theme_name == "tokyonight-day" then
     require("tokyonight").setup { style = "day" }
     vim.cmd.colorscheme "tokyonight"
+    vim.o.background = "light"
   elseif theme_name == "tokyonight" then
     require("tokyonight").setup { style = "storm" }
     vim.cmd.colorscheme "tokyonight"
+    vim.o.background = "dark"
   elseif theme_name == "rose-pine-dawn" then
     require("rose-pine").setup { variant = "dawn" }
     vim.cmd.colorscheme "rose-pine"
+    vim.o.background = "light"
   elseif theme_name == "rose-pine" then
     require("rose-pine").setup { variant = "main" }
     vim.cmd.colorscheme "rose-pine"
+    vim.o.background = "dark"
   elseif theme_name == "kanagawa-lotus" then
     require("kanagawa").setup { theme = "lotus" }
     vim.cmd.colorscheme "kanagawa"
+    vim.o.background = "light"
   elseif theme_name == "kanagawa" then
     require("kanagawa").setup { theme = "dragon" }
     vim.cmd.colorscheme "kanagawa"
+    vim.o.background = "dark"
   elseif theme_name == "onedark" then
     require("onedark").setup { style = "dark" }
     vim.cmd.colorscheme "onedark"
+    vim.o.background = "dark"
   elseif theme_name == "onelight" then
     require("onedark").setup { style = "light" }
     vim.cmd.colorscheme "onedark"
+    vim.o.background = "light"
   elseif theme_name == "gruvbox" then
-    vim.o.background = "dark"
     vim.cmd.colorscheme "gruvbox"
+    vim.o.background = "dark"
   elseif theme_name == "nord" then
     vim.cmd.colorscheme "nord"
+    vim.o.background = "dark"
   elseif theme_name == "dracula" then
     vim.cmd.colorscheme "dracula"
+    vim.o.background = "dark"
   elseif theme_name == "cyberdream" then
     vim.cmd.colorscheme "cyberdream"
+    vim.o.background = "dark"
   elseif theme_name == "catppuccin" then
     require("catppuccin").setup { flavour = "mocha" }
     vim.cmd.colorscheme "catppuccin"
+    vim.o.background = "dark"
   elseif theme_name == "nightfox" then
     vim.cmd.colorscheme "nightfox"
+    vim.o.background = "dark"
   elseif theme_name == "dayfox" then
     vim.cmd.colorscheme "dayfox"
-  elseif theme_name == "ayu-light" then
-    vim.cmd "set background=light"
+    vim.o.background = "light"
+  elseif theme_name == "ayu" then
+    vim.g.ayucolor = "dark"
     vim.cmd.colorscheme "ayu"
-  elseif theme_name == "solarized-light" then
-    vim.cmd "set background=light"
+    vim.o.background = "dark"
+  elseif theme_name == "ayu-light" then
+    vim.g.ayucolor = "light"
+    vim.cmd.colorscheme "ayu"
+    vim.o.background = "light"
+  elseif theme_name == "solarized" then
     vim.cmd.colorscheme "solarized"
-  elseif theme_name == "papercolor" then
-    vim.cmd "set background=light"
-    vim.cmd.colorscheme "PaperColor"
-  elseif theme_name == "omni" then
-    vim.cmd "set background=light"
-    vim.cmd.colorscheme "omni"
-  elseif theme_name == "jellybeans-light" then
-    vim.cmd "set background=light"
+    vim.o.background = "dark"
+  elseif theme_name == "solarized-light" then
+    vim.cmd.colorscheme "solarized"
+    vim.o.background = "light"
+  elseif theme_name == "jellybeans" then
     vim.cmd.colorscheme "jellybeans"
+    vim.o.background = "dark"
+  elseif theme_name == "jellybeans-light" then
+    vim.cmd.colorscheme "jellybeans"
+    vim.o.background = "light"
+  elseif theme_name == "gruvbox-light" then
+    vim.cmd.colorscheme "gruvbox"
+    vim.o.background = "light"
+  elseif theme_name == "papercolor" or theme_name == "papercolor-light" then
+    vim.cmd.colorscheme "PaperColor"
+    vim.o.background = "light"
+  elseif theme_name == "omni" then
+    vim.cmd.colorscheme "omni"
+    vim.o.background = "light"
+  elseif theme_name == "github_dark" then
+    vim.cmd.colorscheme "github_dark"
+    vim.o.background = "dark"
+  elseif theme_name == "github_dark_default" then
+    vim.cmd.colorscheme "github_dark_default"
+    vim.o.background = "dark"
+  elseif theme_name == "github_dark_dimmed" then
+    vim.cmd.colorscheme "github_dark_dimmed"
+    vim.o.background = "dark"
+  elseif theme_name == "github_dark_high_contrast" then
+    vim.cmd.colorscheme "github_dark_high_contrast"
+    vim.o.background = "dark"
+  elseif theme_name == "github_dark_colorblind" then
+    vim.cmd.colorscheme "github_dark_colorblind"
+    vim.o.background = "dark"
+  elseif theme_name == "github_dark_tritanopia" then
+    vim.cmd.colorscheme "github_dark_tritanopia"
+    vim.o.background = "dark"
+  elseif theme_name == "github_light" then
+    vim.cmd.colorscheme "github_light"
+    vim.o.background = "light"
+  elseif theme_name == "github_light_default" then
+    vim.cmd.colorscheme "github_light_default"
+    vim.o.background = "light"
+  elseif theme_name == "github_light_high_contrast" then
+    vim.cmd.colorscheme "github_light_high_contrast"
+    vim.o.background = "light"
+  elseif theme_name == "github_light_colorblind" then
+    vim.cmd.colorscheme "github_light_colorblind"
+    vim.o.background = "light"
   elseif theme_name == "txaty" then
     require("core.theme_txaty").apply()
   else
     vim.cmd.colorscheme(theme_name)
   end
+
+  -- Refresh UI components after theme change
+  vim.schedule(function()
+    -- Refresh bufferline if available
+    local ok_bufferline, bufferline = pcall(require, "bufferline")
+    if ok_bufferline and bufferline.setup then
+      -- Get current config and reapply
+      local config = require "bufferline.config"
+      if config and config.apply then
+        pcall(config.apply)
+      end
+    end
+
+    -- Refresh lualine if available
+    local ok_lualine, lualine = pcall(require, "lualine")
+    if ok_lualine and lualine.setup then
+      -- Lualine auto-detects theme changes, but we can force a refresh
+      pcall(lualine.refresh)
+    end
+  end)
 
   M.save_theme(theme_name)
   vim.notify("Theme: " .. theme_name, vim.log.levels.INFO)
