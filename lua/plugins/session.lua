@@ -1,34 +1,17 @@
 return {
   {
     "folke/persistence.nvim",
-    event = "BufReadPre",
+    lazy = true, -- Loaded on demand by autocmds
     opts = {
-      options = { "buffers", "curdir", "tabpages", "winsize", "help", "globals", "skiprtp" },
+      -- Exclude options to prevent colorscheme from being saved in sessions
+      -- This ensures theme persistence is handled by theme.lua, not sessions
+      options = { "buffers", "curdir", "tabpages", "winsize", "help", "skiprtp" },
     },
     config = function(_, opts)
-      local persistence = require "persistence"
-      persistence.setup(opts)
-
-      -- Auto-save session when exiting Neovim
-      vim.api.nvim_create_autocmd("VimLeavePre", {
-        group = vim.api.nvim_create_augroup("PersistenceAutoSave", { clear = true }),
-        callback = function()
-          persistence.save()
-        end,
-      })
-
-      -- Auto-restore session when opening Neovim without arguments
-      vim.api.nvim_create_autocmd("VimEnter", {
-        group = vim.api.nvim_create_augroup("PersistenceAutoRestore", { clear = true }),
-        nested = true,
-        callback = function()
-          -- Only load the session if nvim was started with no args
-          if vim.fn.argc() == 0 then
-            persistence.load()
-          end
-        end,
-      })
+      require("persistence").setup(opts)
     end,
+    -- Note: Session auto-save and auto-restore are handled in core/autocmds.lua
+    -- This ensures autocmds are registered before VimEnter fires
     keys = {
       {
         "<leader>qs",
