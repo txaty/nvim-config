@@ -136,28 +136,4 @@ return {
       }
     end,
   },
-
-  -- Colorscheme loader and switcher
-  {
-    "nvim-telescope/telescope.nvim",
-    optional = true,
-  },
-
-  {
-    "echasnovski/mini.nvim",
-    optional = true,
-    name = "colorscheme-loader",
-    lazy = false,
-    priority = 1000,
-    config = function()
-      local theme = require "core.theme"
-
-      -- Load last saved theme or default to "catppuccin"
-      local saved_theme = theme.load_saved_theme()
-      local default_theme = saved_theme or "catppuccin"
-
-      -- Apply the theme
-      theme.apply_theme(default_theme)
-    end,
-  },
 }
