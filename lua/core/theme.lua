@@ -92,6 +92,59 @@ M.theme_info = {
 
 local config_path = vim.fn.stdpath "data" .. "/theme_config.json"
 
+-- Map theme names to their plugin names for lazy loading
+local theme_to_plugin = {
+  catppuccin = "catppuccin",
+  tokyonight = "tokyonight.nvim",
+  ["tokyonight-day"] = "tokyonight.nvim",
+  kanagawa = "kanagawa.nvim",
+  ["kanagawa-lotus"] = "kanagawa.nvim",
+  ["rose-pine"] = "rose-pine",
+  ["rose-pine-dawn"] = "rose-pine",
+  nightfox = "nightfox.nvim",
+  dayfox = "nightfox.nvim",
+  onedark = "onedark.nvim",
+  onelight = "onedark.nvim",
+  cyberdream = "cyberdream.nvim",
+  gruvbox = "gruvbox",
+  ["gruvbox-light"] = "gruvbox",
+  nord = "nord",
+  dracula = "dracula",
+  omni = "omni",
+  papercolor = "papercolor",
+  ["papercolor-light"] = "papercolor",
+  ayu = "ayu",
+  ["ayu-light"] = "ayu",
+  solarized = "solarized",
+  ["solarized-light"] = "solarized",
+  jellybeans = "jellybeans",
+  ["jellybeans-light"] = "jellybeans",
+  github_dark = "github-theme",
+  github_dark_default = "github-theme",
+  github_dark_dimmed = "github-theme",
+  github_dark_high_contrast = "github-theme",
+  github_dark_colorblind = "github-theme",
+  github_dark_tritanopia = "github-theme",
+  github_light = "github-theme",
+  github_light_default = "github-theme",
+  github_light_high_contrast = "github-theme",
+  github_light_colorblind = "github-theme",
+  txaty = nil, -- Custom theme, no plugin needed
+}
+
+-- Load a colorscheme plugin if needed (for lazy-loaded plugins)
+local function ensure_plugin_loaded(theme_name)
+  local plugin_name = theme_to_plugin[theme_name]
+  if plugin_name then
+    local lazy_ok, lazy = pcall(require, "lazy")
+    if lazy_ok then
+      lazy.load { plugins = { plugin_name } }
+      return true
+    end
+  end
+  return true -- txaty or already loaded
+end
+
 -- Load persisted theme preference
 function M.load_saved_theme()
   if vim.fn.filereadable(config_path) == 1 then
@@ -111,12 +164,15 @@ function M.save_theme(theme_name)
   vim.fn.writefile(vim.split(json_str, "\n"), config_path)
 end
 
--- Apply theme
-function M.apply_theme(theme_name)
+-- Apply theme (internal function that can skip saving)
+local function apply_theme_internal(theme_name, should_save)
   if not M.theme_info[theme_name] then
     vim.notify("Theme '" .. theme_name .. "' not found", vim.log.levels.WARN)
     return false
   end
+
+  -- Ensure the plugin is loaded before applying
+  ensure_plugin_loaded(theme_name)
 
   -- Clear any previous colorscheme state to prevent conflicts
   vim.cmd "highlight clear"
@@ -264,8 +320,26 @@ function M.apply_theme(theme_name)
     end
   end)
 
-  M.save_theme(theme_name)
-  vim.notify("Theme: " .. theme_name, vim.log.levels.INFO)
+  if should_save then
+    M.save_theme(theme_name)
+    vim.notify("Theme: " .. theme_name, vim.log.levels.INFO)
+  end
+
+  return true
+end
+
+-- Apply theme and save preference
+function M.apply_theme(theme_name)
+  return apply_theme_internal(theme_name, true)
+end
+
+-- Restore saved theme without saving again (used on startup)
+function M.restore_theme()
+  local saved_theme = M.load_saved_theme()
+  if saved_theme then
+    return apply_theme_internal(saved_theme, false)
+  end
+  return false
 end
 
 -- Get all available themes
