@@ -24,18 +24,18 @@ return {
           glyphs = {
             default = "󰈚",
             folder = {
-              default = "",
-              empty = "",
-              empty_open = "",
-              open = "",
-              symlink = "",
+              default = "",
+              empty = "",
+              empty_open = "",
+              open = "",
+              symlink = "",
             },
             git = {
               unstaged = "✗",
               staged = "✓",
-              unmerged = "",
+              unmerged = "",
               renamed = "➜",
-              deleted = "",
+              deleted = "",
               ignored = "◌",
             },
           },
@@ -55,17 +55,46 @@ return {
     opts = {
       options = {
         theme = "auto",
-        component_separators = "|",
-        section_separators = { left = "", right = "" },
+        component_separators = { left = "", right = "" },
+        section_separators = { left = "", right = "" },
         globalstatus = true,
+        disabled_filetypes = { statusline = { "dashboard", "alpha", "starter" } },
       },
       sections = {
-        lualine_a = { { "mode", separator = { left = "" }, right_padding = 2 } },
+        lualine_a = { { "mode", separator = { left = "" }, right_padding = 2 } },
         lualine_b = { "branch", "diff", "diagnostics" },
-        lualine_c = { "filename" },
-        lualine_x = { "encoding", "fileformat", "filetype" },
-        lualine_y = { "progress" },
-        lualine_z = { { "location", separator = { right = "" }, left_padding = 2 } },
+        lualine_c = {
+          { "filetype", icon_only = true, separator = "", padding = { left = 1, right = 0 } },
+          { "filename", path = 1, symbols = { modified = " ●", readonly = " ", unnamed = "[No Name]" } },
+        },
+        lualine_x = {
+          {
+            function()
+              local clients = vim.lsp.get_clients { bufnr = 0 }
+              if #clients == 0 then
+                return ""
+              end
+              local names = {}
+              for _, client in ipairs(clients) do
+                table.insert(names, client.name)
+              end
+              return " " .. table.concat(names, ", ")
+            end,
+            cond = function()
+              return #vim.lsp.get_clients { bufnr = 0 } > 0
+            end,
+          },
+        },
+        lualine_y = { "filetype" },
+        lualine_z = { { "location", separator = { right = "" }, left_padding = 2 } },
+      },
+      inactive_sections = {
+        lualine_a = {},
+        lualine_b = {},
+        lualine_c = { { "filename", path = 1 } },
+        lualine_x = { "location" },
+        lualine_y = {},
+        lualine_z = {},
       },
     },
   },
@@ -79,17 +108,25 @@ return {
     opts = {
       options = {
         mode = "buffers",
-        separator_style = "slant",
+        separator_style = "thin",
         diagnostics = "nvim_lsp",
         always_show_bufferline = false,
+        show_buffer_close_buttons = false,
+        show_close_icon = false,
+        max_name_length = 20,
+        truncate_names = true,
         offsets = {
           {
             filetype = "NvimTree",
-            text = "File Explorer",
+            text = "",
             highlight = "Directory",
-            text_align = "left",
+            separator = true,
           },
         },
+        diagnostics_indicator = function(count, level)
+          local icon = level:match "error" and " " or " "
+          return icon .. count
+        end,
       },
     },
     config = function(_, opts)
@@ -109,7 +146,34 @@ return {
       require("illuminate").configure {
         delay = 120,
         modes_denylist = { "i" },
+        large_file_cutoff = 2000,
+        large_file_overrides = { providers = { "lsp" } },
       }
     end,
+  },
+
+  -- Indent guides
+  {
+    "lukas-reineke/indent-blankline.nvim",
+    event = { "BufReadPost", "BufNewFile" },
+    main = "ibl",
+    opts = {
+      indent = { char = "│", tab_char = "│" },
+      scope = { show_start = false, show_end = false },
+      exclude = {
+        filetypes = {
+          "help",
+          "dashboard",
+          "neo-tree",
+          "NvimTree",
+          "Trouble",
+          "trouble",
+          "lazy",
+          "mason",
+          "notify",
+          "toggleterm",
+        },
+      },
+    },
   },
 }

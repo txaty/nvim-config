@@ -142,17 +142,4 @@ return {
       return opts
     end,
   },
-
-  -- Extend which-key to show remote commands group
-  {
-    "folke/which-key.nvim",
-    optional = true,
-    opts = function(_, opts)
-      opts.spec = opts.spec or {}
-      table.insert(opts.spec, {
-        mode = { "n", "v" },
-        { "<leader>r", group = "remote", icon = "󰢹" },
-      })
-    end,
-  },
 }
