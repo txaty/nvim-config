@@ -37,6 +37,12 @@ luacheck lua/
 :checkhealth        " Comprehensive diagnostics
 :ConformInfo        " Check formatter configuration
 :Lazy profile       " Profile plugin load times
+
+" AI Features Control (requires restart to apply)
+:AIToggle           " Toggle AI features on/off
+:AIEnable           " Enable AI features
+:AIDisable          " Disable AI features
+:AIStatus           " Show current AI status
 ```
 
 ## Critical Architectural Principles
@@ -76,6 +82,7 @@ init.lua (entry point)
   - `theme.lua` — Theme switching module with JSON persistence
   - `theme_txaty.lua` — Custom low-saturation ergonomic dark theme
   - `lang_utils.lua` — Shared utilities for language support (reduces boilerplate)
+  - `ai_toggle.lua` — AI features toggle module (enables/disables Copilot)
 - `lua/plugins/` — Self-contained plugin specifications (all `.lua` files auto-imported)
   - `ui.lua` — nvim-tree, lualine, bufferline, vim-illuminate
   - `whichkey.lua` — Popup showing available keybindings
@@ -290,6 +297,7 @@ stylua lua/
   - `<leader>cp` — Switch to txaty custom theme
   - `<leader>cn/cN` — Next/Previous theme
 - `<leader>a*` — AI assistance (Copilot Chat)
+  - `<leader>ai` — Toggle AI features on/off (requires restart)
   - `<leader>aa` — Toggle AI chat
   - `<leader>aq` — Quick question
   - `<leader>ae` — Explain code
@@ -435,6 +443,14 @@ The nvim-tree auto-open logic is session-aware: if a session exists for the curr
 ### AI Assistance
 - **copilot.lua** — GitHub Copilot integration with ghost text completion (`<C-l>` to accept)
 - **CopilotChat.nvim** — Chat interface for Copilot (`<leader>aa` to toggle, `<leader>aq/ae/at/af/ar` for actions)
+
+**AI Toggle Feature** (similar to Zed's "Disable AI"):
+- Toggle AI features: `<leader>ai` or `:AIToggle`
+- Explicit control: `:AIEnable`, `:AIDisable`, `:AIStatus`
+- When disabled, Copilot plugins are never loaded (improves performance)
+- State persists across sessions (saved to `$XDG_DATA_HOME/ai_config.json`)
+- **Requires Neovim restart** to apply changes
+- Useful for working on sensitive codebases or when Claude Code is sufficient
 
 ### Markdown & Documentation
 - **render-markdown.nvim** — Obsidian-style rendering for Markdown files
