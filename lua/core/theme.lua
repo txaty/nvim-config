@@ -1,251 +1,527 @@
--- Theme switcher module for seamless theme switching
+-- Theme switcher module with unified registry
 local M = {}
 
--- Theme configuration
-M.themes = {
-  -- Dark themes (optimized for coding)
-  dark = {
-    "tokyonight",
-    "kanagawa",
-    "catppuccin",
-    "rose-pine",
-    "nightfox",
-    "onedark",
-    "cyberdream",
-    "gruvbox",
-    "nord",
-    "dracula",
-    "ayu",
-    "solarized",
-    "jellybeans",
-    "github_dark",
-    "github_dark_default",
-    "github_dark_dimmed",
-    "github_dark_high_contrast",
-    "github_dark_colorblind",
-    "github_dark_tritanopia",
-  },
-  -- Light themes (optimized for coding)
-  light = {
-    "tokyonight-day",
-    "rose-pine-dawn",
-    "kanagawa-lotus",
-    "onelight",
-    "ayu-light",
-    "solarized-light",
-    "papercolor",
-    "papercolor-light",
-    "omni",
-    "jellybeans-light",
-    "dayfox",
-    "gruvbox-light",
-    "github_light",
-    "github_light_default",
-    "github_light_high_contrast",
-    "github_light_colorblind",
-  },
-}
+-- ============================================================================
+-- Unified Theme Registry (Single Source of Truth)
+-- ============================================================================
+-- Each theme entry contains all metadata in one place:
+--   variant: "dark" or "light"
+--   description: Human-readable description
+--   plugin_name: Lazy.nvim plugin name for loading (nil for builtin/custom)
+--   plugin_module: Lua module name for setup() call (optional)
+--   setup: Setup options passed to plugin.setup() (optional)
+--   colorscheme: The vim colorscheme name to apply
+--   background: "dark" or "light" vim background setting
+--   global: Table of vim.g variables to set before colorscheme (optional)
+--   custom: true for custom themes that use special apply logic (optional)
+-- ============================================================================
 
-M.theme_info = {
-  -- Dark themes
-  tokyonight = { variant = "dark", description = "Modern Tokyo night with vibrant colors" },
-  kanagawa = { variant = "dark", description = "Japanese-inspired with wave aesthetic" },
-  catppuccin = { variant = "dark", description = "Soothing pastel colors (mocha)" },
-  ["rose-pine"] = { variant = "dark", description = "Soft, elegant rose pine theme" },
-  nightfox = { variant = "dark", description = "Clean dark theme with good contrast" },
-  onedark = { variant = "dark", description = "Atom-inspired one dark theme" },
-  cyberdream = { variant = "dark", description = "Neon cyberpunk aesthetic" },
-  gruvbox = { variant = "dark", description = "Retro groove with warm colors" },
-  nord = { variant = "dark", description = "Arctic, north-bluish theme" },
-  dracula = { variant = "dark", description = "High contrast dark theme" },
-  ayu = { variant = "dark", description = "Ayu dark - minimalist dark theme" },
-  solarized = { variant = "dark", description = "Solarized dark - scientific color palette" },
-  jellybeans = { variant = "dark", description = "Jellybeans dark - colorful dark theme" },
-  github_dark = { variant = "dark", description = "GitHub Dark - official GitHub theme" },
-  github_dark_default = { variant = "dark", description = "GitHub Dark Default - official default dark" },
-  github_dark_dimmed = { variant = "dark", description = "GitHub Dark Dimmed - softer dark variant" },
-  github_dark_high_contrast = { variant = "dark", description = "GitHub Dark High Contrast - enhanced visibility" },
-  github_dark_colorblind = { variant = "dark", description = "GitHub Dark Colorblind - protanopia/deuteranopia" },
-  github_dark_tritanopia = { variant = "dark", description = "GitHub Dark Tritanopia - tritanopia accessible" },
-
-  -- Light themes
-  ["tokyonight-day"] = { variant = "light", description = "Tokyo day - modern light theme" },
-  ["rose-pine-dawn"] = { variant = "light", description = "Rose pine dawn - soft light variant" },
-  ["kanagawa-lotus"] = { variant = "light", description = "Kanagawa lotus - light variant" },
-  onelight = { variant = "light", description = "Atom one light theme" },
-  ["ayu-light"] = { variant = "light", description = "Ayu light - minimalist light theme" },
-  ["solarized-light"] = { variant = "light", description = "Solarized light - scientific color palette" },
-  papercolor = { variant = "light", description = "PaperColor - clean paper-like appearance" },
-  ["papercolor-light"] = { variant = "light", description = "PaperColor light - clean paper-like appearance" },
-  omni = { variant = "light", description = "Omni - modern light theme" },
-  ["jellybeans-light"] = { variant = "light", description = "Jellybeans light - colorful light variant" },
-  dayfox = { variant = "light", description = "Day fox - light fox variant" },
-  ["gruvbox-light"] = { variant = "light", description = "Retro groove light - warm light colors" },
-  github_light = { variant = "light", description = "GitHub Light - official GitHub theme" },
-  github_light_default = { variant = "light", description = "GitHub Light Default - official default light" },
-  github_light_high_contrast = { variant = "light", description = "GitHub Light High Contrast - enhanced visibility" },
-  github_light_colorblind = { variant = "light", description = "GitHub Light Colorblind - protanopia/deuteranopia" },
-
-  -- Custom theme
-  txaty = { variant = "dark", description = "Custom: Low-saturation pure dark ergonomic theme" },
-}
-
-local config_path = vim.fn.stdpath "data" .. "/theme_config.json"
-
--- Map theme names to their plugin names for lazy loading
-local theme_to_plugin = {
-  catppuccin = "catppuccin",
-  tokyonight = "tokyonight.nvim",
-  ["tokyonight-day"] = "tokyonight.nvim",
-  kanagawa = "kanagawa.nvim",
-  ["kanagawa-lotus"] = "kanagawa.nvim",
-  ["rose-pine"] = "rose-pine",
-  ["rose-pine-dawn"] = "rose-pine",
-  nightfox = "nightfox.nvim",
-  dayfox = "nightfox.nvim",
-  onedark = "onedark.nvim",
-  onelight = "onedark.nvim",
-  cyberdream = "cyberdream.nvim",
-  gruvbox = "gruvbox",
-  ["gruvbox-light"] = "gruvbox",
-  nord = "nord",
-  dracula = "dracula",
-  omni = "omni",
-  papercolor = "papercolor",
-  ["papercolor-light"] = "papercolor",
-  ayu = "ayu",
-  ["ayu-light"] = "ayu",
-  solarized = "solarized",
-  ["solarized-light"] = "solarized",
-  jellybeans = "jellybeans",
-  ["jellybeans-light"] = "jellybeans",
-  github_dark = "github-theme",
-  github_dark_default = "github-theme",
-  github_dark_dimmed = "github-theme",
-  github_dark_high_contrast = "github-theme",
-  github_dark_colorblind = "github-theme",
-  github_dark_tritanopia = "github-theme",
-  github_light = "github-theme",
-  github_light_default = "github-theme",
-  github_light_high_contrast = "github-theme",
-  github_light_colorblind = "github-theme",
-  txaty = nil, -- Custom theme, no plugin needed
-}
-
--- Load a colorscheme plugin if needed (for lazy-loaded plugins)
-local function ensure_plugin_loaded(theme_name)
-  local plugin_name = theme_to_plugin[theme_name]
-  if plugin_name then
-    local lazy_ok, lazy = pcall(require, "lazy")
-    if lazy_ok then
-      lazy.load { plugins = { plugin_name } }
-      return true
-    end
-  end
-  return true -- txaty or already loaded
-end
-
--- Load persisted theme preference
-function M.load_saved_theme()
-  if vim.fn.filereadable(config_path) == 1 then
-    local content = vim.fn.readfile(config_path)
-    local ok, result = pcall(vim.json.decode, table.concat(content, ""))
-    if ok and result.theme then
-      return result.theme
-    end
-  end
-  return nil
-end
-
--- Save theme preference
-function M.save_theme(theme_name)
-  local data = { theme = theme_name }
-  local json_str = vim.json.encode(data)
-  vim.fn.writefile(vim.split(json_str, "\n"), config_path)
-end
-
--- Theme application configuration (data-driven approach)
--- Each entry maps theme_name -> { plugin, setup, colorscheme, background, global }
-local theme_configs = {
-  -- Tokyonight variants
-  tokyonight = { plugin = "tokyonight", setup = { style = "storm" }, colorscheme = "tokyonight", background = "dark" },
-  ["tokyonight-day"] = {
-    plugin = "tokyonight",
-    setup = { style = "day" },
+M.registry = {
+  -- === Dark Themes ===
+  tokyonight = {
+    variant = "dark",
+    description = "Modern Tokyo night with vibrant colors",
+    plugin_name = "tokyonight.nvim",
+    plugin_module = "tokyonight",
+    setup = { style = "storm" },
     colorscheme = "tokyonight",
-    background = "light",
-  },
-
-  -- Rose-pine variants
-  ["rose-pine"] = {
-    plugin = "rose-pine",
-    setup = { variant = "main" },
-    colorscheme = "rose-pine",
     background = "dark",
   },
-  ["rose-pine-dawn"] = {
-    plugin = "rose-pine",
-    setup = { variant = "dawn" },
-    colorscheme = "rose-pine",
-    background = "light",
-  },
-
-  -- Kanagawa variants
-  kanagawa = { plugin = "kanagawa", setup = { theme = "dragon" }, colorscheme = "kanagawa", background = "dark" },
-  ["kanagawa-lotus"] = {
-    plugin = "kanagawa",
-    setup = { theme = "lotus" },
+  kanagawa = {
+    variant = "dark",
+    description = "Japanese-inspired with wave aesthetic",
+    plugin_name = "kanagawa.nvim",
+    plugin_module = "kanagawa",
+    setup = { theme = "dragon" },
     colorscheme = "kanagawa",
-    background = "light",
+    background = "dark",
   },
-
-  -- Onedark variants
-  onedark = { plugin = "onedark", setup = { style = "dark" }, colorscheme = "onedark", background = "dark" },
-  onelight = { plugin = "onedark", setup = { style = "light" }, colorscheme = "onedark", background = "light" },
-
-  -- Catppuccin
   catppuccin = {
-    plugin = "catppuccin",
+    variant = "dark",
+    description = "Soothing pastel colors (mocha)",
+    plugin_name = "catppuccin",
+    plugin_module = "catppuccin",
     setup = { flavour = "mocha" },
     colorscheme = "catppuccin",
     background = "dark",
   },
+  ["rose-pine"] = {
+    variant = "dark",
+    description = "Soft, elegant rose pine theme",
+    plugin_name = "rose-pine",
+    plugin_module = "rose-pine",
+    setup = { variant = "main" },
+    colorscheme = "rose-pine",
+    background = "dark",
+  },
+  nightfox = {
+    variant = "dark",
+    description = "Clean dark theme with good contrast",
+    plugin_name = "nightfox.nvim",
+    colorscheme = "nightfox",
+    background = "dark",
+  },
+  onedark = {
+    variant = "dark",
+    description = "Atom-inspired one dark theme",
+    plugin_name = "onedark.nvim",
+    plugin_module = "onedark",
+    setup = { style = "dark" },
+    colorscheme = "onedark",
+    background = "dark",
+  },
+  cyberdream = {
+    variant = "dark",
+    description = "Neon cyberpunk aesthetic",
+    plugin_name = "cyberdream.nvim",
+    colorscheme = "cyberdream",
+    background = "dark",
+  },
+  gruvbox = {
+    variant = "dark",
+    description = "Retro groove with warm colors",
+    plugin_name = "gruvbox",
+    colorscheme = "gruvbox",
+    background = "dark",
+  },
+  nord = {
+    variant = "dark",
+    description = "Arctic, north-bluish theme",
+    plugin_name = "nord",
+    colorscheme = "nord",
+    background = "dark",
+  },
+  dracula = {
+    variant = "dark",
+    description = "High contrast dark theme",
+    plugin_name = "dracula",
+    colorscheme = "dracula",
+    background = "dark",
+  },
+  ayu = {
+    variant = "dark",
+    description = "Ayu dark - minimalist dark theme",
+    plugin_name = "ayu",
+    colorscheme = "ayu",
+    background = "dark",
+    global = { ayucolor = "dark" },
+  },
+  solarized = {
+    variant = "dark",
+    description = "Solarized dark - scientific color palette",
+    plugin_name = "solarized",
+    colorscheme = "solarized",
+    background = "dark",
+  },
+  jellybeans = {
+    variant = "dark",
+    description = "Jellybeans dark - colorful dark theme",
+    plugin_name = "jellybeans",
+    colorscheme = "jellybeans",
+    background = "dark",
+  },
+  -- GitHub dark variants
+  github_dark = {
+    variant = "dark",
+    description = "GitHub Dark - official GitHub theme",
+    plugin_name = "github-theme",
+    colorscheme = "github_dark",
+    background = "dark",
+  },
+  github_dark_default = {
+    variant = "dark",
+    description = "GitHub Dark Default - official default dark",
+    plugin_name = "github-theme",
+    colorscheme = "github_dark_default",
+    background = "dark",
+  },
+  github_dark_dimmed = {
+    variant = "dark",
+    description = "GitHub Dark Dimmed - softer dark variant",
+    plugin_name = "github-theme",
+    colorscheme = "github_dark_dimmed",
+    background = "dark",
+  },
+  github_dark_high_contrast = {
+    variant = "dark",
+    description = "GitHub Dark High Contrast - enhanced visibility",
+    plugin_name = "github-theme",
+    colorscheme = "github_dark_high_contrast",
+    background = "dark",
+  },
+  github_dark_colorblind = {
+    variant = "dark",
+    description = "GitHub Dark Colorblind - protanopia/deuteranopia",
+    plugin_name = "github-theme",
+    colorscheme = "github_dark_colorblind",
+    background = "dark",
+  },
+  github_dark_tritanopia = {
+    variant = "dark",
+    description = "GitHub Dark Tritanopia - tritanopia accessible",
+    plugin_name = "github-theme",
+    colorscheme = "github_dark_tritanopia",
+    background = "dark",
+  },
+  -- New dark themes
+  everforest = {
+    variant = "dark",
+    description = "Green-based comfortable colorscheme",
+    plugin_name = "everforest",
+    colorscheme = "everforest",
+    background = "dark",
+  },
+  duskfox = {
+    variant = "dark",
+    description = "Nightfox variant with dusk tones",
+    plugin_name = "nightfox.nvim",
+    colorscheme = "duskfox",
+    background = "dark",
+  },
+  nordfox = {
+    variant = "dark",
+    description = "Nightfox variant inspired by Nord",
+    plugin_name = "nightfox.nvim",
+    colorscheme = "nordfox",
+    background = "dark",
+  },
+  terafox = {
+    variant = "dark",
+    description = "Nightfox variant with terra tones",
+    plugin_name = "nightfox.nvim",
+    colorscheme = "terafox",
+    background = "dark",
+  },
+  carbonfox = {
+    variant = "dark",
+    description = "Nightfox variant with carbon tones",
+    plugin_name = "nightfox.nvim",
+    colorscheme = "carbonfox",
+    background = "dark",
+  },
+  material = {
+    variant = "dark",
+    description = "Material design dark theme",
+    plugin_name = "material.nvim",
+    plugin_module = "material",
+    setup = {},
+    colorscheme = "material",
+    background = "dark",
+  },
+  vscode = {
+    variant = "dark",
+    description = "VS Code Dark+ lookalike",
+    plugin_name = "vscode.nvim",
+    plugin_module = "vscode",
+    setup = { style = "dark" },
+    colorscheme = "vscode",
+    background = "dark",
+  },
+  moonfly = {
+    variant = "dark",
+    description = "Dark theme with moonlit colors",
+    plugin_name = "vim-moonfly-colors",
+    colorscheme = "moonfly",
+    background = "dark",
+  },
+  nightfly = {
+    variant = "dark",
+    description = "Dark theme inspired by night flights",
+    plugin_name = "vim-nightfly-guicolors",
+    colorscheme = "nightfly",
+    background = "dark",
+  },
+  melange = {
+    variant = "dark",
+    description = "Warm, cozy dark theme",
+    plugin_name = "melange-nvim",
+    colorscheme = "melange",
+    background = "dark",
+  },
+  zenbones = {
+    variant = "dark",
+    description = "Minimal, readability-focused dark theme",
+    plugin_name = "zenbones.nvim",
+    colorscheme = "zenbones",
+    background = "dark",
+  },
+  oxocarbon = {
+    variant = "dark",
+    description = "IBM Carbon design system theme",
+    plugin_name = "oxocarbon.nvim",
+    colorscheme = "oxocarbon",
+    background = "dark",
+  },
 
-  -- Ayu variants (uses vim.g variable)
-  ayu = { colorscheme = "ayu", background = "dark", global = { ayucolor = "dark" } },
-  ["ayu-light"] = { colorscheme = "ayu", background = "light", global = { ayucolor = "light" } },
+  -- === Light Themes ===
+  ["tokyonight-day"] = {
+    variant = "light",
+    description = "Tokyo day - modern light theme",
+    plugin_name = "tokyonight.nvim",
+    plugin_module = "tokyonight",
+    setup = { style = "day" },
+    colorscheme = "tokyonight",
+    background = "light",
+  },
+  ["rose-pine-dawn"] = {
+    variant = "light",
+    description = "Rose pine dawn - soft light variant",
+    plugin_name = "rose-pine",
+    plugin_module = "rose-pine",
+    setup = { variant = "dawn" },
+    colorscheme = "rose-pine",
+    background = "light",
+  },
+  ["kanagawa-lotus"] = {
+    variant = "light",
+    description = "Kanagawa lotus - light variant",
+    plugin_name = "kanagawa.nvim",
+    plugin_module = "kanagawa",
+    setup = { theme = "lotus" },
+    colorscheme = "kanagawa",
+    background = "light",
+  },
+  onelight = {
+    variant = "light",
+    description = "Atom one light theme",
+    plugin_name = "onedark.nvim",
+    plugin_module = "onedark",
+    setup = { style = "light" },
+    colorscheme = "onedark",
+    background = "light",
+  },
+  ["ayu-light"] = {
+    variant = "light",
+    description = "Ayu light - minimalist light theme",
+    plugin_name = "ayu",
+    colorscheme = "ayu",
+    background = "light",
+    global = { ayucolor = "light" },
+  },
+  ["solarized-light"] = {
+    variant = "light",
+    description = "Solarized light - scientific color palette",
+    plugin_name = "solarized",
+    colorscheme = "solarized",
+    background = "light",
+  },
+  papercolor = {
+    variant = "light",
+    description = "PaperColor - clean paper-like appearance",
+    plugin_name = "papercolor",
+    colorscheme = "PaperColor",
+    background = "light",
+  },
+  ["papercolor-light"] = {
+    variant = "light",
+    description = "PaperColor light - clean paper-like appearance",
+    plugin_name = "papercolor",
+    colorscheme = "PaperColor",
+    background = "light",
+  },
+  omni = {
+    variant = "light",
+    description = "Omni - modern light theme",
+    plugin_name = "omni",
+    colorscheme = "omni",
+    background = "light",
+  },
+  ["jellybeans-light"] = {
+    variant = "light",
+    description = "Jellybeans light - colorful light variant",
+    plugin_name = "jellybeans",
+    colorscheme = "jellybeans",
+    background = "light",
+  },
+  dayfox = {
+    variant = "light",
+    description = "Day fox - light fox variant",
+    plugin_name = "nightfox.nvim",
+    colorscheme = "dayfox",
+    background = "light",
+  },
+  ["gruvbox-light"] = {
+    variant = "light",
+    description = "Retro groove light - warm light colors",
+    plugin_name = "gruvbox",
+    colorscheme = "gruvbox",
+    background = "light",
+  },
+  -- GitHub light variants
+  github_light = {
+    variant = "light",
+    description = "GitHub Light - official GitHub theme",
+    plugin_name = "github-theme",
+    colorscheme = "github_light",
+    background = "light",
+  },
+  github_light_default = {
+    variant = "light",
+    description = "GitHub Light Default - official default light",
+    plugin_name = "github-theme",
+    colorscheme = "github_light_default",
+    background = "light",
+  },
+  github_light_high_contrast = {
+    variant = "light",
+    description = "GitHub Light High Contrast - enhanced visibility",
+    plugin_name = "github-theme",
+    colorscheme = "github_light_high_contrast",
+    background = "light",
+  },
+  github_light_colorblind = {
+    variant = "light",
+    description = "GitHub Light Colorblind - protanopia/deuteranopia",
+    plugin_name = "github-theme",
+    colorscheme = "github_light_colorblind",
+    background = "light",
+  },
+  -- New light themes
+  ["everforest-light"] = {
+    variant = "light",
+    description = "Green-based comfortable light colorscheme",
+    plugin_name = "everforest",
+    colorscheme = "everforest",
+    background = "light",
+  },
+  dawnfox = {
+    variant = "light",
+    description = "Nightfox dawn variant - soft light theme",
+    plugin_name = "nightfox.nvim",
+    colorscheme = "dawnfox",
+    background = "light",
+  },
+  ["material-lighter"] = {
+    variant = "light",
+    description = "Material design light theme",
+    plugin_name = "material.nvim",
+    plugin_module = "material",
+    setup = { style = "lighter" },
+    colorscheme = "material",
+    background = "light",
+  },
+  ["vscode-light"] = {
+    variant = "light",
+    description = "VS Code Light+ lookalike",
+    plugin_name = "vscode.nvim",
+    plugin_module = "vscode",
+    setup = { style = "light" },
+    colorscheme = "vscode",
+    background = "light",
+  },
+  ["zenbones-light"] = {
+    variant = "light",
+    description = "Minimal, readability-focused light theme",
+    plugin_name = "zenbones.nvim",
+    colorscheme = "zenbones",
+    background = "light",
+  },
 
-  -- Simple colorschemes (no setup needed)
-  gruvbox = { colorscheme = "gruvbox", background = "dark" },
-  ["gruvbox-light"] = { colorscheme = "gruvbox", background = "light" },
-  nord = { colorscheme = "nord", background = "dark" },
-  dracula = { colorscheme = "dracula", background = "dark" },
-  cyberdream = { colorscheme = "cyberdream", background = "dark" },
-  nightfox = { colorscheme = "nightfox", background = "dark" },
-  dayfox = { colorscheme = "dayfox", background = "light" },
-  solarized = { colorscheme = "solarized", background = "dark" },
-  ["solarized-light"] = { colorscheme = "solarized", background = "light" },
-  jellybeans = { colorscheme = "jellybeans", background = "dark" },
-  ["jellybeans-light"] = { colorscheme = "jellybeans", background = "light" },
-  papercolor = { colorscheme = "PaperColor", background = "light" },
-  ["papercolor-light"] = { colorscheme = "PaperColor", background = "light" },
-  omni = { colorscheme = "omni", background = "light" },
-
-  -- GitHub theme variants
-  github_dark = { colorscheme = "github_dark", background = "dark" },
-  github_dark_default = { colorscheme = "github_dark_default", background = "dark" },
-  github_dark_dimmed = { colorscheme = "github_dark_dimmed", background = "dark" },
-  github_dark_high_contrast = { colorscheme = "github_dark_high_contrast", background = "dark" },
-  github_dark_colorblind = { colorscheme = "github_dark_colorblind", background = "dark" },
-  github_dark_tritanopia = { colorscheme = "github_dark_tritanopia", background = "dark" },
-  github_light = { colorscheme = "github_light", background = "light" },
-  github_light_default = { colorscheme = "github_light_default", background = "light" },
-  github_light_high_contrast = { colorscheme = "github_light_high_contrast", background = "light" },
-  github_light_colorblind = { colorscheme = "github_light_colorblind", background = "light" },
-
-  -- Custom theme
-  txaty = { custom = true },
+  -- === Custom Theme ===
+  txaty = {
+    variant = "dark",
+    description = "Custom: Low-saturation pure dark ergonomic theme",
+    plugin_name = nil,
+    colorscheme = nil,
+    custom = true,
+  },
 }
+
+-- ============================================================================
+-- Backward-Compatible Computed Views
+-- ============================================================================
+-- These are computed from the registry for backward compatibility
+
+-- Build M.themes (dark/light arrays) from registry
+M.themes = { dark = {}, light = {} }
+for name, info in pairs(M.registry) do
+  if not info.custom then
+    if info.variant == "dark" then
+      table.insert(M.themes.dark, name)
+    elseif info.variant == "light" then
+      table.insert(M.themes.light, name)
+    end
+  end
+end
+-- Sort for consistent ordering
+table.sort(M.themes.dark)
+table.sort(M.themes.light)
+
+-- Build M.theme_info from registry (for backward compatibility)
+M.theme_info = {}
+for name, info in pairs(M.registry) do
+  M.theme_info[name] = {
+    variant = info.variant,
+    description = info.description,
+  }
+end
+
+-- ============================================================================
+-- Persistence
+-- ============================================================================
+local config_path = vim.fn.stdpath "data" .. "/theme_config.json"
+
+-- Load persisted theme preference (returns full config table)
+local function load_config()
+  if vim.fn.filereadable(config_path) == 1 then
+    local content = vim.fn.readfile(config_path)
+    local ok, result = pcall(vim.json.decode, table.concat(content, ""))
+    if ok and type(result) == "table" then
+      return result
+    end
+  end
+  return {}
+end
+
+-- Save config to file
+local function save_config(config)
+  local json_str = vim.json.encode(config)
+  vim.fn.writefile(vim.split(json_str, "\n"), config_path)
+end
+
+-- Load saved theme name (public API for backward compatibility)
+function M.load_saved_theme()
+  local config = load_config()
+  return config.theme
+end
+
+-- Save theme preference (updates theme and last_dark/last_light)
+function M.save_theme(theme_name)
+  local config = load_config()
+  config.theme = theme_name
+
+  -- Update per-category last-used
+  local info = M.registry[theme_name]
+  if info then
+    if info.variant == "dark" then
+      config.last_dark = theme_name
+    elseif info.variant == "light" then
+      config.last_light = theme_name
+    end
+  end
+
+  save_config(config)
+end
+
+-- ============================================================================
+-- Plugin Loading
+-- ============================================================================
+
+-- Load a colorscheme plugin if needed (for lazy-loaded plugins)
+local function ensure_plugin_loaded(theme_name)
+  local info = M.registry[theme_name]
+  if info and info.plugin_name then
+    local lazy_ok, lazy = pcall(require, "lazy")
+    if lazy_ok then
+      lazy.load { plugins = { info.plugin_name } }
+    end
+  end
+  return true
+end
+
+-- ============================================================================
+-- UI Refresh
+-- ============================================================================
 
 -- Refresh UI components after theme change
 local function refresh_ui()
@@ -264,13 +540,49 @@ local function refresh_ui()
     if ok_lualine and lualine.refresh then
       pcall(lualine.refresh)
     end
+
+    -- Refresh nvim-tree if available
+    local ok_nvimtree, nvimtree_api = pcall(require, "nvim-tree.api")
+    if ok_nvimtree and nvimtree_api.tree and nvimtree_api.tree.reload then
+      pcall(nvimtree_api.tree.reload)
+    end
   end)
 end
 
+-- ============================================================================
+-- Safe Colorscheme Application
+-- ============================================================================
+
+local DEFAULT_FALLBACK = "default"
+
+-- Safely apply a colorscheme with error handling and fallback
+local function safe_colorscheme(colorscheme_name)
+  local ok, err = pcall(vim.cmd.colorscheme, colorscheme_name)
+  if not ok then
+    vim.notify(
+      string.format(
+        "Failed to load colorscheme '%s': %s. Falling back to '%s'",
+        colorscheme_name,
+        err,
+        DEFAULT_FALLBACK
+      ),
+      vim.log.levels.WARN
+    )
+    pcall(vim.cmd.colorscheme, DEFAULT_FALLBACK)
+    return false
+  end
+  return true
+end
+
+-- ============================================================================
+-- Theme Application
+-- ============================================================================
+
 -- Apply theme (internal function that can skip saving)
 local function apply_theme_internal(theme_name, should_save)
-  if not M.theme_info[theme_name] then
-    vim.notify("Theme '" .. theme_name .. "' not found", vim.log.levels.WARN)
+  local info = M.registry[theme_name]
+  if not info then
+    vim.notify("Theme '" .. theme_name .. "' not found in registry", vim.log.levels.WARN)
     return false
   end
 
@@ -283,33 +595,36 @@ local function apply_theme_internal(theme_name, should_save)
     vim.cmd "syntax reset"
   end
 
-  local config = theme_configs[theme_name]
-
   -- Handle custom theme (txaty)
-  if config and config.custom then
+  if info.custom then
     require("core.theme_txaty").apply()
-  elseif config then
+  else
     -- Set global variables if specified
-    if config.global then
-      for key, value in pairs(config.global) do
+    if info.global then
+      for key, value in pairs(info.global) do
         vim.g[key] = value
       end
     end
 
+    -- Set background before applying (some themes need this)
+    if info.background then
+      vim.o.background = info.background
+    end
+
     -- Run plugin setup if specified
-    if config.plugin and config.setup then
-      local ok, plugin = pcall(require, config.plugin)
+    if info.plugin_module and info.setup then
+      local ok, plugin = pcall(require, info.plugin_module)
       if ok and plugin.setup then
-        plugin.setup(config.setup)
+        plugin.setup(info.setup)
       end
     end
 
-    -- Apply colorscheme and background
-    vim.cmd.colorscheme(config.colorscheme)
-    vim.o.background = config.background
-  else
-    -- Fallback for any theme not in config table
-    vim.cmd.colorscheme(theme_name)
+    -- Apply colorscheme with error handling
+    if info.colorscheme then
+      if not safe_colorscheme(info.colorscheme) then
+        return false
+      end
+    end
   end
 
   refresh_ui()
@@ -336,7 +651,53 @@ function M.restore_theme()
   return false
 end
 
--- Get all available themes
+-- ============================================================================
+-- Smart Variant Switching (remembers last-used per category)
+-- ============================================================================
+
+-- Switch to last-used dark theme (or first dark theme if none saved)
+function M.switch_to_dark()
+  local config = load_config()
+  local target = config.last_dark
+
+  -- Validate target exists and is dark
+  if not target or not M.registry[target] or M.registry[target].variant ~= "dark" then
+    -- Fall back to first dark theme
+    if #M.themes.dark > 0 then
+      target = M.themes.dark[1]
+    else
+      vim.notify("No dark themes available", vim.log.levels.WARN)
+      return false
+    end
+  end
+
+  return M.apply_theme(target)
+end
+
+-- Switch to last-used light theme (or first light theme if none saved)
+function M.switch_to_light()
+  local config = load_config()
+  local target = config.last_light
+
+  -- Validate target exists and is light
+  if not target or not M.registry[target] or M.registry[target].variant ~= "light" then
+    -- Fall back to first light theme
+    if #M.themes.light > 0 then
+      target = M.themes.light[1]
+    else
+      vim.notify("No light themes available", vim.log.levels.WARN)
+      return false
+    end
+  end
+
+  return M.apply_theme(target)
+end
+
+-- ============================================================================
+-- Public API
+-- ============================================================================
+
+-- Get all available themes (flat list)
 function M.get_all_themes()
   local all_themes = {}
   for _, theme in ipairs(M.themes.dark) do
@@ -358,6 +719,11 @@ function M.get_themes_by_variant(variant)
   else
     return {}
   end
+end
+
+-- Get registry entry for a theme (new API)
+function M.get_theme_info(theme_name)
+  return M.registry[theme_name]
 end
 
 return M

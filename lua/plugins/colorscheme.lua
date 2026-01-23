@@ -1,5 +1,5 @@
 return {
-  -- Dark themes
+  -- === Dark themes ===
   {
     "catppuccin/nvim",
     name = "catppuccin",
@@ -61,7 +61,6 @@ return {
     lazy = true,
   },
 
-  -- Additional dark themes for programming
   {
     "morhetz/gruvbox",
     lazy = true,
@@ -79,7 +78,7 @@ return {
     lazy = true,
   },
 
-  -- Light themes for daytime coding
+  -- === Light themes ===
   {
     "yonlu/omni.vim",
     name = "omni",
@@ -118,7 +117,6 @@ return {
     config = function()
       require("github-theme").setup {
         options = {
-          -- Compile to cache for better performance
           compile_path = vim.fn.stdpath "cache" .. "/github-theme",
           compile_file_suffix = "_compiled",
           hide_end_of_buffer = true,
@@ -135,5 +133,88 @@ return {
         },
       }
     end,
+  },
+
+  -- === New themes (added in redesign) ===
+
+  -- Everforest - very popular green-based comfortable theme
+  {
+    "sainnhe/everforest",
+    name = "everforest",
+    lazy = true,
+    config = function()
+      vim.g.everforest_background = "medium"
+      vim.g.everforest_better_performance = 1
+    end,
+  },
+
+  -- Material - Google Material design theme
+  {
+    "marko-cerovac/material.nvim",
+    name = "material.nvim",
+    lazy = true,
+    opts = {
+      contrast = {
+        terminal = false,
+        sidebars = false,
+        floating_windows = false,
+        cursor_line = false,
+        non_current_windows = false,
+      },
+      plugins = {
+        "gitsigns",
+        "nvim-cmp",
+        "nvim-tree",
+        "telescope",
+        "which-key",
+      },
+    },
+  },
+
+  -- VS Code - lookalike theme
+  {
+    "Mofiqul/vscode.nvim",
+    name = "vscode.nvim",
+    lazy = true,
+    opts = {
+      transparent = false,
+      italic_comments = true,
+    },
+  },
+
+  -- Moonfly - dark theme with moonlit colors
+  {
+    "bluz71/vim-moonfly-colors",
+    name = "vim-moonfly-colors",
+    lazy = true,
+  },
+
+  -- Nightfly - dark theme inspired by night flights
+  {
+    "bluz71/vim-nightfly-guicolors",
+    name = "vim-nightfly-guicolors",
+    lazy = true,
+  },
+
+  -- Melange - warm, cozy theme
+  {
+    "savq/melange-nvim",
+    name = "melange-nvim",
+    lazy = true,
+  },
+
+  -- Zenbones - minimal, readability-focused themes (requires lush.nvim)
+  {
+    "mcchrish/zenbones.nvim",
+    name = "zenbones.nvim",
+    lazy = true,
+    dependencies = { "rktjmp/lush.nvim" },
+  },
+
+  -- Oxocarbon - IBM Carbon design system theme
+  {
+    "nyoom-engineering/oxocarbon.nvim",
+    name = "oxocarbon.nvim",
+    lazy = true,
   },
 }
