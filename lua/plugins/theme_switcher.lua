@@ -112,8 +112,8 @@ return {
         theme.apply_theme "txaty"
       end, { desc = "Color: switch to txaty theme", noremap = true, silent = true })
 
-      -- Next/Previous theme
-      map("n", "<leader>cn", function()
+      -- Helper for cycling themes (direction: 1 = next, -1 = previous)
+      local function cycle_theme(direction)
         local all_themes = theme.get_all_themes()
         local saved = theme.load_saved_theme() or "catppuccin"
         local idx = 1
@@ -123,25 +123,25 @@ return {
             break
           end
         end
-        local next_idx = idx % #all_themes + 1
-        theme.apply_theme(all_themes[next_idx])
+        local new_idx
+        if direction > 0 then
+          new_idx = idx % #all_themes + 1
+        else
+          new_idx = idx - 1
+          if new_idx < 1 then
+            new_idx = #all_themes
+          end
+        end
+        theme.apply_theme(all_themes[new_idx])
+      end
+
+      -- Next/Previous theme
+      map("n", "<leader>cn", function()
+        cycle_theme(1)
       end, { desc = "Color: next theme", noremap = true, silent = true })
 
       map("n", "<leader>cN", function()
-        local all_themes = theme.get_all_themes()
-        local saved = theme.load_saved_theme() or "catppuccin"
-        local idx = 1
-        for i, t in ipairs(all_themes) do
-          if t == saved then
-            idx = i
-            break
-          end
-        end
-        local prev_idx = idx - 1
-        if prev_idx < 1 then
-          prev_idx = #all_themes
-        end
-        theme.apply_theme(all_themes[prev_idx])
+        cycle_theme(-1)
       end, { desc = "Color: previous theme", noremap = true, silent = true })
     end,
   },

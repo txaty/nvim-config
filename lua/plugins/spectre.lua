@@ -25,32 +25,32 @@ return {
           desc = "open file",
         },
         ["send_to_qf"] = {
-          map = "<leader>q",
+          map = "tq",
           cmd = "<cmd>lua require('spectre.actions').send_to_qf()<CR>",
           desc = "send all items to quickfix",
         },
         ["replace_cmd"] = {
-          map = "<leader>c",
+          map = "tc",
           cmd = "<cmd>lua require('spectre.actions').replace_cmd()<CR>",
           desc = "input replace command",
         },
         ["show_option_menu"] = {
-          map = "<leader>o",
+          map = "to",
           cmd = "<cmd>lua require('spectre.actions').show_options()<CR>",
           desc = "show options",
         },
         ["run_current_replace"] = {
-          map = "<leader>rc",
+          map = "tr",
           cmd = "<cmd>lua require('spectre.actions').run_current_replace()<CR>",
           desc = "replace current line",
         },
         ["run_replace"] = {
-          map = "<leader>R",
+          map = "tR",
           cmd = "<cmd>lua require('spectre.actions').run_replace()<CR>",
           desc = "replace all",
         },
         ["change_view_mode"] = {
-          map = "<leader>v",
+          map = "tv",
           cmd = "<cmd>lua require('spectre.actions').change_view()<CR>",
           desc = "change result view mode",
         },

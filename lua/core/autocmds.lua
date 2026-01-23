@@ -1,27 +1,5 @@
 local autocmd = vim.api.nvim_create_autocmd
 
--- Debug logging function that writes to a file
-local debug_log = function(msg, silent)
-  local log_file = vim.fn.stdpath "cache" .. "/session_debug.log"
-  local timestamp = os.date "%Y-%m-%d %H:%M:%S"
-  local log_msg = string.format("[%s] %s\n", timestamp, msg)
-
-  -- Append to log file
-  local file = io.open(log_file, "a")
-  if file then
-    file:write(log_msg)
-    file:close()
-  end
-
-  -- Also print to messages (unless silent)
-  if not silent then
-    print(msg)
-  end
-end
-
--- Debug: Verify this file is loading (silent to avoid startup prompts)
-debug_log("[DEBUG] autocmds.lua is loading...", true)
-
 -- Restore cursor position
 autocmd("BufReadPost", {
   pattern = "*",
@@ -67,61 +45,33 @@ autocmd("FileType", {
 })
 
 -- Session auto-restore: runs on VimEnter before everything else
-debug_log("[DEBUG] Registering SessionAutoRestore autocmd...", true)
 autocmd("VimEnter", {
   group = vim.api.nvim_create_augroup("SessionAutoRestore", { clear = true }),
   nested = true,
   callback = function()
     local argc = vim.fn.argc()
-    debug_log("[DEBUG] SessionAutoRestore fired, argc = " .. argc, true)
 
-    -- Check what the arguments are
+    -- Determine if session should be restored
     local should_restore = false
     if argc == 0 then
-      debug_log("[DEBUG] No arguments, should restore session", true)
       should_restore = true
     elseif argc == 1 then
-      -- If there's one argument, check if it's a directory or empty
       local arg = vim.fn.argv(0)
-      debug_log("[DEBUG] Single argument detected: '" .. tostring(arg) .. "'", true)
-
-      -- If the argument is empty, a directory, or matches current directory, restore session
+      -- Restore if argument is empty, ".", or a directory
       if arg == "" or arg == "." or vim.fn.isdirectory(arg) == 1 then
-        debug_log("[DEBUG] Argument is directory or empty, should restore session", true)
         should_restore = true
-      else
-        debug_log("[DEBUG] Argument is a file: " .. arg .. ", skipping restore", true)
       end
-    else
-      debug_log("[DEBUG] Multiple arguments (" .. argc .. "), skipping restore", true)
     end
 
-    -- Only restore session if appropriate
     if should_restore then
-      debug_log("[DEBUG] Attempting to load persistence plugin...", true)
       local ok, persistence = pcall(require, "persistence")
-
       if not ok then
-        debug_log("[DEBUG] Failed to load persistence: " .. tostring(persistence), true)
         return
       end
 
-      debug_log("[DEBUG] Persistence plugin loaded successfully", true)
-
-      -- Check if session file exists
       local session_file = persistence.current()
-      debug_log("[DEBUG] Session file path: " .. session_file, true)
-
       if vim.fn.filereadable(session_file) == 1 then
-        debug_log("[DEBUG] Session file exists, loading...", true)
-        local load_ok, err = pcall(persistence.load)
-        if not load_ok then
-          debug_log("[DEBUG] Failed to load session: " .. tostring(err), true)
-        else
-          debug_log("[DEBUG] Session loaded successfully!", true)
-        end
-      else
-        debug_log("[DEBUG] No session file found at that path", true)
+        pcall(persistence.load)
       end
     end
   end,
@@ -153,23 +103,12 @@ autocmd("VimEnter", {
 })
 
 -- Session auto-save: runs on exit
-debug_log("[DEBUG] Registering SessionAutoSave autocmd...", true)
 autocmd("VimLeavePre", {
   group = vim.api.nvim_create_augroup("SessionAutoSave", { clear = true }),
   callback = function()
-    debug_log("[DEBUG] VimLeavePre: Attempting to save session...", true)
     local ok, persistence = pcall(require, "persistence")
     if ok then
-      local session_file = persistence.current()
-      debug_log("[DEBUG] Saving session to: " .. session_file, true)
-      local save_ok, err = pcall(persistence.save)
-      if not save_ok then
-        debug_log("[DEBUG] Failed to save: " .. tostring(err), true)
-      else
-        debug_log("[DEBUG] Session saved!", true)
-      end
-    else
-      debug_log("[DEBUG] Failed to load persistence plugin", true)
+      pcall(persistence.save)
     end
   end,
 })

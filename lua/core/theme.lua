@@ -164,6 +164,109 @@ function M.save_theme(theme_name)
   vim.fn.writefile(vim.split(json_str, "\n"), config_path)
 end
 
+-- Theme application configuration (data-driven approach)
+-- Each entry maps theme_name -> { plugin, setup, colorscheme, background, global }
+local theme_configs = {
+  -- Tokyonight variants
+  tokyonight = { plugin = "tokyonight", setup = { style = "storm" }, colorscheme = "tokyonight", background = "dark" },
+  ["tokyonight-day"] = {
+    plugin = "tokyonight",
+    setup = { style = "day" },
+    colorscheme = "tokyonight",
+    background = "light",
+  },
+
+  -- Rose-pine variants
+  ["rose-pine"] = {
+    plugin = "rose-pine",
+    setup = { variant = "main" },
+    colorscheme = "rose-pine",
+    background = "dark",
+  },
+  ["rose-pine-dawn"] = {
+    plugin = "rose-pine",
+    setup = { variant = "dawn" },
+    colorscheme = "rose-pine",
+    background = "light",
+  },
+
+  -- Kanagawa variants
+  kanagawa = { plugin = "kanagawa", setup = { theme = "dragon" }, colorscheme = "kanagawa", background = "dark" },
+  ["kanagawa-lotus"] = {
+    plugin = "kanagawa",
+    setup = { theme = "lotus" },
+    colorscheme = "kanagawa",
+    background = "light",
+  },
+
+  -- Onedark variants
+  onedark = { plugin = "onedark", setup = { style = "dark" }, colorscheme = "onedark", background = "dark" },
+  onelight = { plugin = "onedark", setup = { style = "light" }, colorscheme = "onedark", background = "light" },
+
+  -- Catppuccin
+  catppuccin = {
+    plugin = "catppuccin",
+    setup = { flavour = "mocha" },
+    colorscheme = "catppuccin",
+    background = "dark",
+  },
+
+  -- Ayu variants (uses vim.g variable)
+  ayu = { colorscheme = "ayu", background = "dark", global = { ayucolor = "dark" } },
+  ["ayu-light"] = { colorscheme = "ayu", background = "light", global = { ayucolor = "light" } },
+
+  -- Simple colorschemes (no setup needed)
+  gruvbox = { colorscheme = "gruvbox", background = "dark" },
+  ["gruvbox-light"] = { colorscheme = "gruvbox", background = "light" },
+  nord = { colorscheme = "nord", background = "dark" },
+  dracula = { colorscheme = "dracula", background = "dark" },
+  cyberdream = { colorscheme = "cyberdream", background = "dark" },
+  nightfox = { colorscheme = "nightfox", background = "dark" },
+  dayfox = { colorscheme = "dayfox", background = "light" },
+  solarized = { colorscheme = "solarized", background = "dark" },
+  ["solarized-light"] = { colorscheme = "solarized", background = "light" },
+  jellybeans = { colorscheme = "jellybeans", background = "dark" },
+  ["jellybeans-light"] = { colorscheme = "jellybeans", background = "light" },
+  papercolor = { colorscheme = "PaperColor", background = "light" },
+  ["papercolor-light"] = { colorscheme = "PaperColor", background = "light" },
+  omni = { colorscheme = "omni", background = "light" },
+
+  -- GitHub theme variants
+  github_dark = { colorscheme = "github_dark", background = "dark" },
+  github_dark_default = { colorscheme = "github_dark_default", background = "dark" },
+  github_dark_dimmed = { colorscheme = "github_dark_dimmed", background = "dark" },
+  github_dark_high_contrast = { colorscheme = "github_dark_high_contrast", background = "dark" },
+  github_dark_colorblind = { colorscheme = "github_dark_colorblind", background = "dark" },
+  github_dark_tritanopia = { colorscheme = "github_dark_tritanopia", background = "dark" },
+  github_light = { colorscheme = "github_light", background = "light" },
+  github_light_default = { colorscheme = "github_light_default", background = "light" },
+  github_light_high_contrast = { colorscheme = "github_light_high_contrast", background = "light" },
+  github_light_colorblind = { colorscheme = "github_light_colorblind", background = "light" },
+
+  -- Custom theme
+  txaty = { custom = true },
+}
+
+-- Refresh UI components after theme change
+local function refresh_ui()
+  vim.schedule(function()
+    -- Refresh bufferline if available
+    local ok_bufferline, _ = pcall(require, "bufferline")
+    if ok_bufferline then
+      local config = require "bufferline.config"
+      if config and config.apply then
+        pcall(config.apply)
+      end
+    end
+
+    -- Refresh lualine if available
+    local ok_lualine, lualine = pcall(require, "lualine")
+    if ok_lualine and lualine.refresh then
+      pcall(lualine.refresh)
+    end
+  end)
+end
+
 -- Apply theme (internal function that can skip saving)
 local function apply_theme_internal(theme_name, should_save)
   if not M.theme_info[theme_name] then
@@ -180,145 +283,36 @@ local function apply_theme_internal(theme_name, should_save)
     vim.cmd "syntax reset"
   end
 
-  -- Special handling for different theme engines
-  if theme_name == "tokyonight-day" then
-    require("tokyonight").setup { style = "day" }
-    vim.cmd.colorscheme "tokyonight"
-    vim.o.background = "light"
-  elseif theme_name == "tokyonight" then
-    require("tokyonight").setup { style = "storm" }
-    vim.cmd.colorscheme "tokyonight"
-    vim.o.background = "dark"
-  elseif theme_name == "rose-pine-dawn" then
-    require("rose-pine").setup { variant = "dawn" }
-    vim.cmd.colorscheme "rose-pine"
-    vim.o.background = "light"
-  elseif theme_name == "rose-pine" then
-    require("rose-pine").setup { variant = "main" }
-    vim.cmd.colorscheme "rose-pine"
-    vim.o.background = "dark"
-  elseif theme_name == "kanagawa-lotus" then
-    require("kanagawa").setup { theme = "lotus" }
-    vim.cmd.colorscheme "kanagawa"
-    vim.o.background = "light"
-  elseif theme_name == "kanagawa" then
-    require("kanagawa").setup { theme = "dragon" }
-    vim.cmd.colorscheme "kanagawa"
-    vim.o.background = "dark"
-  elseif theme_name == "onedark" then
-    require("onedark").setup { style = "dark" }
-    vim.cmd.colorscheme "onedark"
-    vim.o.background = "dark"
-  elseif theme_name == "onelight" then
-    require("onedark").setup { style = "light" }
-    vim.cmd.colorscheme "onedark"
-    vim.o.background = "light"
-  elseif theme_name == "gruvbox" then
-    vim.cmd.colorscheme "gruvbox"
-    vim.o.background = "dark"
-  elseif theme_name == "nord" then
-    vim.cmd.colorscheme "nord"
-    vim.o.background = "dark"
-  elseif theme_name == "dracula" then
-    vim.cmd.colorscheme "dracula"
-    vim.o.background = "dark"
-  elseif theme_name == "cyberdream" then
-    vim.cmd.colorscheme "cyberdream"
-    vim.o.background = "dark"
-  elseif theme_name == "catppuccin" then
-    require("catppuccin").setup { flavour = "mocha" }
-    vim.cmd.colorscheme "catppuccin"
-    vim.o.background = "dark"
-  elseif theme_name == "nightfox" then
-    vim.cmd.colorscheme "nightfox"
-    vim.o.background = "dark"
-  elseif theme_name == "dayfox" then
-    vim.cmd.colorscheme "dayfox"
-    vim.o.background = "light"
-  elseif theme_name == "ayu" then
-    vim.g.ayucolor = "dark"
-    vim.cmd.colorscheme "ayu"
-    vim.o.background = "dark"
-  elseif theme_name == "ayu-light" then
-    vim.g.ayucolor = "light"
-    vim.cmd.colorscheme "ayu"
-    vim.o.background = "light"
-  elseif theme_name == "solarized" then
-    vim.cmd.colorscheme "solarized"
-    vim.o.background = "dark"
-  elseif theme_name == "solarized-light" then
-    vim.cmd.colorscheme "solarized"
-    vim.o.background = "light"
-  elseif theme_name == "jellybeans" then
-    vim.cmd.colorscheme "jellybeans"
-    vim.o.background = "dark"
-  elseif theme_name == "jellybeans-light" then
-    vim.cmd.colorscheme "jellybeans"
-    vim.o.background = "light"
-  elseif theme_name == "gruvbox-light" then
-    vim.cmd.colorscheme "gruvbox"
-    vim.o.background = "light"
-  elseif theme_name == "papercolor" or theme_name == "papercolor-light" then
-    vim.cmd.colorscheme "PaperColor"
-    vim.o.background = "light"
-  elseif theme_name == "omni" then
-    vim.cmd.colorscheme "omni"
-    vim.o.background = "light"
-  elseif theme_name == "github_dark" then
-    vim.cmd.colorscheme "github_dark"
-    vim.o.background = "dark"
-  elseif theme_name == "github_dark_default" then
-    vim.cmd.colorscheme "github_dark_default"
-    vim.o.background = "dark"
-  elseif theme_name == "github_dark_dimmed" then
-    vim.cmd.colorscheme "github_dark_dimmed"
-    vim.o.background = "dark"
-  elseif theme_name == "github_dark_high_contrast" then
-    vim.cmd.colorscheme "github_dark_high_contrast"
-    vim.o.background = "dark"
-  elseif theme_name == "github_dark_colorblind" then
-    vim.cmd.colorscheme "github_dark_colorblind"
-    vim.o.background = "dark"
-  elseif theme_name == "github_dark_tritanopia" then
-    vim.cmd.colorscheme "github_dark_tritanopia"
-    vim.o.background = "dark"
-  elseif theme_name == "github_light" then
-    vim.cmd.colorscheme "github_light"
-    vim.o.background = "light"
-  elseif theme_name == "github_light_default" then
-    vim.cmd.colorscheme "github_light_default"
-    vim.o.background = "light"
-  elseif theme_name == "github_light_high_contrast" then
-    vim.cmd.colorscheme "github_light_high_contrast"
-    vim.o.background = "light"
-  elseif theme_name == "github_light_colorblind" then
-    vim.cmd.colorscheme "github_light_colorblind"
-    vim.o.background = "light"
-  elseif theme_name == "txaty" then
-    require("core.theme_txaty").apply()
-  else
-    vim.cmd.colorscheme(theme_name)
-  end
+  local config = theme_configs[theme_name]
 
-  -- Refresh UI components after theme change
-  vim.schedule(function()
-    -- Refresh bufferline if available
-    local ok_bufferline, bufferline = pcall(require, "bufferline")
-    if ok_bufferline and bufferline.setup then
-      -- Get current config and reapply
-      local config = require "bufferline.config"
-      if config and config.apply then
-        pcall(config.apply)
+  -- Handle custom theme (txaty)
+  if config and config.custom then
+    require("core.theme_txaty").apply()
+  elseif config then
+    -- Set global variables if specified
+    if config.global then
+      for key, value in pairs(config.global) do
+        vim.g[key] = value
       end
     end
 
-    -- Refresh lualine if available
-    local ok_lualine, lualine = pcall(require, "lualine")
-    if ok_lualine and lualine.setup then
-      -- Lualine auto-detects theme changes, but we can force a refresh
-      pcall(lualine.refresh)
+    -- Run plugin setup if specified
+    if config.plugin and config.setup then
+      local ok, plugin = pcall(require, config.plugin)
+      if ok and plugin.setup then
+        plugin.setup(config.setup)
+      end
     end
-  end)
+
+    -- Apply colorscheme and background
+    vim.cmd.colorscheme(config.colorscheme)
+    vim.o.background = config.background
+  else
+    -- Fallback for any theme not in config table
+    vim.cmd.colorscheme(theme_name)
+  end
+
+  refresh_ui()
 
   if should_save then
     M.save_theme(theme_name)
