@@ -1,3 +1,9 @@
+-- Flutter/Dart language support
+local lang_toggle = require "core.lang_toggle"
+if not lang_toggle.is_enabled "flutter" then
+  return {}
+end
+
 return {
   {
     "akinsho/flutter-tools.nvim",

@@ -354,6 +354,21 @@ return {}
 { "plugin-name", enabled = false }
 ```
 
+### Enable/Disable Language Support
+
+Toggle entire language toolchains (LSP, formatter, linter, treesitter):
+
+```
+<leader>Lp        # Open language support panel
+<leader>Ls        # Show status of all languages
+:LangToggle python  # Toggle Python support
+:LangDisable rust   # Disable Rust support
+```
+
+Supported: `python`, `rust`, `go`, `web` (JS/TS), `flutter`, `latex`, `typst`
+
+Changes require Neovim restart to take effect.
+
 ### Change Colorscheme
 
 Edit `lua/plugins/colorscheme.lua`:

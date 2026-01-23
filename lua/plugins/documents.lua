@@ -1,7 +1,11 @@
 -- Document preparation systems: LaTeX (vimtex) and Typst
-return {
-  -- LaTeX support with vimtex
-  {
+local lang_toggle = require "core.lang_toggle"
+
+local specs = {}
+
+-- LaTeX support with vimtex
+if lang_toggle.is_enabled "latex" then
+  table.insert(specs, {
     "lervag/vimtex",
     ft = "tex",
     lazy = true,
@@ -43,15 +47,19 @@ return {
       -- Automatically open the quickfix window on warnings
       vim.g.vimtex_quickfix_open_on_warning = 1
     end,
-  },
+  })
+end
 
-  -- Typst support with live preview
-  {
+-- Typst support with live preview
+if lang_toggle.is_enabled "typst" then
+  table.insert(specs, {
     "chomosuke/typst-preview.nvim",
     ft = "typst",
     version = "1.*",
     build = function()
       require("typst-preview").update()
     end,
-  },
-}
+  })
+end
+
+return specs
