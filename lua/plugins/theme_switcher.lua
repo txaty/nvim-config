@@ -14,7 +14,6 @@ return {
 
       -- Create custom Telescope picker for themes
       local function open_theme_picker()
-        local telescope = require "telescope.builtin"
         local themes = theme.get_all_themes()
 
         local picker_opts = {
@@ -24,12 +23,6 @@ return {
           previewer = false,
         }
 
-        telescope.find_files(vim.tbl_extend("force", picker_opts, {
-          search_dirs = {},
-          results_handler = function() end,
-        }))
-
-        -- Simpler approach: use built-in theme picker with custom handling
         local pickers = require "telescope.pickers"
         local finders = require "telescope.finders"
         local actions = require "telescope.actions"
@@ -68,20 +61,13 @@ return {
       -- Create commands for theme switching
       vim.api.nvim_create_user_command("ThemeSwitch", open_theme_picker, {})
 
+      -- Smart dark/light switching (remembers last-used theme per category)
       vim.api.nvim_create_user_command("ThemeDark", function()
-        local theme_module = require "core.theme"
-        local dark_themes = theme_module.themes.dark
-        if #dark_themes > 0 then
-          theme_module.apply_theme(dark_themes[1])
-        end
+        require("core.theme").switch_to_dark()
       end, {})
 
       vim.api.nvim_create_user_command("ThemeLight", function()
-        local theme_module = require "core.theme"
-        local light_themes = theme_module.themes.light
-        if #light_themes > 0 then
-          theme_module.apply_theme(light_themes[1])
-        end
+        require("core.theme").switch_to_light()
       end, {})
 
       vim.api.nvim_create_user_command("ThemeTxaty", function()
@@ -94,18 +80,13 @@ return {
       -- Theme switching keymaps (using <leader>c* for colorscheme)
       map("n", "<leader>cc", open_theme_picker, { desc = "Color: choose colorscheme", noremap = true, silent = true })
 
+      -- Smart dark/light switching (uses last-used theme per category)
       map("n", "<leader>cd", function()
-        local dark = theme.get_themes_by_variant "dark"
-        if dark and #dark > 0 then
-          theme.apply_theme(dark[1])
-        end
+        require("core.theme").switch_to_dark()
       end, { desc = "Color: switch to dark theme", noremap = true, silent = true })
 
       map("n", "<leader>cl", function()
-        local light = theme.get_themes_by_variant "light"
-        if light and #light > 0 then
-          theme.apply_theme(light[1])
-        end
+        require("core.theme").switch_to_light()
       end, { desc = "Color: switch to light theme", noremap = true, silent = true })
 
       map("n", "<leader>cp", function()
