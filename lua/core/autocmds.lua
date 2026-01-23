@@ -192,3 +192,50 @@ vim.api.nvim_create_user_command("AIStatus", function()
   local icon = ai_toggle.is_enabled() and "✓" or "✗"
   vim.notify(string.format("%s AI features are %s", icon, status), vim.log.levels.INFO)
 end, { desc = "Show AI features status" })
+
+-- Language Toggle Commands
+local lang_toggle = require "core.lang_toggle"
+
+vim.api.nvim_create_user_command("LangEnable", function(opts)
+  lang_toggle.enable(opts.args)
+end, {
+  nargs = 1,
+  complete = function()
+    return lang_toggle.get_all_languages()
+  end,
+  desc = "Enable language support",
+})
+
+vim.api.nvim_create_user_command("LangDisable", function(opts)
+  lang_toggle.disable(opts.args)
+end, {
+  nargs = 1,
+  complete = function()
+    return lang_toggle.get_all_languages()
+  end,
+  desc = "Disable language support",
+})
+
+vim.api.nvim_create_user_command("LangToggle", function(opts)
+  lang_toggle.toggle(opts.args)
+end, {
+  nargs = 1,
+  complete = function()
+    return lang_toggle.get_all_languages()
+  end,
+  desc = "Toggle language support",
+})
+
+vim.api.nvim_create_user_command("LangStatus", function(opts)
+  if opts.args ~= "" then
+    lang_toggle.show_status(opts.args)
+  else
+    lang_toggle.show_all_status()
+  end
+end, {
+  nargs = "?",
+  complete = function()
+    return lang_toggle.get_all_languages()
+  end,
+  desc = "Show language support status",
+})

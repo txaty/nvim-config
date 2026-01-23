@@ -54,3 +54,7 @@ map("n", "<leader>bd", "<cmd>bdelete<CR>", { desc = "Buffer Close" })
 
 -- AI Feature Toggle
 map("n", "<leader>ai", "<cmd>AIToggle<cr>", { desc = "AI: Toggle AI features" })
+
+-- Language Support Panel (uses capital L to avoid conflict with <leader>l* LSP keymaps)
+map("n", "<leader>Lp", "<cmd>LangPanel<cr>", { desc = "Language: toggle panel" })
+map("n", "<leader>Ls", "<cmd>LangStatus<cr>", { desc = "Language: show status" })

@@ -16,6 +16,7 @@
 | `<leader>F*` | **Flutter** (language) | `<leader>FR` = run Flutter app |
 | `<leader>g*` | **Git** | `<leader>gs` = stage hunk |
 | `<leader>l*` | **LSP & Language** | `<leader>lr` = rename symbol |
+| `<leader>L*` | **Language Support** | `<leader>Lp` = toggle language panel |
 | `<leader>m*` | **Bookmarks & Markdown** | `<leader>ma` = toggle bookmark, `<leader>mo` = open in Typora |
 | `<leader>M*` | **Minimap** | `<leader>MM` = toggle minimap |
 | `<leader>n*` | **Notifications** | `<leader>nl` = show last message |
@@ -412,6 +413,44 @@
 
 ---
 
+## Language Support Panel (`<leader>L*`)
+
+**Note:** Uses capital `L` to avoid conflict with LSP keymaps (`<leader>l*`)
+
+| Keybinding | Description |
+|---|---|
+| `<leader>Lp` | Open language support panel (Telescope) |
+| `<leader>Ls` | Show language support status |
+
+### Panel Keybindings (Inside Telescope Picker)
+| Keybinding | Description |
+|---|---|
+| `<CR>` | Toggle selected language |
+| `e` | Enable selected language |
+| `d` | Disable selected language |
+
+### Commands
+| Command | Description |
+|---|---|
+| `:LangPanel` | Open language support panel |
+| `:LangToggle <lang>` | Toggle language support |
+| `:LangEnable <lang>` | Enable language support |
+| `:LangDisable <lang>` | Disable language support |
+| `:LangStatus [lang]` | Show status (all or specific) |
+
+**Supported Languages:**
+- `python` — pyright, ruff, black, isort, venv-selector
+- `rust` — rustaceanvim, crates.nvim, rust-analyzer
+- `go` — gopls, goimports, gofmt, delve
+- `web` — ts_ls, cssls, jsonls, prettier (JS/TS/HTML/CSS)
+- `flutter` — flutter-tools.nvim
+- `latex` — vimtex, latexindent
+- `typst` — typst-preview.nvim
+
+**Note:** Changes require Neovim restart to take effect. State is persisted across sessions.
+
+---
+
 ## Markdown (`<leader>mo`)
 
 **Note:** Only available in `.md` (markdown) files
@@ -525,6 +564,7 @@
 | `<leader>t*` | "T" for Testing - test runner operations across all languages |
 | `<leader>n*` | "N" for Notifications - Noice message/notification management |
 | `<leader>r*` | "R" for Remote - distant.nvim remote development operations |
+| `<leader>L*` | Capital "L" for Language support panel - avoids collision with LSP (`<leader>l*`) |
 
 ---
 

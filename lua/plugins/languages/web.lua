@@ -1,4 +1,9 @@
 -- Web development support (JavaScript, TypeScript, HTML, CSS)
+local lang_toggle = require "core.lang_toggle"
+if not lang_toggle.is_enabled "web" then
+  return {}
+end
+
 local lang = require "core.lang_utils"
 
 return {

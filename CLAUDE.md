@@ -43,6 +43,13 @@ luacheck lua/
 :AIEnable           " Enable AI features
 :AIDisable          " Disable AI features
 :AIStatus           " Show current AI status
+
+" Language Support Control (requires restart to apply)
+:LangPanel          " Open language support panel (Telescope)
+:LangToggle <lang>  " Toggle language support
+:LangEnable <lang>  " Enable language support
+:LangDisable <lang> " Disable language support
+:LangStatus [lang]  " Show language support status
 ```
 
 ## Critical Architectural Principles
@@ -83,6 +90,7 @@ init.lua (entry point)
   - `theme_txaty.lua` — Custom low-saturation ergonomic dark theme
   - `lang_utils.lua` — Shared utilities for language support (reduces boilerplate)
   - `ai_toggle.lua` — AI features toggle module (enables/disables Copilot)
+  - `lang_toggle.lua` — Language support toggle module (enables/disables language tooling)
 - `lua/plugins/` — Self-contained plugin specifications (all `.lua` files auto-imported)
   - `ui.lua` — nvim-tree, lualine, bufferline, vim-illuminate
   - `whichkey.lua` — Popup showing available keybindings
@@ -91,6 +99,7 @@ init.lua (entry point)
   - `lazygit.lua` — Terminal UI for git operations
   - `remote.lua` — Distant.nvim for VS Code-like remote development
   - `markdown.lua` — Markdown rendering and live preview
+  - `lang_panel.lua` — Telescope-based language support panel
   - `languages/` — Language-specific configurations (python, rust, go, web, flutter)
 - `lua/dap/` — Language-specific debug adapter configurations
 - `docs/` — User documentation (keymaps reference)
@@ -313,6 +322,9 @@ stylua lua/
   - `<leader>at` — Generate tests
   - `<leader>af` — Fix code
   - `<leader>ar` — Review code
+- `<leader>L*` — Language support panel (capital L to avoid LSP conflict)
+  - `<leader>Lp` — Open language support panel (Telescope)
+  - `<leader>Ls` — Show language support status
 - `<leader>q*` — Session/Quit (save, load, quit)
 - `<leader>x*` — Diagnostics/Trouble
 - `<leader>S` — Spectre (project-wide search and replace)
@@ -476,6 +488,16 @@ The nvim-tree auto-open logic is session-aware: if a session exists for the curr
 - State persists across sessions (saved to `$XDG_DATA_HOME/ai_config.json`)
 - **Requires Neovim restart** to apply changes
 - Useful for working on sensitive codebases or when Claude Code is sufficient
+
+**Language Support Toggle Feature**:
+- Open panel: `<leader>Lp` or `:LangPanel`
+- Toggle per-language: `:LangToggle python`, `:LangEnable rust`, `:LangDisable web`
+- Check status: `<leader>Ls` or `:LangStatus`
+- Supported languages: python, rust, go, web, flutter, latex, typst
+- When disabled, language plugins (LSP, formatter, linter, treesitter extensions) are not loaded
+- State persists across sessions (saved to `$XDG_DATA_HOME/language_config.json`)
+- **Requires Neovim restart** to apply changes
+- Useful for improving performance or focusing on specific language stacks
 
 ### Markdown & Documentation
 - **render-markdown.nvim** — Obsidian-style rendering for Markdown files
