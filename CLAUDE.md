@@ -24,6 +24,9 @@ nvim --headless '+checkhealth' +qa
 
 # Format Lua config files
 stylua lua/
+
+# Lint Lua config files
+luacheck lua/
 ```
 
 ### Inside Neovim
@@ -74,6 +77,12 @@ init.lua (entry point)
   - `theme_txaty.lua` — Custom low-saturation ergonomic dark theme
   - `lang_utils.lua` — Shared utilities for language support (reduces boilerplate)
 - `lua/plugins/` — Self-contained plugin specifications (all `.lua` files auto-imported)
+  - `ui.lua` — nvim-tree, lualine, bufferline, vim-illuminate
+  - `whichkey.lua` — Popup showing available keybindings
+  - `telescope.lua` — Fuzzy finder and file navigation
+  - `git.lua` — Gitsigns for git decorations and hunk operations
+  - `lazygit.lua` — Terminal UI for git operations
+  - `markdown.lua` — Markdown rendering and live preview
   - `languages/` — Language-specific configurations (python, rust, go, web, flutter)
 - `lua/dap/` — Language-specific debug adapter configurations
 - `docs/` — User documentation (keymaps reference)
@@ -274,12 +283,19 @@ stylua lua/
 - `<leader>d*` — Debug (breakpoints, step, REPL)
 - `<leader>t*` — Testing (nearest, file, suite)
 - `<leader>p*` — Python (venv selector)
-- `<leader>c*` — Theme/Code (theme switching, AI chat, Flutter commands)
+- `<leader>c*` — Theme/Color switching
   - `<leader>cc` — Choose theme (Telescope picker)
   - `<leader>cd` — Switch to dark theme
   - `<leader>cl` — Switch to light theme
   - `<leader>cp` — Switch to txaty custom theme
   - `<leader>cn/cN` — Next/Previous theme
+- `<leader>a*` — AI assistance (Copilot Chat)
+  - `<leader>aa` — Toggle AI chat
+  - `<leader>aq` — Quick question
+  - `<leader>ae` — Explain code
+  - `<leader>at` — Generate tests
+  - `<leader>af` — Fix code
+  - `<leader>ar` — Review code
 - `<leader>q*` — Session/Quit (save, load, quit)
 - `<leader>x*` — Diagnostics/Trouble
 - `<leader>S` — Spectre (project-wide search and replace)
@@ -320,13 +336,15 @@ The configuration features a seamless theme switching system with 21+ themes:
 ### Usage
 ```vim
 :ThemeSwitch      " Open Telescope picker
-<leader>cc        " Choose theme interactively
-<leader>cd        " Switch to first dark theme
-<leader>cl        " Switch to first light theme
-<leader>cp        " Switch to txaty custom theme
-<leader>cn        " Next theme
-<leader>cN        " Previous theme
+<leader>cc        " Choose theme interactively (Telescope)
+<leader>cd        " Switch to first dark theme (quick)
+<leader>cl        " Switch to first light theme (quick)
+<leader>cp        " Switch to txaty custom theme (quick)
+<leader>cn        " Next theme (cycle forward)
+<leader>cN        " Previous theme (cycle backward)
 ```
+
+Note: Theme keybindings use `<leader>c*` prefix (for "color"). AI chat uses `<leader>a*` prefix.
 
 ## Session Management
 
@@ -415,8 +433,8 @@ The nvim-tree auto-open logic is session-aware: if a session exists for the curr
 - **gitsigns.nvim** — Git decorations and hunk operations
 
 ### AI Assistance
-- **copilot.lua** — GitHub Copilot integration with ghost text completion
-- **CopilotChat.nvim** — Chat interface for Copilot (`<leader>cc`)
+- **copilot.lua** — GitHub Copilot integration with ghost text completion (`<C-l>` to accept)
+- **CopilotChat.nvim** — Chat interface for Copilot (`<leader>aa` to toggle, `<leader>aq/ae/at/af/ar` for actions)
 
 ### Markdown & Documentation
 - **render-markdown.nvim** — Obsidian-style rendering for Markdown files

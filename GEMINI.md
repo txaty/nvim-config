@@ -53,6 +53,11 @@ This repository contains a custom, self-maintained Neovim configuration. It uses
     *   `cmp.lua`: nvim-cmp completion configuration.
     *   `treesitter.lua`: Treesitter setup.
     *   `ui.lua`: nvim-tree, lualine, bufferline, vim-illuminate.
+    *   `whichkey.lua`: Popup showing available keybindings.
+    *   `telescope.lua`: Fuzzy finder and file navigation.
+    *   `git.lua`: Gitsigns for git decorations and hunk operations.
+    *   `lazygit.lua`: Terminal UI for git operations.
+    *   `markdown.lua`: Markdown rendering and live preview.
     *   `colorscheme.lua`: 21+ theme options (10 dark, 10 light, 1 custom).
     *   `theme_switcher.lua`: Telescope-based interactive theme picker.
     *   `session.lua`: persistence.nvim with auto-save/auto-restore.
@@ -112,7 +117,7 @@ Tools (LSP, Formatters, Linters, DAP) are managed by Mason.
 *   **Git**: Use `lazygit` (`<leader>gg`) for staging, committing, amending, rebasing.
 *   **AI**:
     *   Completion: GitHub Copilot (ghost text). Accept with `<C-l>`.
-    *   Chat: `<leader>cc` to toggle chat. `<leader>ce` to explain, `<leader>cf` to fix.
+    *   Chat: `<leader>aa` to toggle chat. `<leader>aq` (quick question), `<leader>ae` (explain), `<leader>at` (tests), `<leader>af` (fix), `<leader>ar` (review).
 *   **Navigation**:
     *   Flash: Press `s` to jump anywhere. Press `S` to select Treesitter nodes.
     *   Telescope: `<leader>ff` (find files), `<leader>fg` (live grep), `<leader>fb` (buffers).
@@ -121,12 +126,13 @@ Tools (LSP, Formatters, Linters, DAP) are managed by Mason.
     *   Statusline: lualine (auto theme).
     *   Bufferline: Navigate buffers with `<Tab>` / `<S-Tab>` or `<leader>x` to close.
     *   Noice History: `<leader>nh`. Dismiss Notifications: `<leader>nd`.
-*   **Theme Switching**:
+*   **Theme Switching** (uses `<leader>c*` prefix for "color"):
     *   Choose theme: `<leader>cc` (Telescope picker) or `:ThemeSwitch`
     *   Quick switch: `<leader>cd` (dark), `<leader>cl` (light), `<leader>cp` (txaty custom)
     *   Cycle themes: `<leader>cn` (next), `<leader>cN` (previous)
     *   21+ themes available: 10 dark, 10 light, 1 custom txaty (low-saturation ergonomic)
     *   Preference persisted to `$XDG_DATA_HOME/theme_config.json`
+    *   Note: AI chat uses separate `<leader>a*` prefix to avoid conflicts
 *   **Session Management**:
     *   Auto-save: Sessions automatically saved on VimLeavePre
     *   Auto-restore: Automatically restored when opening Neovim without arguments
