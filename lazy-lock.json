@@ -1,5 +1,4 @@
 {
-  "CopilotChat.nvim": { "branch": "main", "commit": "21bdecb25aa72119d11d7fc08c7e0ce323f1b540" },
   "LuaSnip": { "branch": "master", "commit": "3732756842a2f7e0e76a7b0487e9692072857277" },
   "ayu": { "branch": "master", "commit": "01faacb4cb76e8cf72ad9858c581d80876260ab3" },
   "bookmarks.nvim": { "branch": "main", "commit": "0540d52ba64d0ec7677ec1ef14b3624c95a2aaba" },
@@ -10,9 +9,9 @@
   "cmp-path": { "branch": "main", "commit": "c642487086dbd9a93160e1679a1327be111cbc25" },
   "cmp_luasnip": { "branch": "master", "commit": "98d9cb5c2c38532bd9bdb481067b20fea8f32e90" },
   "conform.nvim": { "branch": "master", "commit": "5ac2bb57a9096f00ca50e1a3c46020d5930319b8" },
-  "copilot.lua": { "branch": "master", "commit": "0ab400d547814b04b39a069208ff7b40ab22dfb5" },
   "cyberdream.nvim": { "branch": "main", "commit": "b3b3fca9a1c7b667a3bebd86d4b06e469e778cb7" },
   "diffview.nvim": { "branch": "main", "commit": "4516612fe98ff56ae0415a259ff6361a89419b0a" },
+  "distant.nvim": { "branch": "v0.3", "commit": "67d6b066e8490725718b79f643966f4eafc7da3c" },
   "dracula": { "branch": "master", "commit": "d4b0823100c702af127cba8dd5595a8f599041ec" },
   "dressing.nvim": { "branch": "master", "commit": "2d7c2db2507fa3c4956142ee607431ddb2828639" },
   "flash.nvim": { "branch": "main", "commit": "fcea7ff883235d9024dc41e638f164a450c14ca2" },

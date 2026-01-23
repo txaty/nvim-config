@@ -89,6 +89,7 @@ init.lua (entry point)
   - `telescope.lua` — Fuzzy finder and file navigation
   - `git.lua` — Gitsigns for git decorations and hunk operations
   - `lazygit.lua` — Terminal UI for git operations
+  - `remote.lua` — Distant.nvim for VS Code-like remote development
   - `markdown.lua` — Markdown rendering and live preview
   - `languages/` — Language-specific configurations (python, rust, go, web, flutter)
 - `lua/dap/` — Language-specific debug adapter configurations
@@ -290,6 +291,14 @@ stylua lua/
 - `<leader>d*` — Debug (breakpoints, step, REPL)
 - `<leader>t*` — Testing (nearest, file, suite)
 - `<leader>p*` — Python (venv selector)
+- `<leader>r*` — Remote development (distant.nvim)
+  - `<leader>rc` — Connect to remote server
+  - `<leader>rd` — Disconnect from remote
+  - `<leader>ro` — Open remote directory/file
+  - `<leader>rf` — Find files on remote
+  - `<leader>rg` — Live grep on remote
+  - `<leader>rs` — System info
+  - `<leader>rS` — Shell on remote
 - `<leader>c*` — Theme/Color switching
   - `<leader>cc` — Choose theme (Telescope picker)
   - `<leader>cd` — Switch to dark theme
@@ -439,6 +448,22 @@ The nvim-tree auto-open logic is session-aware: if a session exists for the curr
 ### Git Integration
 - **lazygit.nvim** — Terminal UI for git (`<leader>gg`)
 - **gitsigns.nvim** — Git decorations and hunk operations
+
+### Remote Development
+- **distant.nvim** — Remote development like VS Code Remote (`<leader>r*`)
+  - Run Neovim locally, execute files/LSP/formatters on remote server
+  - SSH-based with compression (zstd) for performance
+  - Telescope integration for remote file operations (`<leader>rf`, `<leader>rg`)
+  - Automatic LSP attachment for remote buffers
+  - Connection status shown in lualine with 󰢹 indicator
+  - Connection pooling for faster subsequent operations
+  - Seamless integration with all existing features (git, DAP, formatting, etc.)
+
+**Usage:**
+1. Connect: `<leader>rc` → enter SSH connection (e.g., `ssh://user@hostname`)
+2. Open remote: `<leader>ro` → navigate to remote directory
+3. Edit files: All operations work transparently on remote
+4. Disconnect: `<leader>rd`
 
 ### AI Assistance
 - **copilot.lua** — GitHub Copilot integration with ghost text completion (`<C-l>` to accept)

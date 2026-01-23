@@ -21,6 +21,7 @@
 | `<leader>n*` | **Notifications** | `<leader>nl` = show last message |
 | `<leader>p*` | **Python** (venv) | `<leader>pv` = select virtualenv |
 | `<leader>q*` | **Quit/Session** | `<leader>qq` = quit window |
+| `<leader>r*` | **Remote Development** | `<leader>rc` = connect to server |
 | `<leader>s*` | **Search & Replace** | `<leader>S` = Spectre search/replace |
 | `<leader>S*` | **Spectre** | `<leader>sw` = search current word |
 | `<leader>t*` | **Testing** | `<leader>tn` = run nearest test |
@@ -77,6 +78,40 @@
 | Keybinding | Description |
 |---|---|
 | `<leader>fs` | Save file |
+
+---
+
+## Remote Development (`<leader>r*`)
+
+**Distant.nvim - Remote development like VS Code Remote**
+
+### Connection Management
+| Keybinding | Description |
+|---|---|
+| `<leader>rc` | Connect to remote server via SSH |
+| `<leader>rd` | Disconnect from remote server |
+| `<leader>ro` | Open remote directory/file |
+| `<leader>rs` | Show remote system info |
+| `<leader>rS` | Open shell on remote server |
+
+### Remote File Operations
+| Keybinding | Description |
+|---|---|
+| `<leader>rf` | Find files on remote (Telescope) |
+| `<leader>rg` | Live grep on remote (Telescope) |
+
+**How it works:**
+- Neovim runs locally, but files, LSP, and formatters execute on the remote server
+- Supports SSH connections with compression for better performance
+- Automatic LSP attachment when opening remote files
+- Remote connection status shown in lualine statusline (󰢹 indicator)
+- All file operations work transparently with remote paths
+
+**Usage example:**
+1. Press `<leader>rc` → enter SSH connection string (e.g., `ssh://user@hostname`)
+2. Press `<leader>ro` → open remote directory
+3. Use `<leader>rf` and `<leader>rg` to navigate remote files
+4. Edit files normally - LSP, formatting, and all features work on remote
 
 ---
 
@@ -489,6 +524,7 @@
 | `<leader>d*` | "D" for Debug - DAP operations for all supported languages |
 | `<leader>t*` | "T" for Testing - test runner operations across all languages |
 | `<leader>n*` | "N" for Notifications - Noice message/notification management |
+| `<leader>r*` | "R" for Remote - distant.nvim remote development operations |
 
 ---
 
