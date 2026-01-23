@@ -5,38 +5,44 @@ return {
     opts = {
       delay = 200,
       icons = {
-        breadcrumb = ">",
-        separator = "->",
+        breadcrumb = "»",
+        separator = "→",
         group = "+",
+        mappings = true,
       },
       win = {
         border = "rounded",
+        padding = { 1, 2 },
+      },
+      layout = {
+        spacing = 3,
       },
     },
     config = function(_, opts)
       local wk = require "which-key"
       wk.setup(opts)
 
-      -- Register key groups
+      -- Register key groups with icons for visual consistency
       wk.add {
-        { "<leader>a", group = "AI & Copilot" },
-        { "<leader>b", group = "Buffers" },
-        { "<leader>c", group = "Color/Theme" },
-        { "<leader>d", group = "Debug" },
-        { "<leader>f", group = "Files & Find" },
-        { "<leader>F", group = "Flutter" },
-        { "<leader>g", group = "Git" },
-        { "<leader>l", group = "LSP & Language" },
-        { "<leader>m", group = "Bookmarks & Markdown" },
-        { "<leader>M", group = "Minimap" },
-        { "<leader>n", group = "Notifications" },
-        { "<leader>p", group = "Python" },
-        { "<leader>q", group = "Quit/Session" },
-        { "<leader>s", group = "Search" },
-        { "<leader>S", group = "Spectre" },
-        { "<leader>t", group = "Testing" },
-        { "<leader>w", group = "Windows" },
-        { "<leader>x", group = "Diagnostics" },
+        { "<leader>a", group = "AI", icon = "" },
+        { "<leader>b", group = "Buffers", icon = "" },
+        { "<leader>c", group = "Colors", icon = "" },
+        { "<leader>d", group = "Debug", icon = "" },
+        { "<leader>f", group = "Find", icon = "" },
+        { "<leader>F", group = "Flutter", icon = "" },
+        { "<leader>g", group = "Git", icon = "" },
+        { "<leader>l", group = "LSP", icon = "" },
+        { "<leader>m", group = "Marks", icon = "" },
+        { "<leader>M", group = "Minimap", icon = "" },
+        { "<leader>n", group = "Notify", icon = "" },
+        { "<leader>p", group = "Python", icon = "" },
+        { "<leader>q", group = "Session", icon = "" },
+        { "<leader>r", group = "Remote", icon = "󰢹" },
+        { "<leader>s", group = "Search", icon = "" },
+        { "<leader>S", group = "Spectre", icon = "" },
+        { "<leader>t", group = "Test", icon = "" },
+        { "<leader>w", group = "Windows", icon = "" },
+        { "<leader>x", group = "Diagnostics", icon = "" },
       }
     end,
   },

@@ -62,3 +62,16 @@ opt.signcolumn = "yes"
 opt.foldlevel = 99
 opt.foldmethod = "expr"
 opt.foldexpr = "nvim_treesitter#foldexpr()"
+
+--------------------------------------
+-- UI Polish
+--------------------------------------
+opt.cmdheight = 0 -- Hide cmdline when not in use (works with noice.nvim)
+opt.scrolloff = 8 -- Keep 8 lines visible above/below cursor
+opt.sidescrolloff = 8 -- Keep 8 columns visible left/right of cursor
+opt.pumheight = 10 -- Limit popup menu height
+opt.confirm = true -- Confirm before closing unsaved buffers
+opt.wrap = false -- Disable line wrap by default
+opt.linebreak = true -- Wrap at word boundaries when wrap is enabled
+opt.list = true -- Show invisible characters
+opt.listchars = { tab = "» ", trail = "·", nbsp = "␣" } -- Subtle indicators
