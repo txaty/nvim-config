@@ -417,13 +417,22 @@ M.registry = {
     background = "light",
   },
 
-  -- === Custom Theme ===
+  -- === Custom Themes ===
   txaty = {
     variant = "dark",
-    description = "Custom: Low-saturation pure dark ergonomic theme",
+    description = "Custom: Low-saturation ergonomic dark theme",
     plugin_name = nil,
     colorscheme = nil,
     custom = true,
+    custom_variant = "dark",
+  },
+  ["txaty-light"] = {
+    variant = "light",
+    description = "Custom: Low-saturation ergonomic light theme",
+    plugin_name = nil,
+    colorscheme = nil,
+    custom = true,
+    custom_variant = "light",
   },
 }
 
@@ -526,15 +535,6 @@ end
 -- Refresh UI components after theme change
 local function refresh_ui()
   vim.schedule(function()
-    -- Refresh bufferline if available
-    local ok_bufferline, _ = pcall(require, "bufferline")
-    if ok_bufferline then
-      local config = require "bufferline.config"
-      if config and config.apply then
-        pcall(config.apply)
-      end
-    end
-
     -- Refresh lualine if available
     local ok_lualine, lualine = pcall(require, "lualine")
     if ok_lualine and lualine.refresh then
@@ -546,6 +546,9 @@ local function refresh_ui()
     if ok_nvimtree and nvimtree_api.tree and nvimtree_api.tree.reload then
       pcall(nvimtree_api.tree.reload)
     end
+
+    -- Force redraw tabline (bufferline handles its own refresh via ColorScheme autocmd)
+    vim.cmd "redrawtabline"
   end)
 end
 
@@ -595,9 +598,10 @@ local function apply_theme_internal(theme_name, should_save)
     vim.cmd "syntax reset"
   end
 
-  -- Handle custom theme (txaty)
+  -- Handle custom theme (txaty and txaty-light)
   if info.custom then
-    require("core.theme_txaty").apply()
+    local custom_variant = info.custom_variant or "dark"
+    require("core.theme_txaty").apply(custom_variant)
   else
     -- Set global variables if specified
     if info.global then
@@ -706,7 +710,9 @@ function M.get_all_themes()
   for _, theme in ipairs(M.themes.light) do
     table.insert(all_themes, theme)
   end
-  table.insert(all_themes, "txaty") -- Add custom theme
+  -- Add custom themes
+  table.insert(all_themes, "txaty")
+  table.insert(all_themes, "txaty-light")
   return all_themes
 end
 

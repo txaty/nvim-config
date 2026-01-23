@@ -106,7 +106,7 @@ return {
   -- Bufferline (Tabs)
   {
     "akinsho/bufferline.nvim",
-    event = { "BufReadPost", "BufNewFile" },
+    event = "VeryLazy", -- Load later to avoid coroutine conflicts with nvim-tree
     dependencies = { "nvim-tree/nvim-web-devicons" },
     version = "*",
     opts = {
@@ -133,9 +133,6 @@ return {
         end,
       },
     },
-    config = function(_, opts)
-      require("bufferline").setup(opts)
-    end,
   },
 
   -- Icons
