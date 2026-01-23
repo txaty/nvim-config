@@ -18,6 +18,11 @@
     - `cmp.lua` — nvim-cmp completion setup.
     - `treesitter.lua` — syntax highlighting and parsing.
     - `ui.lua` — nvim-tree, lualine, bufferline, vim-illuminate.
+    - `whichkey.lua` — Popup showing available keybindings.
+    - `telescope.lua` — Fuzzy finder and file navigation.
+    - `git.lua` — Gitsigns for git decorations and hunk operations.
+    - `lazygit.lua` — Terminal UI for git operations.
+    - `markdown.lua` — Markdown rendering and live preview.
     - `colorscheme.lua` — theme options (21+ themes: dark, light, custom).
     - `theme_switcher.lua` — Telescope-based theme picker.
     - `session.lua` — persistence.nvim with auto-save/auto-restore.
@@ -40,7 +45,7 @@
 - Sync plugins: `nvim --headless "+lua require('lazy').sync()" +qa`.
 - Update Treesitter parsers: `nvim --headless '+TSUpdateSync' +qa`.
 - Verify tooling: inside Neovim run `:Mason`, `:LspInfo`, `:ConformInfo`, and test with sample files.
-- Theme testing: `:ThemeSwitch`, `<leader>cc` (picker), `<leader>cn/cN` (cycle themes).
+- Theme testing: `:ThemeSwitch`, `<leader>cc` (picker), `<leader>cd/cl/cp` (quick switch), `<leader>cn/cN` (cycle themes).
 
 ## Coding Style & Naming Conventions
 - Lua: 2-space indent; avoid globals; prefer local helpers.
