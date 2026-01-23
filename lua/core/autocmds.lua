@@ -73,55 +73,55 @@ autocmd("VimEnter", {
   nested = true,
   callback = function()
     local argc = vim.fn.argc()
-    debug_log("[DEBUG] SessionAutoRestore fired, argc = " .. argc)
+    debug_log("[DEBUG] SessionAutoRestore fired, argc = " .. argc, true)
 
     -- Check what the arguments are
     local should_restore = false
     if argc == 0 then
-      debug_log "[DEBUG] No arguments, should restore session"
+      debug_log("[DEBUG] No arguments, should restore session", true)
       should_restore = true
     elseif argc == 1 then
       -- If there's one argument, check if it's a directory or empty
       local arg = vim.fn.argv(0)
-      debug_log("[DEBUG] Single argument detected: '" .. tostring(arg) .. "'")
+      debug_log("[DEBUG] Single argument detected: '" .. tostring(arg) .. "'", true)
 
       -- If the argument is empty, a directory, or matches current directory, restore session
       if arg == "" or arg == "." or vim.fn.isdirectory(arg) == 1 then
-        debug_log "[DEBUG] Argument is directory or empty, should restore session"
+        debug_log("[DEBUG] Argument is directory or empty, should restore session", true)
         should_restore = true
       else
-        debug_log("[DEBUG] Argument is a file: " .. arg .. ", skipping restore")
+        debug_log("[DEBUG] Argument is a file: " .. arg .. ", skipping restore", true)
       end
     else
-      debug_log("[DEBUG] Multiple arguments (" .. argc .. "), skipping restore")
+      debug_log("[DEBUG] Multiple arguments (" .. argc .. "), skipping restore", true)
     end
 
     -- Only restore session if appropriate
     if should_restore then
-      debug_log "[DEBUG] Attempting to load persistence plugin..."
+      debug_log("[DEBUG] Attempting to load persistence plugin...", true)
       local ok, persistence = pcall(require, "persistence")
 
       if not ok then
-        debug_log("[DEBUG] Failed to load persistence: " .. tostring(persistence))
+        debug_log("[DEBUG] Failed to load persistence: " .. tostring(persistence), true)
         return
       end
 
-      debug_log "[DEBUG] Persistence plugin loaded successfully"
+      debug_log("[DEBUG] Persistence plugin loaded successfully", true)
 
       -- Check if session file exists
       local session_file = persistence.current()
-      debug_log("[DEBUG] Session file path: " .. session_file)
+      debug_log("[DEBUG] Session file path: " .. session_file, true)
 
       if vim.fn.filereadable(session_file) == 1 then
-        debug_log "[DEBUG] Session file exists, loading..."
+        debug_log("[DEBUG] Session file exists, loading...", true)
         local load_ok, err = pcall(persistence.load)
         if not load_ok then
-          debug_log("[DEBUG] Failed to load session: " .. tostring(err))
+          debug_log("[DEBUG] Failed to load session: " .. tostring(err), true)
         else
-          debug_log "[DEBUG] Session loaded successfully!"
+          debug_log("[DEBUG] Session loaded successfully!", true)
         end
       else
-        debug_log "[DEBUG] No session file found at that path"
+        debug_log("[DEBUG] No session file found at that path", true)
       end
     end
   end,
@@ -157,19 +157,19 @@ debug_log("[DEBUG] Registering SessionAutoSave autocmd...", true)
 autocmd("VimLeavePre", {
   group = vim.api.nvim_create_augroup("SessionAutoSave", { clear = true }),
   callback = function()
-    debug_log "[DEBUG] VimLeavePre: Attempting to save session..."
+    debug_log("[DEBUG] VimLeavePre: Attempting to save session...", true)
     local ok, persistence = pcall(require, "persistence")
     if ok then
       local session_file = persistence.current()
-      debug_log("[DEBUG] Saving session to: " .. session_file)
+      debug_log("[DEBUG] Saving session to: " .. session_file, true)
       local save_ok, err = pcall(persistence.save)
       if not save_ok then
-        debug_log("[DEBUG] Failed to save: " .. tostring(err))
+        debug_log("[DEBUG] Failed to save: " .. tostring(err), true)
       else
-        debug_log "[DEBUG] Session saved!"
+        debug_log("[DEBUG] Session saved!", true)
       end
     else
-      debug_log "[DEBUG] Failed to load persistence plugin"
+      debug_log("[DEBUG] Failed to load persistence plugin", true)
     end
   end,
 })
