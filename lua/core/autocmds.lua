@@ -135,17 +135,24 @@ autocmd("VimEnter", {
     -- directory?
     local directory = vim.fn.isdirectory(data.file) == 1
 
+    -- Helper to open nvim-tree safely (deferred to avoid coroutine conflicts with bufferline)
+    local function open_tree(opts)
+      vim.schedule(function()
+        require("nvim-tree.api").tree.open(opts)
+      end)
+    end
+
     -- if no file is provided, open the tree
     -- if a directory is provided, open the tree and change directory
     if directory then
       vim.cmd.cd(data.file)
-      require("nvim-tree.api").tree.open()
+      open_tree()
       return
     end
 
     -- if a real file is provided, open the tree but verify the file is focused
     if real_file then
-      require("nvim-tree.api").tree.open { focus = false, find_file = true }
+      open_tree { focus = false, find_file = true }
       return
     end
 
@@ -160,7 +167,7 @@ autocmd("VimEnter", {
 
       -- Only open nvim-tree if no session exists
       if not has_session then
-        require("nvim-tree.api").tree.open()
+        open_tree()
       end
     end
   end,
