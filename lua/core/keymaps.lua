@@ -38,6 +38,8 @@ map("n", "<leader>fr", "<cmd>Telescope oldfiles<cr>", { desc = "Files: recent fi
 map("n", "<leader>fh", "<cmd>Telescope help_tags<cr>", { desc = "Files: help tags" })
 
 -- File Explorer (NvimTree)
+-- Intentional aliases: both keys toggle nvim-tree for different workflows
+-- <leader>fe follows Files group convention, <C-n> is quick toggle
 map("n", "<leader>fe", "<cmd>NvimTreeToggle<cr>", { desc = "Files: toggle explorer" })
 map("n", "<C-n>", "<cmd>NvimTreeToggle<cr>", { desc = "Files: toggle explorer" })
 

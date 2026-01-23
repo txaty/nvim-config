@@ -62,17 +62,4 @@ function M.extend_lspconfig(servers_map)
   }
 end
 
--- Create keymaps helper for reducing boilerplate
--- @param prefix string: Keymap prefix (e.g., "<leader>r")
--- @param mappings table: Map of key suffix to {rhs, desc}
--- @param base_opts table: Base options for all keymaps
-function M.create_keymaps(prefix, mappings, base_opts)
-  base_opts = base_opts or { noremap = true, silent = true }
-  for key, spec in pairs(mappings) do
-    local lhs = prefix .. key
-    local rhs, desc = spec[1], spec[2]
-    vim.keymap.set("n", lhs, rhs, vim.tbl_extend("force", base_opts, { desc = desc }))
-  end
-end
-
 return M
