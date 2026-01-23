@@ -58,10 +58,9 @@ opt.whichwrap:append "<>[]hl"
 -- Keep signcolumn on by default
 opt.signcolumn = "yes"
 
--- Folding
+-- Folding (foldmethod/foldexpr set by treesitter after it loads)
 opt.foldlevel = 99
-opt.foldmethod = "expr"
-opt.foldexpr = "nvim_treesitter#foldexpr()"
+opt.foldmethod = "manual"
 
 --------------------------------------
 -- UI Polish

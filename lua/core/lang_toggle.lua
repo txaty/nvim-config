@@ -7,6 +7,9 @@ local M = {}
 -- Path to store language toggle state
 local config_path = vim.fn.stdpath "data" .. "/language_config.json"
 
+-- Cache for config (avoids repeated file I/O - called 7x at startup)
+local cached_config = nil
+
 -- Language registry with metadata
 M.languages = {
   python = { name = "Python", description = "pyright, ruff, black, isort, venv-selector" },
@@ -18,19 +21,31 @@ M.languages = {
   typst = { name = "Typst", description = "typst-preview.nvim" },
 }
 
---- Load config from disk
+--- Invalidate the cache (called after state changes)
+local function invalidate_cache()
+  cached_config = nil
+end
+
+--- Load config from disk (with caching)
 --- @return table<string, boolean>
 local function load_config()
+  if cached_config ~= nil then
+    return cached_config.languages or {}
+  end
+
   local ok, content = pcall(vim.fn.readfile, config_path)
   if not ok then
+    cached_config = {}
     return {}
   end
 
   local ok2, config = pcall(vim.json.decode, table.concat(content, "\n"))
   if not ok2 then
+    cached_config = {}
     return {}
   end
 
+  cached_config = config
   return config.languages or {}
 end
 
@@ -40,6 +55,7 @@ local function save_config(languages)
   local config = { languages = languages }
   local encoded = vim.json.encode(config)
   vim.fn.writefile({ encoded }, config_path)
+  invalidate_cache()
 end
 
 --- Check if a language is enabled

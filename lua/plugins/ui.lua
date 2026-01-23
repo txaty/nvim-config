@@ -2,6 +2,10 @@ return {
   -- File Explorer
   {
     "nvim-tree/nvim-tree.lua",
+    cmd = { "NvimTreeToggle", "NvimTreeOpen", "NvimTreeFocus", "NvimTreeFindFile" },
+    keys = {
+      { "<C-n>", "<cmd>NvimTreeToggle<cr>", desc = "Toggle file explorer" },
+    },
     opts = {
       filters = { dotfiles = false },
       disable_netrw = true,
@@ -102,7 +106,7 @@ return {
   -- Bufferline (Tabs)
   {
     "akinsho/bufferline.nvim",
-    event = "VeryLazy",
+    event = { "BufReadPost", "BufNewFile" },
     dependencies = { "nvim-tree/nvim-web-devicons" },
     version = "*",
     opts = {
