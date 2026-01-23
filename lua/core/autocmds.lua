@@ -232,3 +232,24 @@ autocmd("VimEnter", {
     end
   end,
 })
+
+-- AI Toggle Commands
+local ai_toggle = require "core.ai_toggle"
+
+vim.api.nvim_create_user_command("AIToggle", function()
+  ai_toggle.toggle()
+end, { desc = "Toggle AI features (Copilot)" })
+
+vim.api.nvim_create_user_command("AIEnable", function()
+  ai_toggle.enable()
+end, { desc = "Enable AI features" })
+
+vim.api.nvim_create_user_command("AIDisable", function()
+  ai_toggle.disable()
+end, { desc = "Disable AI features" })
+
+vim.api.nvim_create_user_command("AIStatus", function()
+  local status = ai_toggle.status()
+  local icon = ai_toggle.is_enabled() and "✓" or "✗"
+  vim.notify(string.format("%s AI features are %s", icon, status), vim.log.levels.INFO)
+end, { desc = "Show AI features status" })
