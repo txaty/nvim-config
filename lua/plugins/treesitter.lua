@@ -46,6 +46,9 @@ return {
     },
     config = function(_, opts)
       require("nvim-treesitter.configs").setup(opts)
+      -- Set folding after treesitter loads (deferred from options.lua for faster startup)
+      vim.opt.foldmethod = "expr"
+      vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
     end,
   },
 }

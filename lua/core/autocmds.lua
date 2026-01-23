@@ -152,17 +152,11 @@ autocmd("VimEnter", {
     -- Fallback: open tree if no args provided (dashboard replacement)
     -- Skip if session is being auto-restored
     if data.file == "" and vim.bo.buftype == "" then
-      -- Check if persistence.nvim will restore a session
-      -- It uses current dir + branch name for git repos
+      -- Check if persistence.nvim will restore a session (direct file check for performance)
       local session_dir = vim.fn.stdpath "state" .. "/sessions/"
-      local cwd_pattern = vim.fn.getcwd():gsub("/", "%%")
-
-      -- Check for session file (with or without branch name)
-      local has_session = false
-      local session_files = vim.fn.glob(session_dir .. cwd_pattern .. "*.vim", false, true)
-      if #session_files > 0 then
-        has_session = true
-      end
+      local cwd_escaped = vim.fn.getcwd():gsub("/", "%%")
+      local session_file = session_dir .. cwd_escaped .. ".vim"
+      local has_session = vim.fn.filereadable(session_file) == 1
 
       -- Only open nvim-tree if no session exists
       if not has_session then
@@ -172,61 +166,58 @@ autocmd("VimEnter", {
   end,
 })
 
--- AI Toggle Commands
-local ai_toggle = require "core.ai_toggle"
-
+-- AI Toggle Commands (lazy-loaded for faster startup)
 vim.api.nvim_create_user_command("AIToggle", function()
-  ai_toggle.toggle()
+  require("core.ai_toggle").toggle()
 end, { desc = "Toggle AI features (Copilot)" })
 
 vim.api.nvim_create_user_command("AIEnable", function()
-  ai_toggle.enable()
+  require("core.ai_toggle").enable()
 end, { desc = "Enable AI features" })
 
 vim.api.nvim_create_user_command("AIDisable", function()
-  ai_toggle.disable()
+  require("core.ai_toggle").disable()
 end, { desc = "Disable AI features" })
 
 vim.api.nvim_create_user_command("AIStatus", function()
-  local status = ai_toggle.status()
-  local icon = ai_toggle.is_enabled() and "✓" or "✗"
-  vim.notify(string.format("%s AI features are %s", icon, status), vim.log.levels.INFO)
+  local ai = require "core.ai_toggle"
+  local icon = ai.is_enabled() and "✓" or "✗"
+  vim.notify(string.format("%s AI features are %s", icon, ai.status()), vim.log.levels.INFO)
 end, { desc = "Show AI features status" })
 
--- Language Toggle Commands
-local lang_toggle = require "core.lang_toggle"
-
+-- Language Toggle Commands (lazy-loaded for faster startup)
 vim.api.nvim_create_user_command("LangEnable", function(opts)
-  lang_toggle.enable(opts.args)
+  require("core.lang_toggle").enable(opts.args)
 end, {
   nargs = 1,
   complete = function()
-    return lang_toggle.get_all_languages()
+    return require("core.lang_toggle").get_all_languages()
   end,
   desc = "Enable language support",
 })
 
 vim.api.nvim_create_user_command("LangDisable", function(opts)
-  lang_toggle.disable(opts.args)
+  require("core.lang_toggle").disable(opts.args)
 end, {
   nargs = 1,
   complete = function()
-    return lang_toggle.get_all_languages()
+    return require("core.lang_toggle").get_all_languages()
   end,
   desc = "Disable language support",
 })
 
 vim.api.nvim_create_user_command("LangToggle", function(opts)
-  lang_toggle.toggle(opts.args)
+  require("core.lang_toggle").toggle(opts.args)
 end, {
   nargs = 1,
   complete = function()
-    return lang_toggle.get_all_languages()
+    return require("core.lang_toggle").get_all_languages()
   end,
   desc = "Toggle language support",
 })
 
 vim.api.nvim_create_user_command("LangStatus", function(opts)
+  local lang_toggle = require "core.lang_toggle"
   if opts.args ~= "" then
     lang_toggle.show_status(opts.args)
   else
@@ -235,7 +226,7 @@ vim.api.nvim_create_user_command("LangStatus", function(opts)
 end, {
   nargs = "?",
   complete = function()
-    return lang_toggle.get_all_languages()
+    return require("core.lang_toggle").get_all_languages()
   end,
   desc = "Show language support status",
 })

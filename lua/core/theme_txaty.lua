@@ -275,7 +275,4 @@ function M.apply()
   apply_theme()
 end
 
--- Apply on first load
-apply_theme()
-
 return M
