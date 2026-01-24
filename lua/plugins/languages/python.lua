@@ -35,7 +35,7 @@ return {
       "mfussenegger/nvim-dap",
     },
     config = function()
-      -- Actual setup deferred to lua/dap/python.lua
+      require("dap.python").setup()
     end,
   },
 
@@ -57,14 +57,7 @@ return {
       stay_on_window = true,
     },
     config = function(_, opts)
-      local selector = require "venv-selector"
-      selector.setup(opts)
-
-      -- Setup DAP only if nvim-dap-python is available
-      local ok = pcall(require, "dap-python")
-      if ok then
-        require("dap.python").setup()
-      end
+      require("venv-selector").setup(opts)
     end,
   },
 }

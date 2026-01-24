@@ -1,3 +1,6 @@
+-- Cache lang_toggle at file top
+local ok_toggle, lang_toggle = pcall(require, "core.lang_toggle")
+
 -- Build dependencies list based on lang_toggle settings
 local deps = {
   "nvim-lua/plenary.nvim",
@@ -6,8 +9,7 @@ local deps = {
 }
 
 -- Conditionally add adapters based on lang_toggle settings
-local ok, lang_toggle = pcall(require, "core.lang_toggle")
-if ok then
+if ok_toggle then
   if lang_toggle.is_enabled "python" then
     table.insert(deps, "nvim-neotest/neotest-python")
   end
@@ -34,21 +36,20 @@ return {
       local adapters = {}
 
       -- Conditionally configure adapters based on lang_toggle settings
-      local toggle_ok, toggle = pcall(require, "core.lang_toggle")
-      if toggle_ok then
-        if toggle.is_enabled "python" then
+      if ok_toggle then
+        if lang_toggle.is_enabled "python" then
           local python_ok, neotest_python = pcall(require, "neotest-python")
           if python_ok then
             table.insert(adapters, neotest_python { dap = { justMyCode = false } })
           end
         end
-        if toggle.is_enabled "go" then
+        if lang_toggle.is_enabled "go" then
           local go_ok, neotest_go = pcall(require, "neotest-go")
           if go_ok then
             table.insert(adapters, neotest_go {})
           end
         end
-        if toggle.is_enabled "rust" then
+        if lang_toggle.is_enabled "rust" then
           local rust_ok, neotest_rust = pcall(require, "neotest-rust")
           if rust_ok then
             table.insert(adapters, neotest_rust {})
