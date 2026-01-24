@@ -1,4 +1,30 @@
 local autocmd = vim.api.nvim_create_autocmd
+local augroup = function(name)
+  return vim.api.nvim_create_augroup(name, { clear = true })
+end
+
+-- Initialize UI toggle state on startup
+local ui_toggle = require "core.ui_toggle"
+ui_toggle.init()
+
+-- Apply UI state to new windows
+autocmd({ "WinNew", "BufWinEnter" }, {
+  group = augroup "ui_state",
+  callback = function()
+    require("core.ui_toggle").apply()
+  end,
+})
+
+-- Prose-friendly settings for text files (overrides session state)
+autocmd("FileType", {
+  group = augroup "prose_settings",
+  pattern = { "markdown", "text", "tex", "typst" },
+  callback = function()
+    vim.opt_local.wrap = true
+    vim.opt_local.linebreak = true
+    vim.opt_local.breakindent = true
+  end,
+})
 
 -- Restore cursor position
 autocmd("BufReadPost", {

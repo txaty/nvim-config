@@ -42,6 +42,7 @@ return {
         { "<leader>s", group = "Search", icon = "󰑑" },
         { "<leader>S", group = "Spectre", icon = "󰛔" },
         { "<leader>t", group = "Test", icon = "󰙨" },
+        { "<leader>u", group = "UI/Display", icon = "󰙵" },
         { "<leader>w", group = "Windows", icon = "󰖲" },
         { "<leader>x", group = "Diagnostics", icon = "󰒡" },
       }
