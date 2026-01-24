@@ -17,8 +17,23 @@ map("n", "<C-k>", "<C-w>k", { desc = "Switch Window up" })
 map("n", "<C-s>", "<cmd>w<CR>", { desc = "General Save file" })
 map("n", "<C-c>", "<cmd>%y+<CR>", { desc = "General Copy whole file" })
 
-map("n", "<leader>n", "<cmd>set nu!<CR>", { desc = "Toggle Line number" })
-map("n", "<leader>nr", "<cmd>set rnu!<CR>", { desc = "Toggle Relative number" })
+-- UI/Display toggles (session-persistent via vim.g.ui_*)
+local ui = require "core.ui_toggle"
+map("n", "<leader>uw", function()
+  ui.toggle "wrap"
+end, { desc = "UI: Toggle line wrap" })
+map("n", "<leader>us", function()
+  ui.toggle "spell"
+end, { desc = "UI: Toggle spell check" })
+map("n", "<leader>un", function()
+  ui.toggle "number"
+end, { desc = "UI: Toggle line numbers" })
+map("n", "<leader>ur", function()
+  ui.toggle "relativenumber"
+end, { desc = "UI: Toggle relative numbers" })
+map("n", "<leader>uc", function()
+  ui.toggle "conceallevel"
+end, { desc = "UI: Toggle conceal" })
 
 -- User Mappings from mappings.lua
 map("n", ";", ":", { desc = "Command mode" })

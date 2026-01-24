@@ -330,6 +330,12 @@ stylua lua/
 - `<leader>L*` — Language support panel (capital L to avoid LSP conflict)
   - `<leader>Lp` — Open language support panel (Telescope)
   - `<leader>Ls` — Show language support status
+- `<leader>u*` — UI/Display toggles (session-persistent)
+  - `<leader>uw` — Toggle line wrap
+  - `<leader>us` — Toggle spell check
+  - `<leader>un` — Toggle line numbers
+  - `<leader>ur` — Toggle relative numbers
+  - `<leader>uc` — Toggle conceal
 - `<leader>q*` — Session/Quit (save, load, quit)
 - `<leader>x*` — Diagnostics/Trouble
 - `<leader>S` — Spectre (project-wide search and replace)

@@ -3,9 +3,9 @@ return {
     "folke/persistence.nvim",
     lazy = true, -- Loaded on demand by autocmds
     opts = {
-      -- Exclude options to prevent colorscheme from being saved in sessions
-      -- This ensures theme persistence is handled by theme.lua, not sessions
-      options = { "buffers", "curdir", "tabpages", "winsize", "help", "skiprtp" },
+      -- Session options: includes globals for UI toggle state persistence
+      -- Theme persistence is handled separately by theme.lua
+      options = { "buffers", "curdir", "tabpages", "winsize", "help", "skiprtp", "globals" },
     },
     config = function(_, opts)
       require("persistence").setup(opts)

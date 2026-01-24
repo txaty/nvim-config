@@ -26,6 +26,7 @@
 | `<leader>s*` | **Search & Replace** | `<leader>S` = Spectre search/replace |
 | `<leader>S*` | **Spectre** | `<leader>sw` = search current word |
 | `<leader>t*` | **Testing** | `<leader>tn` = run nearest test |
+| `<leader>u*` | **UI/Display** | `<leader>uw` = toggle wrap |
 | `<leader>w*` | **Windows** | `<leader>ws` = horizontal split |
 | `<leader>x*` | **Diagnostics** | `<leader>xx` = toggle diagnostics |
 
@@ -557,12 +558,19 @@
 
 ---
 
-## Line Number & Display Toggle
+## UI/Display Toggles (`<leader>u*`)
 
-| Keybinding | Description |
-|---|---|
-| `<leader>n` | Toggle line numbers on/off |
-| `<leader>nr` | Toggle relative line numbers on/off |
+**Note:** UI toggles are session-persistent. Toggle state is saved when exiting Neovim and restored when reopening the same project.
+
+| Keybinding | Description | Default |
+|---|---|---|
+| `<leader>uw` | Toggle line wrap | OFF |
+| `<leader>us` | Toggle spell check | OFF |
+| `<leader>un` | Toggle line numbers | ON |
+| `<leader>ur` | Toggle relative numbers | ON |
+| `<leader>uc` | Toggle conceal (0/2) | ON (2) |
+
+**Prose Override:** Markdown, text, TeX, and Typst files automatically enable word wrap regardless of session state.
 
 ---
 
@@ -593,6 +601,7 @@
 | `<leader>x*` | "X" for eXtensions - diagnostics, trouble, quickfix management |
 | `<leader>d*` | "D" for Debug - DAP operations for all supported languages |
 | `<leader>t*` | "T" for Testing - test runner operations across all languages |
+| `<leader>u*` | "U" for UI - display toggle operations (wrap, spell, numbers, conceal) |
 | `<leader>n*` | "N" for Notifications - Noice message/notification management |
 | `<leader>r*` | "R" for Remote - distant.nvim remote development operations |
 | `<leader>L*` | Capital "L" for Language support panel - avoids collision with LSP (`<leader>l*`) |
