@@ -31,6 +31,7 @@ return {
   -- Telescope extension for bookmarks
   {
     "nvim-telescope/telescope.nvim",
+    optional = true,
     opts = function(_, opts)
       opts.extensions_list = opts.extensions_list or {}
       table.insert(opts.extensions_list, "bookmarks")

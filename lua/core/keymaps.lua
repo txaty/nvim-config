@@ -46,11 +46,7 @@ map("n", "<leader>qq", "<cmd>q<cr>", { desc = "Quit window" })
 map("n", "<leader>qQ", "<cmd>qa!<cr>", { desc = "Quit all" })
 
 -- Files & Finding (Telescope)
-map("n", "<leader>ff", "<cmd>Telescope find_files<cr>", { desc = "Files: find files" })
-map("n", "<leader>fg", "<cmd>Telescope live_grep<cr>", { desc = "Files: live grep" })
-map("n", "<leader>fb", "<cmd>Telescope buffers<cr>", { desc = "Files: find buffers" })
-map("n", "<leader>fr", "<cmd>Telescope oldfiles<cr>", { desc = "Files: recent files" })
-map("n", "<leader>fh", "<cmd>Telescope help_tags<cr>", { desc = "Files: help tags" })
+-- Core telescope keymaps defined in lua/plugins/telescope.lua for lazy-loading
 
 -- File Explorer (NvimTree)
 -- Intentional aliases: both keys toggle nvim-tree for different workflows

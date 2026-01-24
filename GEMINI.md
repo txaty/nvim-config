@@ -157,6 +157,16 @@ Tools (LSP, Formatters, Linters, DAP) are managed by Mason.
     *   Find files: `<leader>rf` (Telescope)
     *   Live grep: `<leader>rg` (Telescope)
     *   System info: `<leader>rs`, Shell: `<leader>rS`
+*   **Rust Operations** (uses `<leader>R*` prefix - capital R to avoid conflict with Remote):
+    *   Run: `<leader>Rr`, Run release: `<leader>RR`
+    *   Test: `<leader>Rt`, Test release: `<leader>RT`
+    *   Check: `<leader>Rc`, Build: `<leader>Rb`
+    *   Lint (clippy): `<leader>Rl`, Toggle inlay hints: `<leader>Rd`
+    *   Expand macro: `<leader>Ra`, Explain error: `<leader>Rx`
+*   **Crates Management** (uses `<leader>C*` prefix, in Cargo.toml):
+    *   Show versions: `<leader>Cv`, Show features: `<leader>Cf`
+    *   Show dependencies: `<leader>Cd`
+    *   Upgrade crate: `<leader>Cu`, Upgrade all: `<leader>CA`
 *   **Session Management**:
     *   Auto-save: Sessions automatically saved on VimLeavePre
     *   Auto-restore: Automatically restored when opening Neovim without arguments

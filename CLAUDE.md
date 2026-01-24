@@ -313,6 +313,25 @@ stylua lua/
   - `<leader>rg` — Live grep on remote
   - `<leader>rs` — System info
   - `<leader>rS` — Shell on remote
+- `<leader>R*` — Rust operations (rustaceanvim)
+  - `<leader>Rr` — Run
+  - `<leader>RR` — Run (release)
+  - `<leader>Rt` — Test
+  - `<leader>RT` — Test (release)
+  - `<leader>Rc` — Check
+  - `<leader>Rb` — Build
+  - `<leader>Ra` — Expand macro
+  - `<leader>Rx` — Explain error
+  - `<leader>RD` — Debuggables
+  - `<leader>RH` — Hover action
+  - `<leader>Rl` — Lint (clippy)
+  - `<leader>Rd` — Toggle inlay hints
+- `<leader>C*` — Crates management (in Cargo.toml)
+  - `<leader>Cv` — Show versions popup
+  - `<leader>Cf` — Show features popup
+  - `<leader>Cd` — Show dependencies popup
+  - `<leader>Cu` — Upgrade crate
+  - `<leader>CA` — Upgrade all crates
 - `<leader>c*` — Theme/Color switching
   - `<leader>cc` — Choose theme (Telescope picker)
   - `<leader>cd` — Switch to dark theme
@@ -517,11 +536,8 @@ The nvim-tree auto-open logic is session-aware: if a session exists for the curr
 
 ### Markdown & Documentation
 - **render-markdown.nvim** — Obsidian-style rendering for Markdown files
-- **markdown-preview.nvim** — Live preview in browser
 
 ### Other Tools
-- **nvim-surround** — Add/change/delete surrounding delimiters
-- **comment.nvim** — Smart commenting with `gc` motion
 - **persistence.nvim** — Session management with auto-save/restore
 - **bookmark.nvim** — Enhanced bookmark functionality
 - **neominimap.nvim** — Code minimap sidebar (`<leader>MM` to toggle)
