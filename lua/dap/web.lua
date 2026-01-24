@@ -1,8 +1,7 @@
 local dap = require "dap"
 
-require("dap-vscode-js").setup {
-  adapters = { "node", "chrome", "pwa-node" },
-}
+-- dap-vscode-js is configured in plugins/dap.lua via opts
+-- This file only defines the configurations
 
 dap.configurations.javascript = {
   {

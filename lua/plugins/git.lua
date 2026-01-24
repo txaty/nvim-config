@@ -15,7 +15,7 @@ return {
         delay = 300,
       },
       on_attach = function(bufnr)
-        local gs = package.loaded.gitsigns
+        local gs = require "gitsigns"
         local map = function(mode, lhs, rhs, desc)
           vim.keymap.set(mode, lhs, rhs, { buffer = bufnr, desc = desc })
         end

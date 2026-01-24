@@ -3,8 +3,8 @@ return {
   -- Formatting with conform.nvim
   {
     "stevearc/conform.nvim",
-    dependencies = { "mason.nvim" },
-    lazy = true,
+    dependencies = { "williamboman/mason.nvim" },
+    event = { "BufWritePre" },
     cmd = "ConformInfo",
     keys = {
       {

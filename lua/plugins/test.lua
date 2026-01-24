@@ -1,24 +1,77 @@
+-- Build dependencies list based on lang_toggle settings
+local deps = {
+  "nvim-lua/plenary.nvim",
+  "nvim-treesitter/nvim-treesitter",
+  "nvim-neotest/nvim-nio",
+}
+
+-- Conditionally add adapters based on lang_toggle settings
+local ok, lang_toggle = pcall(require, "core.lang_toggle")
+if ok then
+  if lang_toggle.is_enabled "python" then
+    table.insert(deps, "nvim-neotest/neotest-python")
+  end
+  if lang_toggle.is_enabled "go" then
+    table.insert(deps, "nvim-neotest/neotest-go")
+  end
+  if lang_toggle.is_enabled "rust" then
+    table.insert(deps, "rouge8/neotest-rust")
+  end
+else
+  -- Fallback: load all adapters if lang_toggle unavailable
+  table.insert(deps, "nvim-neotest/neotest-python")
+  table.insert(deps, "nvim-neotest/neotest-go")
+  table.insert(deps, "rouge8/neotest-rust")
+end
+
 return {
   {
     "nvim-neotest/neotest",
     event = "VeryLazy",
-    dependencies = {
-      "nvim-lua/plenary.nvim",
-      "nvim-treesitter/nvim-treesitter",
-      "nvim-neotest/nvim-nio",
-      -- Adapters
-      "nvim-neotest/neotest-python",
-      "nvim-neotest/neotest-go",
-      "rouge8/neotest-rust",
-    },
+    dependencies = deps,
     config = function()
       local neotest = require "neotest"
+      local adapters = {}
+
+      -- Conditionally configure adapters based on lang_toggle settings
+      local toggle_ok, toggle = pcall(require, "core.lang_toggle")
+      if toggle_ok then
+        if toggle.is_enabled "python" then
+          local python_ok, neotest_python = pcall(require, "neotest-python")
+          if python_ok then
+            table.insert(adapters, neotest_python { dap = { justMyCode = false } })
+          end
+        end
+        if toggle.is_enabled "go" then
+          local go_ok, neotest_go = pcall(require, "neotest-go")
+          if go_ok then
+            table.insert(adapters, neotest_go {})
+          end
+        end
+        if toggle.is_enabled "rust" then
+          local rust_ok, neotest_rust = pcall(require, "neotest-rust")
+          if rust_ok then
+            table.insert(adapters, neotest_rust {})
+          end
+        end
+      else
+        -- Fallback: load all adapters if lang_toggle unavailable
+        local python_ok, neotest_python = pcall(require, "neotest-python")
+        if python_ok then
+          table.insert(adapters, neotest_python { dap = { justMyCode = false } })
+        end
+        local go_ok, neotest_go = pcall(require, "neotest-go")
+        if go_ok then
+          table.insert(adapters, neotest_go {})
+        end
+        local rust_ok, neotest_rust = pcall(require, "neotest-rust")
+        if rust_ok then
+          table.insert(adapters, neotest_rust {})
+        end
+      end
+
       neotest.setup {
-        adapters = {
-          require "neotest-python" { dap = { justMyCode = false } },
-          require "neotest-go" {},
-          require "neotest-rust" {},
-        },
+        adapters = adapters,
         quickfix = { open = false },
         summary = { animated = false },
       }
