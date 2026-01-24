@@ -55,9 +55,6 @@ opt.updatetime = 250
 -- when cursor reaches end/beginning of line
 opt.whichwrap:append "<>[]hl"
 
--- Keep signcolumn on by default
-opt.signcolumn = "yes"
-
 -- Folding (foldmethod/foldexpr set by treesitter after it loads)
 opt.foldlevel = 99
 opt.foldmethod = "manual"

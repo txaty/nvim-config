@@ -77,13 +77,26 @@ return {
         dapui.close()
       end, { desc = "Terminate" })
 
-      -- Preload cpp if available (optional)
+      -- Preload language-specific DAP configs if available
       pcall(require, "dap.cpp")
+      pcall(require, "dap.go")
+      pcall(require, "dap.web")
     end,
   },
   {
     "rcarriga/nvim-dap-ui",
     event = "VeryLazy",
+  },
+  -- JavaScript/TypeScript debug adapter
+  {
+    "mxsdev/nvim-dap-vscode-js",
+    event = "VeryLazy",
+    dependencies = {
+      "mfussenegger/nvim-dap",
+    },
+    opts = {
+      adapters = { "node", "chrome", "pwa-node" },
+    },
   },
   {
     "jay-babu/mason-nvim-dap.nvim",

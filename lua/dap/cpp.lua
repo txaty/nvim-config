@@ -3,7 +3,7 @@ local dap = require "dap"
 local mason_root = vim.fn.stdpath "data" .. "/mason/packages/codelldb/extension/"
 local codelldb_path = mason_root .. "adapter/codelldb"
 
-if not vim.loop.fs_stat(codelldb_path) then
+if not vim.uv.fs_stat(codelldb_path) then
   codelldb_path = "/opt/homebrew/opt/llvm/bin/lldb-vscode"
 end
 

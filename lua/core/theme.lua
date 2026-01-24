@@ -474,9 +474,12 @@ local config_path = vim.fn.stdpath "data" .. "/theme_config.json"
 local function load_config()
   if vim.fn.filereadable(config_path) == 1 then
     local content = vim.fn.readfile(config_path)
-    local ok, result = pcall(vim.json.decode, table.concat(content, ""))
+    local raw = table.concat(content, "")
+    local ok, result = pcall(vim.json.decode, raw)
     if ok and type(result) == "table" then
       return result
+    elseif raw ~= "" then
+      vim.notify("Theme config corrupted, using defaults. Delete " .. config_path .. " to reset.", vim.log.levels.WARN)
     end
   end
   return {}

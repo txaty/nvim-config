@@ -140,18 +140,34 @@ autocmd("VimEnter", {
       vim.schedule(function()
         -- Clean up any stale NvimTree buffers from session restore
         -- These buffers exist but nvim-tree plugin wasn't initialized
+        -- Must complete before opening nvim-tree to avoid E95 name conflict
+        local cleaned = false
         for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-          local name = vim.api.nvim_buf_get_name(buf)
-          if name:match "NvimTree_" then
-            pcall(vim.api.nvim_buf_delete, buf, { force = true })
+          if vim.api.nvim_buf_is_valid(buf) then
+            local name = vim.api.nvim_buf_get_name(buf)
+            if name:match "NvimTree_" then
+              -- Wipe the buffer completely (more thorough than delete)
+              pcall(vim.api.nvim_buf_delete, buf, { force = true })
+              cleaned = true
+            end
           end
         end
 
-        local ok, api = pcall(require, "nvim-tree.api")
-        if not ok then
-          return
+        -- If we cleaned buffers, defer opening to next event loop iteration
+        -- to ensure buffer names are fully released
+        local function do_open()
+          local ok, api = pcall(require, "nvim-tree.api")
+          if not ok then
+            return
+          end
+          pcall(api.tree.open, opts)
         end
-        pcall(api.tree.open, opts)
+
+        if cleaned then
+          vim.schedule(do_open)
+        else
+          do_open()
+        end
       end)
     end
 
@@ -186,67 +202,201 @@ autocmd("VimEnter", {
   end,
 })
 
+-- Theme Commands (defined early for immediate availability)
+vim.api.nvim_create_user_command("ThemeSwitch", function()
+  local ok, telescope = pcall(require, "telescope")
+  if not ok then
+    vim.notify("Telescope is required for ThemeSwitch", vim.log.levels.ERROR)
+    return
+  end
+
+  local theme_ok, theme = pcall(require, "core.theme")
+  if not theme_ok then
+    vim.notify("Failed to load theme module: " .. tostring(theme), vim.log.levels.ERROR)
+    return
+  end
+
+  local themes = theme.get_all_themes()
+
+  local pickers_ok, pickers = pcall(require, "telescope.pickers")
+  local finders_ok, finders = pcall(require, "telescope.finders")
+  local actions_ok, actions = pcall(require, "telescope.actions")
+  local action_state_ok, action_state = pcall(require, "telescope.actions.state")
+  local conf_ok, conf = pcall(function()
+    return require("telescope.config").values
+  end)
+
+  if not (pickers_ok and finders_ok and actions_ok and action_state_ok and conf_ok) then
+    vim.notify("Failed to load Telescope components", vim.log.levels.ERROR)
+    return
+  end
+
+  local picker_opts = {
+    prompt_title = "  Switch Theme",
+    results_title = "Available Themes",
+    preview_title = "Theme Preview",
+    previewer = false,
+  }
+
+  local picker = pickers.new(picker_opts, {
+    finder = finders.new_table {
+      results = themes,
+      entry_maker = function(entry)
+        local info = theme.theme_info[entry] or {}
+        local variant = info.variant or "unknown"
+        local desc = info.description or entry
+        return {
+          value = entry,
+          display = string.format("%-20s [%s] %s", entry, variant, desc),
+          ordinal = entry,
+        }
+      end,
+    },
+    sorter = conf.generic_sorter(picker_opts),
+    attach_mappings = function(prompt_bufnr, _map)
+      actions.select_default:replace(function()
+        actions.close(prompt_bufnr)
+        local selection = action_state.get_selected_entry()
+        if selection then
+          theme.apply_theme(selection.value)
+        end
+      end)
+      return true
+    end,
+  })
+  picker:find()
+end, { desc = "Open theme picker" })
+
+vim.api.nvim_create_user_command("ThemeDark", function()
+  local ok, theme = pcall(require, "core.theme")
+  if ok then
+    theme.switch_to_dark()
+  else
+    vim.notify("Failed to load theme module", vim.log.levels.ERROR)
+  end
+end, { desc = "Switch to dark theme" })
+
+vim.api.nvim_create_user_command("ThemeLight", function()
+  local ok, theme = pcall(require, "core.theme")
+  if ok then
+    theme.switch_to_light()
+  else
+    vim.notify("Failed to load theme module", vim.log.levels.ERROR)
+  end
+end, { desc = "Switch to light theme" })
+
+vim.api.nvim_create_user_command("ThemeTxaty", function()
+  local ok, theme = pcall(require, "core.theme")
+  if ok then
+    theme.apply_theme "txaty"
+  else
+    vim.notify("Failed to load theme module", vim.log.levels.ERROR)
+  end
+end, { desc = "Switch to txaty theme" })
+
 -- AI Toggle Commands (lazy-loaded for faster startup)
 vim.api.nvim_create_user_command("AIToggle", function()
-  require("core.ai_toggle").toggle()
+  local ok, ai = pcall(require, "core.ai_toggle")
+  if ok then
+    ai.toggle()
+  else
+    vim.notify("Failed to load ai_toggle module", vim.log.levels.ERROR)
+  end
 end, { desc = "Toggle AI features (Copilot)" })
 
 vim.api.nvim_create_user_command("AIEnable", function()
-  require("core.ai_toggle").enable()
+  local ok, ai = pcall(require, "core.ai_toggle")
+  if ok then
+    ai.enable()
+  else
+    vim.notify("Failed to load ai_toggle module", vim.log.levels.ERROR)
+  end
 end, { desc = "Enable AI features" })
 
 vim.api.nvim_create_user_command("AIDisable", function()
-  require("core.ai_toggle").disable()
+  local ok, ai = pcall(require, "core.ai_toggle")
+  if ok then
+    ai.disable()
+  else
+    vim.notify("Failed to load ai_toggle module", vim.log.levels.ERROR)
+  end
 end, { desc = "Disable AI features" })
 
 vim.api.nvim_create_user_command("AIStatus", function()
-  local ai = require "core.ai_toggle"
-  local icon = ai.is_enabled() and "✓" or "✗"
-  vim.notify(string.format("%s AI features are %s", icon, ai.status()), vim.log.levels.INFO)
+  local ok, ai = pcall(require, "core.ai_toggle")
+  if ok then
+    local icon = ai.is_enabled() and "✓" or "✗"
+    vim.notify(string.format("%s AI features are %s", icon, ai.status()), vim.log.levels.INFO)
+  else
+    vim.notify("Failed to load ai_toggle module", vim.log.levels.ERROR)
+  end
 end, { desc = "Show AI features status" })
 
 -- Language Toggle Commands (lazy-loaded for faster startup)
 vim.api.nvim_create_user_command("LangEnable", function(opts)
-  require("core.lang_toggle").enable(opts.args)
+  local ok, lang_toggle = pcall(require, "core.lang_toggle")
+  if ok then
+    lang_toggle.enable(opts.args)
+  else
+    vim.notify("Failed to load lang_toggle module", vim.log.levels.ERROR)
+  end
 end, {
   nargs = 1,
   complete = function()
-    return require("core.lang_toggle").get_all_languages()
+    local ok, lang_toggle = pcall(require, "core.lang_toggle")
+    return ok and lang_toggle.get_all_languages() or {}
   end,
   desc = "Enable language support",
 })
 
 vim.api.nvim_create_user_command("LangDisable", function(opts)
-  require("core.lang_toggle").disable(opts.args)
+  local ok, lang_toggle = pcall(require, "core.lang_toggle")
+  if ok then
+    lang_toggle.disable(opts.args)
+  else
+    vim.notify("Failed to load lang_toggle module", vim.log.levels.ERROR)
+  end
 end, {
   nargs = 1,
   complete = function()
-    return require("core.lang_toggle").get_all_languages()
+    local ok, lang_toggle = pcall(require, "core.lang_toggle")
+    return ok and lang_toggle.get_all_languages() or {}
   end,
   desc = "Disable language support",
 })
 
 vim.api.nvim_create_user_command("LangToggle", function(opts)
-  require("core.lang_toggle").toggle(opts.args)
+  local ok, lang_toggle = pcall(require, "core.lang_toggle")
+  if ok then
+    lang_toggle.toggle(opts.args)
+  else
+    vim.notify("Failed to load lang_toggle module", vim.log.levels.ERROR)
+  end
 end, {
   nargs = 1,
   complete = function()
-    return require("core.lang_toggle").get_all_languages()
+    local ok, lang_toggle = pcall(require, "core.lang_toggle")
+    return ok and lang_toggle.get_all_languages() or {}
   end,
   desc = "Toggle language support",
 })
 
 vim.api.nvim_create_user_command("LangStatus", function(opts)
-  local lang_toggle = require "core.lang_toggle"
-  if opts.args ~= "" then
-    lang_toggle.show_status(opts.args)
+  local ok, lang_toggle = pcall(require, "core.lang_toggle")
+  if ok then
+    if opts.args ~= "" then
+      lang_toggle.show_status(opts.args)
+    else
+      lang_toggle.show_all_status()
+    end
   else
-    lang_toggle.show_all_status()
+    vim.notify("Failed to load lang_toggle module", vim.log.levels.ERROR)
   end
 end, {
   nargs = "?",
   complete = function()
-    return require("core.lang_toggle").get_all_languages()
+    local ok, lang_toggle = pcall(require, "core.lang_toggle")
+    return ok and lang_toggle.get_all_languages() or {}
   end,
   desc = "Show language support status",
 })
@@ -259,12 +409,24 @@ vim.api.nvim_create_user_command("LangPanel", function()
     return
   end
 
-  local lang_toggle = require "core.lang_toggle"
-  local pickers = require "telescope.pickers"
-  local finders = require "telescope.finders"
-  local actions = require "telescope.actions"
-  local action_state = require "telescope.actions.state"
-  local conf = require("telescope.config").values
+  local lang_ok, lang_toggle = pcall(require, "core.lang_toggle")
+  if not lang_ok then
+    vim.notify("Failed to load lang_toggle module", vim.log.levels.ERROR)
+    return
+  end
+
+  local pickers_ok, pickers = pcall(require, "telescope.pickers")
+  local finders_ok, finders = pcall(require, "telescope.finders")
+  local actions_ok, actions = pcall(require, "telescope.actions")
+  local action_state_ok, action_state = pcall(require, "telescope.actions.state")
+  local conf_ok, conf = pcall(function()
+    return require("telescope.config").values
+  end)
+
+  if not (pickers_ok and finders_ok and actions_ok and action_state_ok and conf_ok) then
+    vim.notify("Failed to load Telescope components", vim.log.levels.ERROR)
+    return
+  end
 
   local function get_entries()
     local entries = {}

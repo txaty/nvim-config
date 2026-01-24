@@ -4,7 +4,11 @@ if not lang_toggle.is_enabled "flutter" then
   return {}
 end
 
+local lang = require "core.lang_utils"
+
 return {
+  -- Extend treesitter with Dart parser
+  lang.extend_treesitter { "dart" },
   {
     "akinsho/flutter-tools.nvim",
     dependencies = {

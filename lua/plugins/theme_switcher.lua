@@ -14,6 +14,19 @@ return {
 
       -- Create custom Telescope picker for themes
       local function open_theme_picker()
+        local pickers_ok, pickers = pcall(require, "telescope.pickers")
+        local finders_ok, finders = pcall(require, "telescope.finders")
+        local actions_ok, actions = pcall(require, "telescope.actions")
+        local action_state_ok, action_state = pcall(require, "telescope.actions.state")
+        local conf_ok, conf = pcall(function()
+          return require("telescope.config").values
+        end)
+
+        if not (pickers_ok and finders_ok and actions_ok and action_state_ok and conf_ok) then
+          vim.notify("Failed to load Telescope components", vim.log.levels.ERROR)
+          return
+        end
+
         local themes = theme.get_all_themes()
 
         local picker_opts = {
@@ -22,12 +35,6 @@ return {
           preview_title = "Theme Preview",
           previewer = false,
         }
-
-        local pickers = require "telescope.pickers"
-        local finders = require "telescope.finders"
-        local actions = require "telescope.actions"
-        local action_state = require "telescope.actions.state"
-        local conf = require("telescope.config").values
 
         local picker = pickers.new(picker_opts, {
           finder = finders.new_table {
