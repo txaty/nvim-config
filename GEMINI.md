@@ -30,8 +30,9 @@ This repository contains a custom, self-maintained Neovim configuration. It uses
 *   **Git**: `gitsigns.nvim`
 *   **Debugging**: `nvim-dap`
 *   **Session**: `persistence.nvim` (auto-save/auto-restore session management)
-*   **Themes**: 21+ themes (10 dark, 10 light, 1 custom txaty - low-saturation ergonomic)
-*   **Theme Switcher**: Telescope-based picker with persistence
+*   **Remote Development**: `distant.nvim` (VS Code Remote-like experience)
+*   **Themes**: 50+ themes (25+ dark, 20+ light, 2 custom txaty/txaty-light - ergonomic design)
+*   **Theme Switcher**: Telescope-based picker with persistence and smart dark/light switching
 
 ## Directory Structure
 *   `init.lua`: The entry point for Neovim. Loads `lua/core/init.lua`.
@@ -42,10 +43,12 @@ This repository contains a custom, self-maintained Neovim configuration. It uses
     *   `init.lua`: Loads all core modules (options, keymaps, autocmds, lazy).
     *   `options.lua`: Vim options (vim.opt) and sane defaults.
     *   `keymaps.lua`: General keybindings and navigation shortcuts.
-    *   `autocmds.lua`: Event-driven logic (cursor restoration, view saving, auto-open nvim-tree).
+    *   `autocmds.lua`: Event-driven logic (cursor restoration, view saving, auto-open nvim-tree, user commands).
     *   `lazy.lua`: Bootstraps lazy.nvim with custom performance settings.
-    *   `theme.lua`: Theme switching module with JSON persistence.
-    *   `theme_txaty.lua`: Custom low-saturation ergonomic dark theme (#0f1419).
+    *   `theme.lua`: Unified theme registry with 50+ themes and smart switching.
+    *   `theme_txaty.lua`: Custom ergonomic theme with factory pattern (dark/light variants).
+    *   `ai_toggle.lua`: AI features toggle module (enables/disables Copilot).
+    *   `lang_toggle.lua`: Language support toggle module (enables/disables language tooling).
     *   `lang_utils.lua`: Shared utilities for language support (reduces boilerplate).
 *   `lua/plugins/`: Plugin specifications (using lazy.nvim syntax), organized by domain
     *   `lsp.lua`: Mason + vim.lsp.config (new Neovim 0.11+ API) with LspAttach autocmd.
@@ -57,20 +60,21 @@ This repository contains a custom, self-maintained Neovim configuration. It uses
     *   `telescope.lua`: Fuzzy finder and file navigation.
     *   `git.lua`: Gitsigns for git decorations and hunk operations.
     *   `lazygit.lua`: Terminal UI for git operations.
+    *   `remote.lua`: Distant.nvim for VS Code-like remote development.
     *   `markdown.lua`: Markdown rendering and live preview.
-    *   `colorscheme.lua`: 21+ theme options (10 dark, 10 light, 1 custom).
-    *   `theme_switcher.lua`: Telescope-based interactive theme picker.
+    *   `colorscheme.lua`: 40+ colorscheme plugin declarations.
+    *   `theme_switcher.lua`: Telescope-based interactive theme picker with smart switching.
     *   `session.lua`: persistence.nvim with auto-save/auto-restore.
     *   `bookmark.lua`: bookmarks.nvim with telescope extension.
-    *   `documents.lua`: vimtex (LaTeX) + typst-preview (merged file).
+    *   `documents.lua`: vimtex (LaTeX) + typst-preview (respects lang toggle).
     *   `noice.lua`, `flash.lua`, `trouble.lua`, `todo.lua`, `spectre.lua`: UI/UX plugins.
-    *   `copilot.lua`: GitHub Copilot integration.
+    *   `copilot.lua`: GitHub Copilot integration (respects AI toggle).
     *   `dap.lua`: Debug adapter protocol setup.
-    *   `test.lua`: neotest testing framework.
+    *   `test.lua`: neotest testing framework (respects lang toggle).
     *   `minimap.lua`: neominimap.nvim code minimap.
     *   `languages/`: Language-specific configurations using lang_utils:
         *   `python.lua`, `go.lua`, `rust.lua`, `flutter.lua`, `web.lua`.
-*   `lua/dap/`: Debug Adapter Protocol configurations (web.lua, cpp.lua, python.lua, flutter.lua).
+*   `lua/dap/`: Debug Adapter Protocol configurations (web.lua, cpp.lua, python.lua, flutter.lua, go.lua).
 *   `docs/`: User documentation (keymaps.md reference).
 *   **Note**: `lua/configs/` and other NvChad-related directories have been completely removed. All configuration is inlined into plugin specs.
 
@@ -130,9 +134,29 @@ Tools (LSP, Formatters, Linters, DAP) are managed by Mason.
     *   Choose theme: `<leader>cc` (Telescope picker) or `:ThemeSwitch`
     *   Quick switch: `<leader>cd` (dark), `<leader>cl` (light), `<leader>cp` (txaty custom)
     *   Cycle themes: `<leader>cn` (next), `<leader>cN` (previous)
-    *   21+ themes available: 10 dark, 10 light, 1 custom txaty (low-saturation ergonomic)
+    *   50+ themes available: 25+ dark, 20+ light, 2 custom (txaty dark, txaty-light)
+    *   Smart switching: `<leader>cd/cl` remembers last-used theme per category
     *   Preference persisted to `$XDG_DATA_HOME/theme_config.json`
     *   Note: AI chat uses separate `<leader>a*` prefix to avoid conflicts
+*   **AI Toggle**:
+    *   Toggle: `<leader>ai` or `:AIToggle`
+    *   Explicit control: `:AIEnable`, `:AIDisable`, `:AIStatus`
+    *   State persisted to `$XDG_DATA_HOME/ai_config.json`
+    *   **Requires restart** to apply changes
+*   **Language Support Toggle**:
+    *   Panel: `<leader>Lp` or `:LangPanel` (Telescope-based with e/d keys)
+    *   Status: `<leader>Ls` or `:LangStatus`
+    *   Toggle: `:LangToggle python`, `:LangEnable rust`, `:LangDisable web`
+    *   Supported: python, rust, go, web, flutter, latex, typst
+    *   State persisted to `$XDG_DATA_HOME/language_config.json`
+    *   **Requires restart** to apply changes
+*   **Remote Development** (uses `<leader>r*` prefix):
+    *   Connect: `<leader>rc` (SSH connection)
+    *   Disconnect: `<leader>rd`
+    *   Open remote: `<leader>ro` (file/directory)
+    *   Find files: `<leader>rf` (Telescope)
+    *   Live grep: `<leader>rg` (Telescope)
+    *   System info: `<leader>rs`, Shell: `<leader>rS`
 *   **Session Management**:
     *   Auto-save: Sessions automatically saved on VimLeavePre
     *   Auto-restore: Automatically restored when opening Neovim without arguments
@@ -198,6 +222,9 @@ Tools (LSP, Formatters, Linters, DAP) are managed by Mason.
 *   **Modular Plugin System**: Each plugin is self-contained with its own configuration, dependencies, and keymaps inlined in `lua/plugins/`. All plugins lazy-load via `event`, `cmd`, `ft`, or `keys` triggers.
 *   **Performance Optimized**: lazy.nvim is configured with custom performance settings in `lua/core/lazy.lua`. Disabled runtime plugins improve startup time.
 *   **Startup Behavior**: `autocmds.lua` includes VimEnter logic to auto-open nvim-tree for directories/empty buffers (session-aware: won't open if session exists).
-*   **Theme System**: Seamless theme switching with 21+ themes (10 dark, 10 light, 1 custom txaty). Custom txaty theme is low-saturation ergonomic dark (#0f1419) based on research showing too many colors impair code reading. Preference persisted to `$XDG_DATA_HOME/theme_config.json`.
+*   **Theme System**: Unified registry with 50+ themes (25+ dark, 20+ light, 2 custom txaty/txaty-light). Factory pattern for custom themes. Smart dark/light switching remembers last-used per category. Ergonomic design: low saturation (15-25%), warm neutrals, WCAG 2.1 AA compliant. Preference persisted to `$XDG_DATA_HOME/theme_config.json`.
 *   **Session Management**: Auto-save on VimLeavePre, auto-restore when opening Neovim without arguments. Per-directory sessions maintain buffers, windows, tabs, and state. Integrates with nvim-tree auto-open logic.
 *   **LSP Migration**: Migrated from deprecated `require('lspconfig')` to new `vim.lsp.config()` API (Neovim 0.11+). All servers managed through mason-lspconfig handlers with `vim.lsp.enable()`. Rust handled exclusively by `rustaceanvim`.
+*   **AI Toggle**: Copilot plugins can be disabled entirely (like Zed's "Disable AI"). State persisted to `$XDG_DATA_HOME/ai_config.json`. Requires restart to apply.
+*   **Language Toggle**: Per-language tooling (LSP, formatters, linters, treesitter) can be disabled. State persisted to `$XDG_DATA_HOME/language_config.json`. Requires restart.
+*   **Remote Development**: Distant.nvim integration for VS Code Remote-like experience. SSH-based with compression. Auto-attaches LSP to remote buffers. Connection status shown in lualine.
