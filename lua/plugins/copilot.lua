@@ -30,7 +30,7 @@ return {
         auto_trigger = true,
         debounce = 75,
         keymap = {
-          accept = "<C-l>", -- Control + L to accept (common convention)
+          accept = "<M-l>", -- Alt + L to accept (avoids conflict with cursor nav)
           accept_word = false,
           accept_line = false,
           next = "<M-]>",

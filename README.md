@@ -208,7 +208,7 @@ Chat with Copilot:
 <leader>ar    # Review code
 ```
 
-Inline suggestions appear automatically. Accept with `<C-l>`.
+Inline suggestions appear automatically. Accept with `<M-l>` (Alt+L).
 
 **Toggle AI features** (useful for sensitive codebases):
 ```

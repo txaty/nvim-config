@@ -513,7 +513,7 @@ The nvim-tree auto-open logic is session-aware: if a session exists for the curr
 4. Disconnect: `<leader>rd`
 
 ### AI Assistance
-- **copilot.lua** — GitHub Copilot integration with ghost text completion (`<C-l>` to accept)
+- **copilot.lua** — GitHub Copilot integration with ghost text completion (`<M-l>` / Alt+L to accept)
 - **CopilotChat.nvim** — Chat interface for Copilot (`<leader>aa` to toggle, `<leader>aq/ae/at/af/ar` for actions)
 
 **AI Toggle Feature** (similar to Zed's "Disable AI"):

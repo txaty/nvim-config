@@ -205,7 +205,7 @@
 ### Copilot Inline Suggestions (Insert Mode)
 | Keybinding | Description |
 |---|---|
-| `<C-l>` | Accept suggestion |
+| `<M-l>` (Alt+L) | Accept suggestion |
 | `<C-]>` | Dismiss suggestion |
 | `<M-[>` | Previous suggestion |
 | `<M-]>` | Next suggestion |
