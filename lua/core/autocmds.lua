@@ -138,7 +138,20 @@ autocmd("VimEnter", {
     -- Helper to open nvim-tree safely (deferred to avoid coroutine conflicts with bufferline)
     local function open_tree(opts)
       vim.schedule(function()
-        require("nvim-tree.api").tree.open(opts)
+        -- Clean up any stale NvimTree buffers from session restore
+        -- These buffers exist but nvim-tree plugin wasn't initialized
+        for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+          local name = vim.api.nvim_buf_get_name(buf)
+          if name:match "NvimTree_" then
+            pcall(vim.api.nvim_buf_delete, buf, { force = true })
+          end
+        end
+
+        local ok, api = pcall(require, "nvim-tree.api")
+        if not ok then
+          return
+        end
+        pcall(api.tree.open, opts)
       end)
     end
 
@@ -237,3 +250,116 @@ end, {
   end,
   desc = "Show language support status",
 })
+
+vim.api.nvim_create_user_command("LangPanel", function()
+  -- Trigger lazy-loading of lang-panel plugin which sets up the Telescope picker
+  local ok = pcall(require, "telescope")
+  if not ok then
+    vim.notify("Telescope is required for LangPanel", vim.log.levels.ERROR)
+    return
+  end
+
+  local lang_toggle = require "core.lang_toggle"
+  local pickers = require "telescope.pickers"
+  local finders = require "telescope.finders"
+  local actions = require "telescope.actions"
+  local action_state = require "telescope.actions.state"
+  local conf = require("telescope.config").values
+
+  local function get_entries()
+    local entries = {}
+    local langs = lang_toggle.get_all_languages()
+    for _, lang in ipairs(langs) do
+      local info = lang_toggle.languages[lang]
+      local enabled = lang_toggle.is_enabled(lang)
+      table.insert(entries, {
+        lang = lang,
+        name = info.name,
+        description = info.description,
+        enabled = enabled,
+      })
+    end
+    return entries
+  end
+
+  local function make_finder()
+    return finders.new_table {
+      results = get_entries(),
+      entry_maker = function(entry)
+        local icon = entry.enabled and "+" or "-"
+        local status = entry.enabled and "Enabled " or "Disabled"
+        local display = string.format("%s %-10s [%s] %s", icon, entry.name, status, entry.description)
+        return {
+          value = entry,
+          display = display,
+          ordinal = entry.name .. " " .. entry.lang,
+        }
+      end,
+    }
+  end
+
+  local picker_opts = {
+    prompt_title = "  Language Support Panel",
+    results_title = "Toggle languages (requires restart)",
+    previewer = false,
+    layout_config = {
+      width = 0.7,
+      height = 0.5,
+    },
+  }
+
+  local picker = pickers.new(picker_opts, {
+    finder = make_finder(),
+    sorter = conf.generic_sorter(picker_opts),
+    attach_mappings = function(prompt_bufnr, map)
+      -- Toggle on Enter
+      actions.select_default:replace(function()
+        local selection = action_state.get_selected_entry()
+        if selection then
+          lang_toggle.toggle(selection.value.lang)
+          local current_picker = action_state.get_current_picker(prompt_bufnr)
+          current_picker:refresh(make_finder(), { reset_prompt = false })
+        end
+      end)
+
+      -- Enable with 'e'
+      map("i", "e", function()
+        local selection = action_state.get_selected_entry()
+        if selection then
+          lang_toggle.enable(selection.value.lang)
+          local current_picker = action_state.get_current_picker(prompt_bufnr)
+          current_picker:refresh(make_finder(), { reset_prompt = false })
+        end
+      end)
+      map("n", "e", function()
+        local selection = action_state.get_selected_entry()
+        if selection then
+          lang_toggle.enable(selection.value.lang)
+          local current_picker = action_state.get_current_picker(prompt_bufnr)
+          current_picker:refresh(make_finder(), { reset_prompt = false })
+        end
+      end)
+
+      -- Disable with 'd'
+      map("i", "d", function()
+        local selection = action_state.get_selected_entry()
+        if selection then
+          lang_toggle.disable(selection.value.lang)
+          local current_picker = action_state.get_current_picker(prompt_bufnr)
+          current_picker:refresh(make_finder(), { reset_prompt = false })
+        end
+      end)
+      map("n", "d", function()
+        local selection = action_state.get_selected_entry()
+        if selection then
+          lang_toggle.disable(selection.value.lang)
+          local current_picker = action_state.get_current_picker(prompt_bufnr)
+          current_picker:refresh(make_finder(), { reset_prompt = false })
+        end
+      end)
+
+      return true
+    end,
+  })
+  picker:find()
+end, { desc = "Open language support panel" })
