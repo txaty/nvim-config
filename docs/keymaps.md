@@ -8,9 +8,9 @@
 
 | Namespace | Purpose | Example |
 |-----------|---------|---------|
-| `<leader>a*` | **AI & Copilot** | `<leader>aa` = AI Chat toggle |
+| `<leader>a*` | **AI & Copilot** | `<leader>ai` = toggle AI, `<leader>aa` = chat |
 | `<leader>b*` | **Buffers** | `<leader>bd` = delete buffer |
-| `<leader>c*` | **Color/Colorscheme** | `<leader>cc` = choose theme |
+| `<leader>c*` | **Color/Colorscheme** | `<leader>cc` = choose theme (50+) |
 | `<leader>d*` | **Debug** (DAP) | `<leader>db` = toggle breakpoint |
 | `<leader>f*` | **Files & Finding** | `<leader>ff` = find files |
 | `<leader>F*` | **Flutter** (language) | `<leader>FR` = run Flutter app |
@@ -176,6 +176,20 @@
 
 ## AI & Copilot (`<leader>a*`)
 
+### AI Features Toggle
+| Keybinding | Description |
+|---|---|
+| `<leader>ai` | Toggle AI features on/off (requires restart) |
+
+**Commands:**
+- `:AIToggle` — Toggle AI features
+- `:AIEnable` — Enable AI features
+- `:AIDisable` — Disable AI features
+- `:AIStatus` — Show current AI status
+
+**Note:** When AI is disabled, Copilot plugins are never loaded (improves performance). Useful for sensitive codebases or when using external AI tools like Claude Code.
+
+### Copilot Chat
 | Keybinding | Description |
 |---|---|
 | `<leader>aa` | Toggle Copilot Chat window |
@@ -343,24 +357,24 @@
 
 ## Color/Colorscheme (`<leader>c*`)
 
-**Note:** Theme preference is automatically saved and restored on next startup
+**Note:** Theme preference is automatically saved and restored on next startup. Smart switching remembers last-used theme per category (dark/light).
 
 ### Theme Selection
 | Keybinding | Description |
 |---|---|
-| `<leader>cc` | Choose theme from Telescope picker (all 20+ themes) |
-| `<leader>cd` | Switch to first dark theme |
-| `<leader>cl` | Switch to first light theme |
-| `<leader>cp` | Switch to custom "txaty" theme (low-saturation, pure dark, ergonomic) |
+| `<leader>cc` | Choose theme from Telescope picker (all 50+ themes) |
+| `<leader>cd` | Switch to last-used dark theme (smart) |
+| `<leader>cl` | Switch to last-used light theme (smart) |
+| `<leader>cp` | Switch to custom "txaty" theme |
 | `<leader>cn` | Cycle to next theme in rotation |
 | `<leader>cN` | Cycle to previous theme in rotation |
 
-### Available Themes
+### Available Themes (50+)
 
-**Dark Themes (10):**
+**Dark Themes (25+):**
 - `tokyonight` — Modern Tokyo night with vibrant colors
 - `kanagawa` — Japanese-inspired wave aesthetic
-- `catppuccin` — Soothing pastel colors
+- `catppuccin` — Soothing pastel colors (mocha)
 - `rose-pine` — Soft, elegant rose pine theme
 - `nightfox` — Clean dark theme with excellent contrast
 - `onedark` — Atom-inspired one dark theme
@@ -368,21 +382,38 @@
 - `gruvbox` — Retro groove with warm colors
 - `nord` — Arctic, north-bluish theme (cool and calm)
 - `dracula` — High contrast dark theme
+- `ayu` — Minimalist dark theme
+- `solarized` — Scientific color palette (dark)
+- `jellybeans` — Colorful dark theme
+- `everforest` — Green-based comfortable colorscheme
+- `duskfox`, `nordfox`, `terafox`, `carbonfox` — Nightfox variants
+- `material` — Material design dark theme
+- `vscode` — VS Code Dark+ lookalike
+- `moonfly`, `nightfly` — Moonlit/night flight themes
+- `melange` — Warm, cozy dark theme
+- `zenbones` — Minimal, readability-focused
+- `oxocarbon` — IBM Carbon design system
+- `github_dark*` — GitHub dark variants (default, dimmed, high contrast, colorblind, tritanopia)
 
-**Light Themes (10):**
+**Light Themes (20+):**
 - `tokyonight-day` — Tokyo day - modern light variant
 - `rose-pine-dawn` — Rose pine dawn - soft light variant
 - `kanagawa-lotus` — Kanagawa lotus - minimal light variant
 - `onelight` — Atom one light theme
 - `ayu-light` — Ayu light - minimalist design
-- `solarized-light` — Solarized light - scientifically-derived colors
+- `solarized-light` — Solarized light - scientific color palette
 - `papercolor` — PaperColor - clean paper-like appearance
-- `omni` — Omni - modern light theme
-- `jellybeans-light` — Jellybeans light - colorful light variant
-- `dayfox` — Day fox - light fox variant
+- `gruvbox-light` — Retro groove light - warm colors
+- `dayfox`, `dawnfox` — Nightfox light variants
+- `everforest-light` — Green-based comfortable light
+- `material-lighter` — Material design light
+- `vscode-light` — VS Code Light+ lookalike
+- `zenbones-light` — Minimal, readability-focused light
+- `github_light*` — GitHub light variants (default, high contrast, colorblind)
 
-**Custom Theme:**
-- `txaty` — Low-saturation, pure dark ergonomic theme designed for reduced eye strain and improved code readability during long sessions
+**Custom Themes:**
+- `txaty` — Low-saturation ergonomic dark theme (#0f1419 background) designed for reduced eye strain
+- `txaty-light` — Low-saturation ergonomic light theme (#fafafa background) with same design principles
 
 ---
 

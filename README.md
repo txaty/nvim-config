@@ -4,26 +4,30 @@ A modern, modular Neovim configuration focusing on **productivity, language supp
 
 ## Features
 
-- **🚀 Fast Startup**: Lazy-loading plugins for instant startup
-- **📝 Full Language Support**: Python, Go, Rust, JavaScript/TypeScript, Flutter, LaTeX, Typst
-- **🤖 AI Integration**: Copilot with chat interface and inline suggestions
-- **🧪 Testing**: Integrated test runner (neotest) for multiple languages
-- **🐛 Debugging**: Debug Adapter Protocol (DAP) support with visual breakpoints
-- **📂 Project Navigation**: Telescope + nvim-tree for fast file discovery
-- **🎨 Code Quality**: LSP, linting, formatting on save
-- **🔍 Git Integration**: Gitsigns hunk operations, diffview, lazygit TUI
-- **💾 Session Management**: Auto-save and restore sessions
+- **Fast Startup**: Lazy-loading plugins for instant startup
+- **Full Language Support**: Python, Go, Rust, JavaScript/TypeScript, Flutter, LaTeX, Typst
+- **AI Integration**: Copilot with chat interface and inline suggestions (toggleable)
+- **Testing**: Integrated test runner (neotest) for multiple languages
+- **Debugging**: Debug Adapter Protocol (DAP) support with visual breakpoints
+- **Project Navigation**: Telescope + nvim-tree for fast file discovery
+- **Code Quality**: LSP, linting, formatting on save
+- **Git Integration**: Gitsigns hunk operations, diffview, lazygit TUI
+- **Remote Development**: VS Code Remote-like experience with distant.nvim
+- **Session Management**: Auto-save and restore sessions
+- **50+ Themes**: Dark, light, and custom ergonomic themes with smart switching
+- **Modular Language Toggle**: Enable/disable language tooling per-language
 
 ## Quick Start
 
 ### Prerequisites
 
-- Neovim 0.9+
+- Neovim 0.11+ (required for new LSP API)
 - Git
 - Node.js 18+ (for Copilot)
 - Python 3.8+ (for Python support)
 - Go 1.19+ (for Go support)
 - Rust 1.70+ (for Rust support)
+- lazygit (optional, for git TUI)
 
 ### Installation
 
@@ -69,6 +73,8 @@ Common workflows:
 - **Run tests**: `<leader>tn` (nearest test)
 - **Debug**: `<leader>db` (toggle breakpoint)
 - **AI Chat**: `<leader>aa` (Copilot)
+- **Switch theme**: `<leader>cc` (Telescope picker)
+- **Remote connect**: `<leader>rc` (distant.nvim)
 
 See **[docs/keymaps.md](docs/keymaps.md)** for complete keybinding reference.
 
@@ -186,6 +192,26 @@ Chat with Copilot:
 ```
 
 Inline suggestions appear automatically. Accept with `<C-l>`.
+
+**Toggle AI features** (useful for sensitive codebases):
+```
+<leader>ai    # Toggle AI on/off (requires restart)
+:AIStatus     # Check current state
+```
+
+### Remote Development
+
+Connect to remote servers (VS Code Remote-like experience):
+
+```
+<leader>rc    # Connect to remote (SSH)
+<leader>ro    # Open remote file/directory
+<leader>rf    # Find files on remote
+<leader>rg    # Live grep on remote
+<leader>rd    # Disconnect
+```
+
+LSP, formatting, and all features work transparently on remote files.
 
 ### File Navigation
 
@@ -359,25 +385,40 @@ return {}
 Toggle entire language toolchains (LSP, formatter, linter, treesitter):
 
 ```
-<leader>Lp        # Open language support panel
-<leader>Ls        # Show status of all languages
+<leader>Lp          # Open language support panel (Telescope)
+<leader>Ls          # Show status of all languages
 :LangToggle python  # Toggle Python support
-:LangDisable rust   # Disable Rust support
+:LangEnable rust    # Enable Rust support
+:LangDisable web    # Disable Web (JS/TS) support
 ```
+
+**Inside Language Panel:**
+- `e` - Enable selected language
+- `d` - Disable selected language
+- `<CR>` - Toggle selected language
 
 Supported: `python`, `rust`, `go`, `web` (JS/TS), `flutter`, `latex`, `typst`
 
-Changes require Neovim restart to take effect.
+Changes require Neovim restart to take effect. State persisted across sessions.
 
 ### Change Colorscheme
 
-Edit `lua/plugins/colorscheme.lua`:
-
-```lua
-{ "catppuccin/nvim", name = "catppuccin", lazy = false, priority = 1000 }
+**Interactive switching (recommended):**
+```
+<leader>cc    # Open theme picker (Telescope)
+<leader>cd    # Switch to last-used dark theme
+<leader>cl    # Switch to last-used light theme
+<leader>cp    # Switch to txaty custom theme
+<leader>cn    # Cycle to next theme
+<leader>cN    # Cycle to previous theme
 ```
 
-Available: Catppuccin, Tokyonight, Kanagawa, Gruvbox, etc.
+**50+ themes available:**
+- **Dark (25+):** tokyonight, kanagawa, catppuccin, rose-pine, nightfox, onedark, cyberdream, gruvbox, nord, dracula, github_dark variants, everforest, material, vscode, and more
+- **Light (20+):** tokyonight-day, rose-pine-dawn, kanagawa-lotus, onelight, ayu-light, solarized-light, papercolor, github_light variants, and more
+- **Custom:** txaty (ergonomic dark), txaty-light (ergonomic light)
+
+Theme preference is automatically saved and restored on next startup.
 
 ### Add Language Support
 
@@ -407,24 +448,31 @@ return {
 ├── init.lua                 # Entry point
 ├── lua/
 │   ├── core/               # Fundamental settings
-│   │   ├── init.lua
+│   │   ├── init.lua         # Bootstrap loader
 │   │   ├── options.lua      # Vim options
 │   │   ├── keymaps.lua      # Global keybindings
-│   │   ├── autocmds.lua     # Autocommands
-│   │   └── lazy.lua         # Lazy.nvim bootstrap
+│   │   ├── autocmds.lua     # Autocommands + user commands
+│   │   ├── lazy.lua         # Lazy.nvim bootstrap
+│   │   ├── theme.lua        # Theme registry (50+ themes)
+│   │   ├── theme_txaty.lua  # Custom ergonomic theme
+│   │   ├── ai_toggle.lua    # AI features toggle
+│   │   ├── lang_toggle.lua  # Language support toggle
+│   │   └── lang_utils.lua   # Language utilities
 │   └── plugins/            # Plugin specifications
-│       ├── init.lua         # Plugin loader
-│       ├── colorscheme.lua
-│       ├── lsp.lua
-│       ├── formatting.lua
-│       ├── python.lua       # Python support
-│       ├── go.lua           # Go support
-│       ├── rust.lua         # Rust support
-│       ├── flutter.lua      # Flutter support
-│       └── ...
+│       ├── lsp.lua          # LSP + Mason
+│       ├── colorscheme.lua  # 40+ theme plugins
+│       ├── theme_switcher.lua
+│       ├── copilot.lua      # AI (respects toggle)
+│       ├── remote.lua       # Remote development
+│       └── languages/       # Language-specific
+│           ├── python.lua
+│           ├── go.lua
+│           ├── rust.lua
+│           ├── flutter.lua
+│           └── web.lua
+├── lua/dap/                # Debug configurations
 ├── docs/
-│   ├── keymaps.md          # Keybinding reference
-│   └── ...
+│   └── keymaps.md          # Keybinding reference
 ├── lazy-lock.json          # Plugin versions (auto-updated)
 └── README.md               # This file
 ```

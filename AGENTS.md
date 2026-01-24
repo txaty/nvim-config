@@ -7,10 +7,12 @@
     - `init.lua` — loads all core modules in sequence.
     - `options.lua` — vim options (vim.opt) and sane defaults.
     - `keymaps.lua` — general keybindings and navigation.
-    - `autocmds.lua` — event-driven logic (restore cursor position, view saving, auto-open nvim-tree).
+    - `autocmds.lua` — event-driven logic (restore cursor, view saving, auto-open nvim-tree, user commands).
     - `lazy.lua` — lazy.nvim bootstrap with custom performance settings.
-    - `theme.lua` — theme switching module with JSON persistence.
-    - `theme_txaty.lua` — custom low-saturation ergonomic dark theme.
+    - `theme.lua` — unified theme registry with 50+ themes and smart switching.
+    - `theme_txaty.lua` — custom ergonomic theme with factory pattern (dark/light variants).
+    - `ai_toggle.lua` — AI features toggle module (enables/disables Copilot).
+    - `lang_toggle.lua` — language support toggle module (enables/disables language tooling).
     - `lang_utils.lua` — shared utilities for language support (reduces boilerplate).
   - `plugins/` — modular plugin specs with inlined configurations:
     - `lsp.lua` — Mason + vim.lsp.config (new Neovim 0.11+ API) with LspAttach autocmd.
@@ -22,20 +24,21 @@
     - `telescope.lua` — Fuzzy finder and file navigation.
     - `git.lua` — Gitsigns for git decorations and hunk operations.
     - `lazygit.lua` — Terminal UI for git operations.
+    - `remote.lua` — Distant.nvim for VS Code-like remote development.
     - `markdown.lua` — Markdown rendering and live preview.
-    - `colorscheme.lua` — theme options (21+ themes: dark, light, custom).
-    - `theme_switcher.lua` — Telescope-based theme picker.
+    - `colorscheme.lua` — 40+ colorscheme plugin declarations.
+    - `theme_switcher.lua` — Telescope-based theme picker with keymaps.
     - `session.lua` — persistence.nvim with auto-save/auto-restore.
     - `bookmark.lua` — bookmarks.nvim with telescope extension.
-    - `documents.lua` — vimtex (LaTeX) + typst-preview (merged file).
+    - `documents.lua` — vimtex (LaTeX) + typst-preview (respects lang toggle).
     - `noice.lua`, `flash.lua`, `trouble.lua`, `todo.lua`, `spectre.lua` — UI/UX enhancements.
-    - `copilot.lua` — GitHub Copilot integration.
+    - `copilot.lua` — GitHub Copilot integration (respects AI toggle).
     - `dap.lua` — debug adapter protocol setup.
-    - `test.lua` — neotest testing framework.
+    - `test.lua` — neotest testing framework (respects lang toggle).
     - `minimap.lua` — neominimap.nvim code minimap.
     - `languages/` — language-specific configurations using lang_utils:
       - `python.lua`, `go.lua`, `rust.lua`, `flutter.lua`, `web.lua`.
-  - `dap/` — language-specific DAP configurations (`web.lua`, `cpp.lua`, `python.lua`, `flutter.lua`).
+  - `dap/` — language-specific DAP configurations (`web.lua`, `cpp.lua`, `python.lua`, `flutter.lua`, `go.lua`).
 - **Note**: `lua/configs/` and other NvChad directories have been completely removed. All configuration is inlined into plugin specs.
 
 ## Build, Test, and Development Commands
@@ -46,6 +49,8 @@
 - Update Treesitter parsers: `nvim --headless '+TSUpdateSync' +qa`.
 - Verify tooling: inside Neovim run `:Mason`, `:LspInfo`, `:ConformInfo`, and test with sample files.
 - Theme testing: `:ThemeSwitch`, `<leader>cc` (picker), `<leader>cd/cl/cp` (quick switch), `<leader>cn/cN` (cycle themes).
+- AI toggle: `:AIToggle`, `:AIStatus`, `<leader>ai` (requires restart).
+- Language toggle: `:LangPanel`, `:LangToggle <lang>`, `<leader>Lp` (panel), `<leader>Ls` (status).
 
 ## Coding Style & Naming Conventions
 - Lua: 2-space indent; avoid globals; prefer local helpers.
@@ -88,6 +93,9 @@
 - **Modular Design**: Each plugin is self-contained with its own config, keymaps, and dependencies inlined in the plugin spec.
 - **Performance**: lazy.nvim is configured with custom performance settings in `lua/core/lazy.lua`.
 - **Startup**: `autocmds.lua` handles VimEnter logic to auto-open nvim-tree for directories/empty buffers (session-aware: won't open if session exists).
-- **Theme System**: 21+ themes (10 dark, 10 light, 1 custom txaty). Seamless switching with persistence. Custom txaty theme is low-saturation ergonomic dark (#0f1419) based on research showing too many colors impair code reading.
+- **Theme System**: 50+ themes (25+ dark, 20+ light, 2 custom txaty/txaty-light). Unified registry with metadata. Smart dark/light switching remembers last-used per category. Custom txaty theme uses factory pattern for dark/light variants with ergonomic design (low saturation, warm neutrals, WCAG 2.1 AA compliant).
 - **Session Management**: Auto-save on VimLeavePre, auto-restore when opening Neovim without arguments. Per-directory sessions maintain buffers, windows, tabs, and state.
 - **LSP Migration**: Migrated from deprecated `require('lspconfig')` to new `vim.lsp.config()` API (Neovim 0.11+). All servers managed through mason-lspconfig handlers.
+- **AI Toggle**: Copilot plugins can be disabled entirely (like Zed's "Disable AI"). State persisted to `$XDG_DATA_HOME/ai_config.json`. Requires restart to apply.
+- **Language Toggle**: Per-language tooling (LSP, formatters, linters, treesitter) can be disabled. State persisted to `$XDG_DATA_HOME/language_config.json`. Requires restart.
+- **Remote Development**: Distant.nvim integration for VS Code Remote-like experience. SSH-based with auto LSP attachment for remote buffers.

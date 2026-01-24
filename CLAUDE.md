@@ -86,8 +86,8 @@ init.lua (entry point)
 
 ### Directory Structure
 - `lua/core/` — Fundamental Neovim settings and lazy.nvim bootstrap
-  - `theme.lua` — Theme switching module with JSON persistence
-  - `theme_txaty.lua` — Custom low-saturation ergonomic dark theme
+  - `theme.lua` — Unified theme registry with 50+ themes and smart switching
+  - `theme_txaty.lua` — Custom ergonomic theme with factory pattern (dark/light variants)
   - `lang_utils.lua` — Shared utilities for language support (reduces boilerplate)
   - `ai_toggle.lua` — AI features toggle module (enables/disables Copilot)
   - `lang_toggle.lua` — Language support toggle module (enables/disables language tooling)
@@ -99,7 +99,12 @@ init.lua (entry point)
   - `lazygit.lua` — Terminal UI for git operations
   - `remote.lua` — Distant.nvim for VS Code-like remote development
   - `markdown.lua` — Markdown rendering and live preview
-  - `lang_panel.lua` — Telescope-based language support panel
+  - `colorscheme.lua` — 40+ colorscheme plugin declarations
+  - `theme_switcher.lua` — Telescope-based theme picker with keymaps
+  - `copilot.lua` — GitHub Copilot (respects AI toggle state)
+  - `session.lua` — persistence.nvim with auto-save/restore
+  - `test.lua` — neotest framework (respects language toggle state)
+  - `documents.lua` — LaTeX (vimtex) and Typst (respects language toggle)
   - `languages/` — Language-specific configurations (python, rust, go, web, flutter)
 - `lua/dap/` — Language-specific debug adapter configurations
 - `docs/` — User documentation (keymaps reference)
@@ -337,20 +342,25 @@ See `docs/keymaps.md` for complete reference.
 ## Theme System
 
 ### Architecture
-The configuration features a seamless theme switching system with 21+ themes:
+The configuration features a seamless theme switching system with 50+ themes:
 
 **Components:**
 1. **Theme Module** (`lua/core/theme.lua`)
+   - Unified registry with metadata (variant, description, plugin, setup options)
    - Manages theme switching and persistence
    - Saves preference to `$XDG_DATA_HOME/theme_config.json`
-   - Supports 10 dark themes + 10 light themes + 1 custom theme
+   - Smart dark/light switching (remembers last-used per category)
+   - Supports 25+ dark themes + 20+ light themes + 2 custom themes
    - Commands: `:ThemeSwitch`, `:ThemeDark`, `:ThemeLight`, `:ThemeTxaty`
 
 2. **Custom txaty Theme** (`lua/core/theme_txaty.lua`)
-   - Low-saturation, ergonomic dark theme (#0f1419 background)
-   - Based on research: "Too many colors impairs code reading"
-   - Muted color palette for sustained focus
-   - Comprehensive highlight groups for all plugins (LSP, Treesitter, UI, git, bufferline, etc.)
+   - **Factory pattern** with dark and light variants
+   - Ergonomic design: Low saturation (15-25%), warm neutrals, consistent luminosity
+   - Color palette: 5-6 semantic colors (accent1-5 for strings, types, functions, keywords, special)
+   - WCAG 2.1 AA compliant contrast ratios
+   - No pure black/white (reduces eye strain)
+   - Dark variant: #0f1419 background
+   - Light variant: #fafafa background
 
 3. **Theme Switcher** (`lua/plugins/theme_switcher.lua`)
    - Telescope-based interactive theme picker
@@ -358,16 +368,16 @@ The configuration features a seamless theme switching system with 21+ themes:
    - Quick switching: `<leader>cd` (dark), `<leader>cl` (light), `<leader>cp` (txaty)
 
 **Available Themes:**
-- Dark: tokyonight, kanagawa, catppuccin, rose-pine, nightfox, onedark, cyberdream, gruvbox, nord, dracula
-- Light: tokyonight-day, rose-pine-dawn, kanagawa-lotus, onelight, ayu-light, solarized-light, papercolor, omni, jellybeans-light, dayfox
-- Custom: txaty (low-saturation ergonomic dark)
+- **Dark (25+):** tokyonight, kanagawa, catppuccin, rose-pine, nightfox, onedark, cyberdream, gruvbox, nord, dracula, ayu, solarized, jellybeans, everforest, duskfox, nordfox, terafox, carbonfox, material, vscode, moonfly, nightfly, melange, zenbones, oxocarbon, github_dark variants
+- **Light (20+):** tokyonight-day, rose-pine-dawn, kanagawa-lotus, onelight, ayu-light, solarized-light, papercolor, omni, jellybeans-light, dayfox, gruvbox-light, everforest-light, dawnfox, material-lighter, vscode-light, zenbones-light, github_light variants
+- **Custom:** txaty (ergonomic dark), txaty-light (ergonomic light)
 
 ### Usage
 ```vim
 :ThemeSwitch      " Open Telescope picker
 <leader>cc        " Choose theme interactively (Telescope)
-<leader>cd        " Switch to first dark theme (quick)
-<leader>cl        " Switch to first light theme (quick)
+<leader>cd        " Switch to last-used dark theme (smart)
+<leader>cl        " Switch to last-used light theme (smart)
 <leader>cp        " Switch to txaty custom theme (quick)
 <leader>cn        " Next theme (cycle forward)
 <leader>cN        " Previous theme (cycle backward)
