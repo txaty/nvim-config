@@ -106,6 +106,23 @@ Install Rust via `rustup`, then open `.rs` file.
 
 **Installed tools:** `rust-analyzer`, `rustfmt`, `codelldb` (debugger)
 
+**Rust keybindings** (use `<leader>R*` prefix):
+```
+<leader>Rr    # Run project
+<leader>Rc    # Check (cargo check)
+<leader>Rb    # Build
+<leader>Rt    # Run tests
+<leader>Rl    # Lint (clippy)
+<leader>Rd    # Toggle inlay hints
+```
+
+**Crates keybindings** (in Cargo.toml):
+```
+<leader>Cv    # Show versions
+<leader>Cu    # Upgrade crate
+<leader>CA    # Upgrade all crates
+```
+
 #### TypeScript/JavaScript
 
 Open `.ts`, `.tsx`, `.js`, `.jsx` files - LSP auto-attaches.

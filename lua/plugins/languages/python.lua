@@ -27,6 +27,18 @@ return {
     ruff = {},
   },
 
+  -- DAP Python integration
+  {
+    "mfussenegger/nvim-dap-python",
+    ft = "python",
+    dependencies = {
+      "mfussenegger/nvim-dap",
+    },
+    config = function()
+      -- Actual setup deferred to lua/dap/python.lua
+    end,
+  },
+
   -- Virtual environment selector
   {
     "linux-cultist/venv-selector.nvim",
@@ -48,8 +60,11 @@ return {
       local selector = require "venv-selector"
       selector.setup(opts)
 
-      -- Setup DAP (extracted to lua/dap/python.lua)
-      require("dap.python").setup()
+      -- Setup DAP only if nvim-dap-python is available
+      local ok = pcall(require, "dap-python")
+      if ok then
+        require("dap.python").setup()
+      end
     end,
   },
 }

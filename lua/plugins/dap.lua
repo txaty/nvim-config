@@ -78,9 +78,15 @@ return {
       end, { desc = "Terminate" })
 
       -- Preload language-specific DAP configs if available
-      pcall(require, "dap.cpp")
-      pcall(require, "dap.go")
-      pcall(require, "dap.web")
+      local function load_dap_config(name)
+        local ok, err = pcall(require, "dap." .. name)
+        if not ok and not err:match "module .* not found" then
+          vim.notify("DAP config error (" .. name .. "): " .. err, vim.log.levels.WARN)
+        end
+      end
+      load_dap_config "cpp"
+      load_dap_config "go"
+      load_dap_config "web"
     end,
   },
   {

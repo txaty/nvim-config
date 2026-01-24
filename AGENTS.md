@@ -51,6 +51,8 @@
 - Theme testing: `:ThemeSwitch`, `<leader>cc` (picker), `<leader>cd/cl/cp` (quick switch), `<leader>cn/cN` (cycle themes).
 - AI toggle: `:AIToggle`, `:AIStatus`, `<leader>ai` (requires restart).
 - Language toggle: `:LangPanel`, `:LangToggle <lang>`, `<leader>Lp` (panel), `<leader>Ls` (status).
+- Rust operations: `<leader>R*` prefix (e.g., `<leader>Rr` run, `<leader>Rc` check, `<leader>Rt` test).
+- Crates (Cargo.toml): `<leader>C*` prefix (e.g., `<leader>Cu` upgrade, `<leader>Cv` versions).
 
 ## Coding Style & Naming Conventions
 - Lua: 2-space indent; avoid globals; prefer local helpers.

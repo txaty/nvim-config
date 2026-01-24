@@ -142,35 +142,35 @@ return {
       }
     end,
     config = function()
-      -- Keymaps specific to Rust
+      -- Keymaps specific to Rust (use <leader>R to avoid conflict with Remote <leader>r)
       local map = vim.keymap.set
       local opts = { noremap = true, silent = true }
-      map("n", "<leader>rr", "<cmd>RustRun<cr>", vim.tbl_extend("force", opts, { desc = "Rust: Run" }))
+      map("n", "<leader>Rr", "<cmd>RustRun<cr>", vim.tbl_extend("force", opts, { desc = "Rust: Run" }))
       map(
         "n",
-        "<leader>rR",
+        "<leader>RR",
         "<cmd>RustRun release<cr>",
         vim.tbl_extend("force", opts, { desc = "Rust: Run (release)" })
       )
-      map("n", "<leader>rt", "<cmd>RustTest<cr>", vim.tbl_extend("force", opts, { desc = "Rust: Test" }))
-      map("n", "<leader>rT", function()
+      map("n", "<leader>Rt", "<cmd>RustTest<cr>", vim.tbl_extend("force", opts, { desc = "Rust: Test" }))
+      map("n", "<leader>RT", function()
         vim.cmd.RustTest { args = "--release" }
       end, vim.tbl_extend("force", opts, { desc = "Rust: Test (release)" }))
-      map("n", "<leader>rc", "<cmd>RustCheck<cr>", vim.tbl_extend("force", opts, { desc = "Rust: Check" }))
-      map("n", "<leader>rb", "<cmd>RustBuild<cr>", vim.tbl_extend("force", opts, { desc = "Rust: Build" }))
-      map("n", "<leader>ra", "<cmd>RustExpandMacro<cr>", vim.tbl_extend("force", opts, { desc = "Rust: Expand macro" }))
+      map("n", "<leader>Rc", "<cmd>RustCheck<cr>", vim.tbl_extend("force", opts, { desc = "Rust: Check" }))
+      map("n", "<leader>Rb", "<cmd>RustBuild<cr>", vim.tbl_extend("force", opts, { desc = "Rust: Build" }))
+      map("n", "<leader>Ra", "<cmd>RustExpandMacro<cr>", vim.tbl_extend("force", opts, { desc = "Rust: Expand macro" }))
       map(
         "n",
-        "<leader>rx",
+        "<leader>Rx",
         "<cmd>RustExplainError<cr>",
         vim.tbl_extend("force", opts, { desc = "Rust: Explain error" })
       )
-      map("n", "<leader>rD", "<cmd>RustDebuggables<cr>", vim.tbl_extend("force", opts, { desc = "Rust: Debuggables" }))
-      map("n", "<leader>rH", "<cmd>RustHoverAction<cr>", vim.tbl_extend("force", opts, { desc = "Rust: Hover action" }))
-      map("n", "<leader>rl", "<cmd>RustLint<cr>", vim.tbl_extend("force", opts, { desc = "Rust: Lint (clippy)" }))
+      map("n", "<leader>RD", "<cmd>RustDebuggables<cr>", vim.tbl_extend("force", opts, { desc = "Rust: Debuggables" }))
+      map("n", "<leader>RH", "<cmd>RustHoverAction<cr>", vim.tbl_extend("force", opts, { desc = "Rust: Hover action" }))
+      map("n", "<leader>Rl", "<cmd>RustLint<cr>", vim.tbl_extend("force", opts, { desc = "Rust: Lint (clippy)" }))
       map(
         "n",
-        "<leader>rd",
+        "<leader>Rd",
         "<cmd>RustToggleInlayHints<cr>",
         vim.tbl_extend("force", opts, { desc = "Rust: Toggle inlay hints" })
       )

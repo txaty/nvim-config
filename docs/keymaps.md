@@ -23,6 +23,8 @@
 | `<leader>p*` | **Python** (venv) | `<leader>pv` = select virtualenv |
 | `<leader>q*` | **Quit/Session** | `<leader>qq` = quit window |
 | `<leader>r*` | **Remote Development** | `<leader>rc` = connect to server |
+| `<leader>R*` | **Rust** (language) | `<leader>Rr` = run, `<leader>Rc` = check |
+| `<leader>C*` | **Crates** (Cargo.toml) | `<leader>Cu` = upgrade crate |
 | `<leader>s*` | **Search & Replace** | `<leader>S` = Spectre search/replace |
 | `<leader>S*` | **Spectre** | `<leader>sw` = search current word |
 | `<leader>t*` | **Testing** | `<leader>tn` = run nearest test |
@@ -233,6 +235,46 @@
 | `<leader>Fe` | Launch emulator |
 | `<leader>Fo` | Toggle widget outline |
 | `<leader>FL` | Toggle dev logs |
+
+---
+
+## Rust (`<leader>R*`)
+
+**Note:** Only available in `.rs` (Rust) files. Uses capital `R` to avoid conflict with Remote (`<leader>r*`).
+
+### Build & Run
+| Keybinding | Description |
+|---|---|
+| `<leader>Rr` | Run Rust project |
+| `<leader>RR` | Run Rust project (release mode) |
+| `<leader>Rt` | Run tests |
+| `<leader>RT` | Run tests (release mode) |
+| `<leader>Rc` | Check project (cargo check) |
+| `<leader>Rb` | Build project (cargo build) |
+
+### Debugging & Analysis
+| Keybinding | Description |
+|---|---|
+| `<leader>Ra` | Expand macro at cursor |
+| `<leader>Rx` | Explain error under cursor |
+| `<leader>RD` | Show debuggables picker |
+| `<leader>RH` | Hover action |
+| `<leader>Rl` | Run clippy (lint) |
+| `<leader>Rd` | Toggle inlay hints |
+
+---
+
+## Crates (`<leader>C*`)
+
+**Note:** Only available in `Cargo.toml` files.
+
+| Keybinding | Description |
+|---|---|
+| `<leader>Cv` | Show versions popup |
+| `<leader>Cf` | Show features popup |
+| `<leader>Cd` | Show dependencies popup |
+| `<leader>Cu` | Upgrade crate under cursor |
+| `<leader>CA` | Upgrade all crates |
 
 ---
 
@@ -603,7 +645,9 @@
 | `<leader>t*` | "T" for Testing - test runner operations across all languages |
 | `<leader>u*` | "U" for UI - display toggle operations (wrap, spell, numbers, conceal) |
 | `<leader>n*` | "N" for Notifications - Noice message/notification management |
-| `<leader>r*` | "R" for Remote - distant.nvim remote development operations |
+| `<leader>r*` | "r" for Remote - distant.nvim remote development operations |
+| `<leader>R*` | Capital "R" for Rust - language-specific, avoids collision with Remote (`<leader>r*`) |
+| `<leader>C*` | Capital "C" for Crates - Cargo.toml crate management |
 | `<leader>L*` | Capital "L" for Language support panel - avoids collision with LSP (`<leader>l*`) |
 
 ---
@@ -614,6 +658,7 @@ The following keymaps have changed to resolve conflicts and improve organization
 
 | Old Keymap | New Keymap | Reason |
 |---|---|---|
+| `<leader>r*` (Rust) | `<leader>R*` | Moved to capital R to avoid collision with Remote (`<leader>r*`) |
 | `<leader>rn` | `<leader>nr` | Freed for LSP rename |
 | `<leader>cm` | `<leader>lm` | Moved to LSP namespace |
 | `<leader>cc/cq/ce/ct/cf/cr` | `<leader>aa/aq/ae/at/af/ar` | Copilot now in AI namespace |
