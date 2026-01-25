@@ -8,6 +8,7 @@ local M = {}
 local config_path = vim.fn.stdpath "data" .. "/language_config.json"
 
 -- Cache for config (avoids repeated file I/O - called 7x at startup)
+-- Loaded once at module init and cached for entire session
 local cached_config = nil
 
 -- Language registry with metadata
@@ -21,6 +22,47 @@ M.languages = {
   typst = { name = "Typst", description = "typst-preview.nvim" },
 }
 
+-- Load config once at module load (called during lazy.nvim spec evaluation)
+-- Optimized using vim.uv for faster I/O
+local function load_config_once()
+  if cached_config ~= nil then
+    return
+  end
+
+  -- Use vim.uv.fs_stat for faster existence check
+  local stat = vim.uv.fs_stat(config_path)
+  if not stat then
+    cached_config = { languages = {} }
+    return
+  end
+
+  -- Read file synchronously using libuv (faster for small files)
+  local fd = vim.uv.fs_open(config_path, "r", 438)
+  if not fd then
+    cached_config = { languages = {} }
+    return
+  end
+
+  local content = vim.uv.fs_read(fd, stat.size, 0)
+  vim.uv.fs_close(fd)
+
+  if not content or content == "" then
+    cached_config = { languages = {} }
+    return
+  end
+
+  local ok, config = pcall(vim.json.decode, content)
+  if not ok or type(config) ~= "table" then
+    cached_config = { languages = {} }
+    return
+  end
+
+  cached_config = config
+end
+
+-- Initialize cache immediately at module load
+load_config_once()
+
 --- Invalidate the cache (called after state changes)
 local function invalidate_cache()
   cached_config = nil
@@ -29,24 +71,10 @@ end
 --- Load config from disk (with caching)
 --- @return table<string, boolean>
 local function load_config()
-  if cached_config ~= nil then
-    return cached_config.languages or {}
+  if cached_config == nil then
+    load_config_once()
   end
-
-  local ok, content = pcall(vim.fn.readfile, config_path)
-  if not ok then
-    cached_config = {}
-    return {}
-  end
-
-  local ok2, config = pcall(vim.json.decode, table.concat(content, "\n"))
-  if not ok2 then
-    cached_config = {}
-    return {}
-  end
-
-  cached_config = config
-  return config.languages or {}
+  return cached_config.languages or {}
 end
 
 --- Save config to disk

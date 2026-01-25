@@ -46,7 +46,9 @@ return {
       }
 
       local lint_augroup = vim.api.nvim_create_augroup("lint", { clear = true })
-      vim.api.nvim_create_autocmd({ "BufEnter", "BufWritePost", "InsertLeave" }, {
+      -- Note: BufEnter removed - too aggressive, causes lint on every buffer switch
+      -- Linting now runs on: file write (BufWritePost) and leaving insert mode (InsertLeave)
+      vim.api.nvim_create_autocmd({ "BufWritePost", "InsertLeave" }, {
         group = lint_augroup,
         callback = function()
           lint.try_lint()
@@ -56,7 +58,7 @@ return {
   },
   {
     "rshkarin/mason-nvim-lint",
-    event = "VeryLazy",
+    event = { "BufReadPre", "BufNewFile" }, -- Load with nvim-lint, not VeryLazy
     dependencies = { "williamboman/mason.nvim", "mfussenegger/nvim-lint" },
     opts = {},
   },

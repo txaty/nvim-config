@@ -53,6 +53,10 @@ autocmd("BufReadPost", {
 })
 
 -- View saving logic (folds only, excludes special buffers)
+-- Debounced to avoid excessive I/O during rapid buffer switches
+local view_save_timer = nil
+local DEBOUNCE_MS = 100
+
 autocmd({ "BufWinLeave" }, {
   group = augroup "view_saving",
   pattern = "*",
@@ -63,7 +67,13 @@ autocmd({ "BufWinLeave" }, {
     if bufname == "" or buftype ~= "" or filetype == "NvimTree" or filetype == "help" then
       return
     end
-    vim.cmd "mkview"
+    -- Debounce: cancel pending save and schedule a new one
+    if view_save_timer then
+      view_save_timer:stop()
+    end
+    view_save_timer = vim.defer_fn(function()
+      pcall(vim.cmd, "mkview")
+    end, DEBOUNCE_MS)
   end,
 })
 

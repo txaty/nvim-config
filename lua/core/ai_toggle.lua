@@ -7,8 +7,50 @@ local M = {}
 -- Path to store AI toggle state
 local config_path = vim.fn.stdpath "data" .. "/ai_config.json"
 
--- Cache for enabled state (avoids repeated file I/O)
+-- Cache for enabled state (avoids repeated file I/O during startup)
+-- This is read once at module load and cached for the session
 local cached_enabled = nil
+
+-- Load config once at module load to avoid repeated file I/O
+-- This is called during lazy.nvim spec evaluation, so we optimize it
+local function load_config_once()
+  if cached_enabled ~= nil then
+    return
+  end
+
+  -- Use vim.uv.fs_stat for faster existence check (no pcall needed)
+  local stat = vim.uv.fs_stat(config_path)
+  if not stat then
+    cached_enabled = true -- Default: AI enabled (no config file)
+    return
+  end
+
+  -- Read file synchronously (faster than vim.fn.readfile for small files)
+  local fd = vim.uv.fs_open(config_path, "r", 438)
+  if not fd then
+    cached_enabled = true
+    return
+  end
+
+  local content = vim.uv.fs_read(fd, stat.size, 0)
+  vim.uv.fs_close(fd)
+
+  if not content or content == "" then
+    cached_enabled = true
+    return
+  end
+
+  local ok, config = pcall(vim.json.decode, content)
+  if not ok or type(config) ~= "table" then
+    cached_enabled = true
+    return
+  end
+
+  cached_enabled = config.enabled ~= false
+end
+
+-- Initialize cache immediately at module load
+load_config_once()
 
 --- Invalidate the cache (called after state changes)
 local function invalidate_cache()
@@ -18,23 +60,9 @@ end
 --- Check if AI features are enabled
 --- @return boolean true if AI is enabled, false otherwise
 function M.is_enabled()
-  if cached_enabled ~= nil then
-    return cached_enabled
+  if cached_enabled == nil then
+    load_config_once()
   end
-
-  local ok, content = pcall(vim.fn.readfile, config_path)
-  if not ok then
-    cached_enabled = true -- Default: AI enabled
-    return cached_enabled
-  end
-
-  local ok2, config = pcall(vim.json.decode, table.concat(content, "\n"))
-  if not ok2 then
-    cached_enabled = true -- Fallback to enabled on parse error
-    return cached_enabled
-  end
-
-  cached_enabled = config.enabled ~= false
   return cached_enabled
 end
 

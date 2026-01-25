@@ -11,6 +11,10 @@ local defaults = {
   conceallevel = 2,
 }
 
+-- Throttle apply() calls to avoid excessive work during rapid window operations
+local last_apply_time = 0
+local APPLY_THROTTLE_MS = 50 -- Minimum ms between apply() calls
+
 --- Initialize UI state from globals or defaults
 function M.init()
   for opt, default in pairs(defaults) do
@@ -21,9 +25,16 @@ function M.init()
   end
 end
 
---- Apply current UI state to a window
+--- Apply current UI state to a window (throttled to avoid excessive calls)
 ---@param win? number Window handle (0 for current window)
 function M.apply(win)
+  -- Throttle rapid calls (e.g., during session restore with many windows)
+  local now = vim.uv.now()
+  if now - last_apply_time < APPLY_THROTTLE_MS then
+    return
+  end
+  last_apply_time = now
+
   win = win or 0
   vim.wo[win].wrap = vim.g.ui_wrap
   vim.wo[win].spell = vim.g.ui_spell
