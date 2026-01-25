@@ -42,22 +42,32 @@ autocmd("BufReadPost", {
   end,
 })
 
--- User's View Saving Logic
+-- View saving logic (folds only, excludes special buffers)
 autocmd({ "BufWinLeave" }, {
+  group = augroup "view_saving",
   pattern = "*",
   callback = function()
-    if vim.fn.expand "%" ~= "" and vim.bo.buftype == "" then
-      vim.cmd "mkview"
+    local bufname = vim.fn.expand "%"
+    local buftype = vim.bo.buftype
+    local filetype = vim.bo.filetype
+    if bufname == "" or buftype ~= "" or filetype == "NvimTree" or filetype == "help" then
+      return
     end
+    vim.cmd "mkview"
   end,
 })
 
 autocmd({ "BufWinEnter" }, {
+  group = augroup "view_loading",
   pattern = "*",
   callback = function()
-    if vim.fn.expand "%" ~= "" and vim.bo.buftype == "" then
-      vim.cmd "silent! loadview"
+    local bufname = vim.fn.expand "%"
+    local buftype = vim.bo.buftype
+    local filetype = vim.bo.filetype
+    if bufname == "" or buftype ~= "" or filetype == "NvimTree" or filetype == "help" then
+      return
     end
+    vim.cmd "silent! loadview"
   end,
 })
 

@@ -90,6 +90,23 @@ return {
     config = function(_, opts)
       require("nvim-tree").setup(opts)
 
+      -- Track target width for enforcement
+      local target_width = nvim_tree_width:load() or 30
+
+      -- Enforce nvim-tree width (called after events that might reset it)
+      local function enforce_width()
+        for _, win in ipairs(vim.api.nvim_list_wins()) do
+          local buf = vim.api.nvim_win_get_buf(win)
+          if vim.bo[buf].filetype == "NvimTree" then
+            local current = vim.api.nvim_win_get_width(win)
+            if current ~= target_width then
+              vim.api.nvim_win_set_width(win, target_width)
+            end
+            break
+          end
+        end
+      end
+
       -- Track width changes via nvim-tree's own events
       local api = require "nvim-tree.api"
       api.events.subscribe(api.events.Event.TreeOpen, function()
@@ -101,6 +118,7 @@ return {
               local current_width = vim.api.nvim_win_get_width(win)
               -- Only save if different from default and reasonable
               if current_width >= 20 then
+                target_width = current_width
                 nvim_tree_width:save(current_width)
               end
               break
@@ -109,17 +127,36 @@ return {
         end, 100)
       end)
 
-      -- Save width on window resize
+      -- Save width on window resize and update target
       vim.api.nvim_create_autocmd("WinResized", {
         group = vim.api.nvim_create_augroup("NvimTreeWidthPersist", { clear = true }),
         callback = function()
           for _, win in ipairs(vim.api.nvim_list_wins()) do
             local buf = vim.api.nvim_win_get_buf(win)
             if vim.bo[buf].filetype == "NvimTree" then
-              nvim_tree_width:save(vim.api.nvim_win_get_width(win))
+              local new_width = vim.api.nvim_win_get_width(win)
+              target_width = new_width
+              nvim_tree_width:save(new_width)
               break
             end
           end
+        end,
+      })
+
+      -- Enforce width on buffer enter (catches loadview/session side effects)
+      vim.api.nvim_create_autocmd("BufEnter", {
+        group = vim.api.nvim_create_augroup("NvimTreeWidthEnforce", { clear = true }),
+        callback = function()
+          vim.defer_fn(enforce_width, 10)
+        end,
+      })
+
+      -- Enforce width after session load
+      vim.api.nvim_create_autocmd("SessionLoadPost", {
+        group = vim.api.nvim_create_augroup("NvimTreeWidthSession", { clear = true }),
+        callback = function()
+          target_width = nvim_tree_width:load() or 30
+          vim.defer_fn(enforce_width, 100)
         end,
       })
     end,
