@@ -25,7 +25,10 @@ autocmd({ "WinNew", "BufWinEnter" }, {
   end,
 })
 
--- Prose-friendly settings for text files (overrides session state)
+-- Prose-friendly settings for text files
+-- NOTE: Prose filetypes always force wrap=true, regardless of global UI setting
+-- This is intentional: prose files should always wrap for readability
+-- The global vim.g.ui_wrap setting applies to code files only
 autocmd("FileType", {
   group = augroup "prose_settings",
   pattern = { "markdown", "text", "tex", "typst" },
@@ -128,6 +131,10 @@ autocmd("VimEnter", {
       local session_file = persistence.current()
       if vim.fn.filereadable(session_file) == 1 then
         pcall(persistence.load)
+        -- Apply UI state to all restored windows (bypasses throttle)
+        vim.schedule(function()
+          require("core.ui_toggle").apply_all()
+        end)
       end
     end
   end,
@@ -591,3 +598,20 @@ vim.api.nvim_create_user_command("CleanupNvim", function()
     vim.notify("Failed to load cleanup module", vim.log.levels.ERROR)
   end
 end, { desc = "Clean up temporary and cache files" })
+
+-- UI Status Command (show current UI toggle states)
+vim.api.nvim_create_user_command("UIStatus", function()
+  local ok = pcall(require, "core.ui_toggle")
+  if not ok then
+    vim.notify("Failed to load ui_toggle module", vim.log.levels.ERROR)
+    return
+  end
+
+  local lines = { "UI Toggle Status:" }
+  for _, opt in ipairs { "wrap", "spell", "number", "relativenumber", "conceallevel" } do
+    local value = vim.g["ui_" .. opt]
+    local display = type(value) == "boolean" and (value and "on" or "off") or tostring(value)
+    table.insert(lines, string.format("  %s: %s", opt, display))
+  end
+  vim.notify(table.concat(lines, "\n"), vim.log.levels.INFO)
+end, { desc = "Show UI toggle status" })
