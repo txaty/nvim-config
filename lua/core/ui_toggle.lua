@@ -53,8 +53,8 @@ local function save_config(config)
   cached_config = nil -- Invalidate cache
 end
 
--- Initialize config cache on module load
-load_config_once()
+-- Note: load_config_once() is called lazily in init() or on first access
+-- This avoids disk I/O at require-time for faster startup
 
 --- Initialize UI state from JSON config, session globals, or defaults
 --- Precedence: JSON file > vim.g global (session) > default

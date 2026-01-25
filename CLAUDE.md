@@ -82,13 +82,38 @@ init.lua (entry point)
   └─ core/init.lua → loads in order:
       ├─ core/options.lua    (vim.opt settings)
       ├─ core/keymaps.lua    (general keybindings)
-      ├─ core/autocmds.lua   (event handlers)
+      ├─ core/autocmds.lua   (core event handlers + lifecycle setup)
+      │   └─ core/lifecycle/init.lua (VimEnter orchestrator)
       └─ core/lazy.lua       (plugin manager bootstrap)
           └─ plugins/*       (lazy-loaded plugin specs)
+
+VimEnter Lifecycle (deterministic order):
+  1. core/lifecycle/colorscheme.lua  (theme restore FIRST)
+  2. core/lifecycle/session.lua      (session restore)
+  3. core/lifecycle/ui_state.lua     (apply UI toggles)
+  4. core/lifecycle/nvim_tree.lua    (file explorer auto-open)
+  5. core/commands/init.lua          (register user commands)
 ```
 
 ### Directory Structure
 - `lua/core/` — Fundamental Neovim settings and lazy.nvim bootstrap
+  - `lifecycle/` — Initialization lifecycle modules (VimEnter orchestration)
+    - `init.lua` — Lifecycle orchestrator
+    - `colorscheme.lua` — Theme restoration
+    - `session.lua` — Session save/restore
+    - `ui_state.lua` — UI toggle application
+    - `nvim_tree.lua` — NvimTree auto-open
+  - `commands/` — User command definitions
+    - `init.lua` — Command registry
+    - `theme.lua` — :ThemeSwitch, :ThemeDark, etc
+    - `ai.lua` — :AIToggle, :AIEnable, etc
+    - `lang.lua` — :LangToggle, :LangPanel, etc
+    - `cleanup.lua` — :CleanupNvim
+    - `ui.lua` — :UIStatus
+  - `util/` — Shared utilities
+    - `augroup.lua` — Augroup helper with registry
+    - `keymap.lua` — Keymap helper with conflict detection
+    - `safe_require.lua` — pcall wrapper with error handling
   - `theme.lua` — Unified theme registry with 50+ themes and smart switching
   - `theme_txaty.lua` — Custom ergonomic theme with factory pattern (dark/light variants)
   - `lang_utils.lua` — Shared utilities for language support (reduces boilerplate)
