@@ -59,6 +59,9 @@ opt.whichwrap:append "<>[]hl"
 opt.foldlevel = 99
 opt.foldmethod = "manual"
 
+-- View options: only save folds (cursor restored by BufReadPost autocmd)
+opt.viewoptions = "folds"
+
 --------------------------------------
 -- UI Polish
 --------------------------------------
