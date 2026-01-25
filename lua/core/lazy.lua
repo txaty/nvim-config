@@ -11,19 +11,22 @@ require("lazy").setup {
   },
   defaults = { lazy = true },
   install = { colorscheme = { "catppuccin", "habamax" } },
-  checker = { enabled = true }, -- automatically check for plugin updates
+  checker = { enabled = false }, -- disable auto-check for better performance (use :Lazy check)
   performance = {
     rtp = {
-      -- disable some rtp plugins
+      -- disable some rtp plugins for faster startup
       disabled_plugins = {
         "gzip",
         "matchit",
-        --"matchparen",
+        -- "matchparen", -- keep for bracket matching
         "netrwPlugin",
         "tarPlugin",
         "tohtml",
         "tutor",
         "zipPlugin",
+        "rplugin", -- remote plugins (not used)
+        "spellfile", -- spell file download (rarely used)
+        "editorconfig", -- we set options explicitly
       },
     },
   },

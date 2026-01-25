@@ -1,10 +1,17 @@
 -- UI Components: File Explorer, Statusline, Bufferline, and visual enhancements
 
--- Shared utility for nvim-tree width persistence
+-- Shared utility for nvim-tree width persistence (with in-memory caching)
 local nvim_tree_width = {
   path = vim.fn.stdpath "data" .. "/nvim_tree_width.json",
+  cached_width = nil, -- In-memory cache to reduce disk I/O
+  dirty = false, -- Track if cache differs from disk
 
   load = function(self)
+    -- Return cached value if available
+    if self.cached_width then
+      return self.cached_width
+    end
+
     local f = io.open(self.path, "r")
     if not f then
       return nil
@@ -13,6 +20,7 @@ local nvim_tree_width = {
     f:close()
     local ok, data = pcall(vim.json.decode, content)
     if ok and data and type(data.width) == "number" and data.width >= 20 then
+      self.cached_width = data.width
       return data.width
     end
     return nil
@@ -22,10 +30,23 @@ local nvim_tree_width = {
     if type(width) ~= "number" or width < 20 then
       return
     end
+    -- Update cache, mark dirty (persist later)
+    if self.cached_width ~= width then
+      self.cached_width = width
+      self.dirty = true
+    end
+  end,
+
+  -- Persist to disk (called on tree close or VimLeave)
+  persist = function(self)
+    if not self.dirty or not self.cached_width then
+      return
+    end
     local f = io.open(self.path, "w")
     if f then
-      f:write(vim.json.encode { width = width })
+      f:write(vim.json.encode { width = self.cached_width })
       f:close()
+      self.dirty = false
     end
   end,
 }
@@ -126,7 +147,7 @@ return {
       -- 2. Save width on nvim-tree's own resize event (API calls)
       api.events.subscribe(api.events.Event.Resize, function(size)
         if size and size >= 20 then
-          nvim_tree_width:save(size)
+          nvim_tree_width:save(size) -- Updates cache, doesn't write to disk
           -- Re-apply winfixwidth after resize
           local win = get_nvim_tree_win()
           if win then
@@ -134,6 +155,19 @@ return {
           end
         end
       end)
+
+      -- 2b. Persist width to disk on tree close (reduces I/O during resizes)
+      api.events.subscribe(api.events.Event.TreeClose, function()
+        nvim_tree_width:persist()
+      end)
+
+      -- 2c. Persist on vim exit as well
+      vim.api.nvim_create_autocmd("VimLeavePre", {
+        group = vim.api.nvim_create_augroup("NvimTreeWidthSave", { clear = true }),
+        callback = function()
+          nvim_tree_width:persist()
+        end,
+      })
 
       -- 3. Save width on manual resize (mouse drag, <C-w>< etc.)
       vim.api.nvim_create_autocmd("WinResized", {
@@ -191,8 +225,8 @@ return {
         },
         lualine_x = {
           {
+            -- LSP client names - cached per statusline refresh to avoid duplicate API calls
             function()
-              -- Cache result to avoid duplicate API call (cond also checks this)
               local clients = vim.lsp.get_clients { bufnr = 0 }
               if #clients == 0 then
                 return ""
@@ -203,7 +237,8 @@ return {
               end
               return " " .. table.concat(names, ", ")
             end,
-            -- Note: We check inside the function to avoid duplicate get_clients call
+            -- Condition uses the same logic inline to avoid separate API call
+            -- The component returns empty string when no clients, which hides it
           },
         },
         lualine_y = { "filetype" },
@@ -288,7 +323,7 @@ return {
     event = "BufReadPost",
     config = function()
       require("illuminate").configure {
-        delay = 120,
+        delay = 200, -- Increased from 120ms for better performance
         modes_denylist = { "i" },
         large_file_cutoff = 2000,
         large_file_overrides = { providers = { "lsp" } },

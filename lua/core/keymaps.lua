@@ -18,21 +18,21 @@ map("n", "<C-s>", "<cmd>w<CR>", { desc = "General Save file" })
 map("n", "<C-c>", "<cmd>%y+<CR>", { desc = "General Copy whole file" })
 
 -- UI/Display toggles (session-persistent via vim.g.ui_*)
-local ui = require "core.ui_toggle"
+-- Note: ui_toggle is loaded on-demand to avoid startup cost
 map("n", "<leader>uw", function()
-  ui.toggle "wrap"
+  require("core.ui_toggle").toggle "wrap"
 end, { desc = "UI: Toggle line wrap" })
 map("n", "<leader>us", function()
-  ui.toggle "spell"
+  require("core.ui_toggle").toggle "spell"
 end, { desc = "UI: Toggle spell check" })
 map("n", "<leader>un", function()
-  ui.toggle "number"
+  require("core.ui_toggle").toggle "number"
 end, { desc = "UI: Toggle line numbers" })
 map("n", "<leader>ur", function()
-  ui.toggle "relativenumber"
+  require("core.ui_toggle").toggle "relativenumber"
 end, { desc = "UI: Toggle relative numbers" })
 map("n", "<leader>uc", function()
-  ui.toggle "conceallevel"
+  require("core.ui_toggle").toggle "conceallevel"
 end, { desc = "UI: Toggle conceal" })
 
 -- User Mappings from mappings.lua

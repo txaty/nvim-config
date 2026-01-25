@@ -1,10 +1,83 @@
 return {
   {
     "mfussenegger/nvim-dap",
-    event = "VeryLazy",
+    lazy = true, -- Loaded on-demand via keymaps
     dependencies = {
       "rcarriga/nvim-dap-ui",
       "nvim-neotest/nvim-nio",
+    },
+    keys = {
+      {
+        "<leader>db",
+        function()
+          require("dap").toggle_breakpoint()
+        end,
+        desc = "Toggle breakpoint",
+      },
+      {
+        "<leader>dB",
+        function()
+          require("dap").set_breakpoint(vim.fn.input "Breakpoint condition: ")
+        end,
+        desc = "Conditional breakpoint",
+      },
+      {
+        "<leader>dc",
+        function()
+          require("dap").continue()
+        end,
+        desc = "Continue / run",
+      },
+      {
+        "<leader>dl",
+        function()
+          require("dap").run_last()
+        end,
+        desc = "Run last",
+      },
+      {
+        "<leader>di",
+        function()
+          require("dap").step_into()
+        end,
+        desc = "Step into",
+      },
+      {
+        "<leader>do",
+        function()
+          require("dap").step_over()
+        end,
+        desc = "Step over",
+      },
+      {
+        "<leader>dO",
+        function()
+          require("dap").step_out()
+        end,
+        desc = "Step out",
+      },
+      {
+        "<leader>dr",
+        function()
+          require("dap").repl.toggle()
+        end,
+        desc = "Toggle REPL",
+      },
+      {
+        "<leader>du",
+        function()
+          require("dapui").toggle()
+        end,
+        desc = "Toggle UI",
+      },
+      {
+        "<leader>dx",
+        function()
+          require("dap").terminate()
+          require("dapui").close()
+        end,
+        desc = "Terminate",
+      },
     },
     config = function()
       local dap = require "dap"
@@ -59,44 +132,36 @@ return {
         dapui.close()
       end
 
-      -- Keymaps
-      local map = vim.keymap.set
-      map("n", "<leader>db", dap.toggle_breakpoint, { desc = "Toggle breakpoint" })
-      map("n", "<leader>dB", function()
-        dap.set_breakpoint(vim.fn.input "Breakpoint condition: ")
-      end, { desc = "Conditional breakpoint" })
-      map("n", "<leader>dc", dap.continue, { desc = "Continue / run" })
-      map("n", "<leader>dl", dap.run_last, { desc = "Run last" })
-      map("n", "<leader>di", dap.step_into, { desc = "Step into" })
-      map("n", "<leader>do", dap.step_over, { desc = "Step over" })
-      map("n", "<leader>dO", dap.step_out, { desc = "Step out" })
-      map("n", "<leader>dr", dap.repl.toggle, { desc = "Toggle REPL" })
-      map("n", "<leader>du", dapui.toggle, { desc = "Toggle UI" })
-      map("n", "<leader>dx", function()
-        dap.terminate()
-        dapui.close()
-      end, { desc = "Terminate" })
-
-      -- Preload language-specific DAP configs if available
-      local function load_dap_config(name)
-        local ok, err = pcall(require, "dap." .. name)
-        if not ok and not err:match "module .* not found" then
-          vim.notify("DAP config error (" .. name .. "): " .. err, vim.log.levels.WARN)
-        end
-      end
-      load_dap_config "cpp"
-      load_dap_config "go"
-      load_dap_config "web"
+      -- Defer language-specific DAP configs loading (only load when needed)
+      -- These will be loaded on first debug session start via LspAttach or filetype
+      vim.api.nvim_create_autocmd("FileType", {
+        group = vim.api.nvim_create_augroup("DapLangConfigs", { clear = true }),
+        pattern = { "c", "cpp", "go", "javascript", "typescript" },
+        once = true,
+        callback = function()
+          vim.schedule(function()
+            local function load_dap_config(name)
+              local ok, err = pcall(require, "dap." .. name)
+              if not ok and not err:match "module .* not found" then
+                vim.notify("DAP config error (" .. name .. "): " .. err, vim.log.levels.WARN)
+              end
+            end
+            load_dap_config "cpp"
+            load_dap_config "go"
+            load_dap_config "web"
+          end)
+        end,
+      })
     end,
   },
   {
     "rcarriga/nvim-dap-ui",
-    event = "VeryLazy",
+    lazy = true, -- Loaded as dependency of nvim-dap
   },
   -- JavaScript/TypeScript debug adapter
   {
     "mxsdev/nvim-dap-vscode-js",
-    event = "VeryLazy",
+    ft = { "javascript", "typescript", "javascriptreact", "typescriptreact" },
     dependencies = {
       "mfussenegger/nvim-dap",
     },
@@ -106,7 +171,7 @@ return {
   },
   {
     "jay-babu/mason-nvim-dap.nvim",
-    event = "VeryLazy",
+    cmd = { "DapInstall", "DapUninstall" },
     dependencies = {
       "williamboman/mason.nvim",
       "mfussenegger/nvim-dap",
