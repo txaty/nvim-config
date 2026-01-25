@@ -52,12 +52,6 @@ local nvim_tree_width = {
 }
 
 return {
-  -- Buffer deletion utility (handles edge cases properly)
-  {
-    "famiu/bufdelete.nvim",
-    lazy = true,
-  },
-
   -- File Explorer
   {
     "nvim-tree/nvim-tree.lua",
@@ -261,7 +255,6 @@ return {
     event = "VeryLazy",
     dependencies = {
       "nvim-tree/nvim-web-devicons",
-      "famiu/bufdelete.nvim",
     },
     version = "*",
     opts = {
@@ -274,12 +267,12 @@ return {
         show_close_icon = true,
         max_name_length = 20,
         truncate_names = true,
-        -- Use bufdelete for proper buffer closing (handles all edge cases)
+        -- Use centralized buffer closing to avoid re-entrancy issues
         close_command = function(bufnr)
-          require("bufdelete").bufdelete(bufnr, true)
+          require("core.buffers").close(bufnr, { force = true })
         end,
         right_mouse_command = function(bufnr)
-          require("bufdelete").bufdelete(bufnr, true)
+          require("core.buffers").close(bufnr, { force = true })
         end,
         offsets = {
           {
@@ -299,14 +292,14 @@ return {
       {
         "<leader>bd",
         function()
-          require("bufdelete").bufdelete(0, true)
+          require("core.buffers").close(0, { force = true })
         end,
         desc = "Delete buffer",
       },
       {
         "<leader>bD",
         function()
-          require("bufdelete").bufwipeout(0, true)
+          require("core.buffers").close(0, { force = true, wipe = true })
         end,
         desc = "Wipeout buffer",
       },
