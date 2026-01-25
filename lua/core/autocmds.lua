@@ -3,9 +3,19 @@ local augroup = function(name)
   return vim.api.nvim_create_augroup(name, { clear = true })
 end
 
--- Initialize UI toggle state on startup
-local ui_toggle = require "core.ui_toggle"
-ui_toggle.init()
+-- Initialize UI toggle state on startup (deferred to avoid blocking)
+-- Note: ui_toggle is loaded on-demand; init() is fast (just reads vim.g)
+vim.schedule(function()
+  require("core.ui_toggle").init()
+end)
+
+-- Auto-cleanup on startup (throttled to run at most once per day)
+vim.schedule(function()
+  local ok, cleanup = pcall(require, "core.cleanup")
+  if ok then
+    pcall(cleanup.auto_cleanup)
+  end
+end)
 
 -- Apply UI state to new windows
 autocmd({ "WinNew", "BufWinEnter" }, {
@@ -561,3 +571,13 @@ vim.api.nvim_create_user_command("LangPanel", function()
   })
   picker:find()
 end, { desc = "Open language support panel" })
+
+-- Cleanup Command (manual trigger with verbose output)
+vim.api.nvim_create_user_command("CleanupNvim", function()
+  local ok, cleanup = pcall(require, "core.cleanup")
+  if ok then
+    cleanup.manual_cleanup()
+  else
+    vim.notify("Failed to load cleanup module", vim.log.levels.ERROR)
+  end
+end, { desc = "Clean up temporary and cache files" })
