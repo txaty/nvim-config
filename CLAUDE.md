@@ -50,6 +50,9 @@ luacheck lua/
 :LangEnable <lang>  " Enable language support
 :LangDisable <lang> " Disable language support
 :LangStatus [lang]  " Show language support status
+
+" Cleanup
+:CleanupNvim        " Clean up temporary and cache files (manual trigger)
 ```
 
 ## Critical Architectural Principles
@@ -91,6 +94,7 @@ init.lua (entry point)
   - `lang_utils.lua` — Shared utilities for language support (reduces boilerplate)
   - `ai_toggle.lua` — AI features toggle module (enables/disables Copilot)
   - `lang_toggle.lua` — Language support toggle module (enables/disables language tooling)
+  - `cleanup.lua` — Automatic cleanup for temporary/cache files (minimizes disk footprint)
 - `lua/plugins/` — Self-contained plugin specifications (all `.lua` files auto-imported)
   - `ui.lua` — nvim-tree, lualine, bufferline, vim-illuminate
   - `whichkey.lua` — Popup showing available keybindings
@@ -438,6 +442,40 @@ The configuration uses `persistence.nvim` with automatic session management:
 
 **Integration with nvim-tree:**
 The nvim-tree auto-open logic is session-aware: if a session exists for the current directory, it won't auto-open nvim-tree, allowing the session to restore the workspace state instead.
+
+## Automatic Cleanup
+
+### Overview
+Automatic cleanup runs on startup to minimize disk footprint by removing stale temporary and cache files. This happens silently and is throttled to run at most once per day.
+
+### Cleanup Targets
+
+| Target | Location | Strategy |
+|--------|----------|----------|
+| Log files | `~/.local/state/nvim/*.log` | Delete if >7 days old |
+| Swap files | `~/.local/state/nvim/swap/` | Delete orphaned files >1 day old |
+| View files | `~/.local/state/nvim/view/` | Delete if source file no longer exists |
+| Luac cache | `~/.cache/nvim/luac/` | Delete if >30 days old |
+| LSP logs | Mason package log directories | Delete if >7 days old |
+
+### Manual Cleanup
+```vim
+:CleanupNvim        " Run cleanup immediately with verbose output
+```
+
+### Configuration
+**Opt-out**: To disable automatic cleanup, add to your config:
+```lua
+vim.g.disable_auto_cleanup = true
+```
+
+**Throttling**: Cleanup runs at most once per 24 hours. The timestamp is stored in `~/.local/state/nvim/cleanup_last_run`.
+
+### Safety Measures
+- Only operates within Neovim-controlled directories
+- Validates paths before deletion
+- Preserves active swap files (files currently being edited)
+- Uses pcall for all file operations (failures are silent)
 
 ## Language-Specific Notes
 
