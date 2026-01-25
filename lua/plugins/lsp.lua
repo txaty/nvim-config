@@ -45,7 +45,7 @@ return {
 
       -- LspAttach Autocmd for Keymaps
       vim.api.nvim_create_autocmd("LspAttach", {
-        group = vim.api.nvim_create_augroup("UserLspConfig", {}),
+        group = vim.api.nvim_create_augroup("UserLspConfig", { clear = true }),
         callback = function(ev)
           local keymap_opts = { buffer = ev.buf }
 
