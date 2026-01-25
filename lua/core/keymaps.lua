@@ -60,7 +60,7 @@ map("n", "<leader>wv", "<cmd>vsplit<cr>", { desc = "Window: vertical split" })
 -- Buffer navigation
 map("n", "<TAB>", "<cmd>bnext<CR>", { desc = "Buffer Next" })
 map("n", "<S-TAB>", "<cmd>bprev<CR>", { desc = "Buffer Prev" })
--- <leader>bd is defined in lua/plugins/ui.lua (bufdelete plugin handles edge cases)
+-- <leader>bd is defined in lua/plugins/ui.lua (centralized buffer close)
 
 -- AI Feature Toggle
 map("n", "<leader>ai", "<cmd>AIToggle<cr>", { desc = "AI: Toggle AI features" })

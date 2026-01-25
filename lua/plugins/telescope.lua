@@ -15,6 +15,18 @@ return {
     },
     opts = function()
       local actions = require "telescope.actions"
+      local action_state = require "telescope.actions.state"
+
+      local function delete_buffer(prompt_bufnr)
+        local picker = action_state.get_current_picker(prompt_bufnr)
+        local selection = action_state.get_selected_entry()
+        if not selection or not selection.bufnr then
+          return
+        end
+        require("core.buffers").close(selection.bufnr, { force = true })
+        picker:refresh(picker.finder, { reset_prompt = false })
+      end
+
       return {
         defaults = {
           prompt_prefix = "  ",
@@ -66,8 +78,8 @@ return {
             show_all_buffers = true,
             sort_lastused = true,
             mappings = {
-              i = { ["<C-d>"] = actions.delete_buffer },
-              n = { ["d"] = actions.delete_buffer },
+              i = { ["<C-d>"] = delete_buffer },
+              n = { ["d"] = delete_buffer },
             },
           },
         },
