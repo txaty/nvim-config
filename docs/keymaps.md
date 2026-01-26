@@ -611,6 +611,7 @@
 | `<leader>un` | Toggle line numbers | ON |
 | `<leader>ur` | Toggle relative numbers | ON |
 | `<leader>uc` | Toggle conceal (0/2) | ON (2) |
+| `<leader>ug` | Toggle nvim-tree git status | ON |
 
 **Prose Override:** Markdown, text, TeX, and Typst files automatically enable word wrap regardless of session state.
 
