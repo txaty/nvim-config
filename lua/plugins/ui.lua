@@ -298,6 +298,14 @@ return {
             separator = true,
           },
         },
+        -- Filter out directory buffers (e.g. "nvim/" when opening nvim in a directory)
+        custom_filter = function(buf_number)
+          local buf_name = vim.api.nvim_buf_get_name(buf_number)
+          if buf_name ~= "" and vim.fn.isdirectory(buf_name) == 1 then
+            return false
+          end
+          return true
+        end,
         diagnostics_indicator = function(count, level)
           local icon = level:match "error" and " " or " "
           return icon .. count
