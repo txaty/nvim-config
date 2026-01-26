@@ -384,6 +384,7 @@ stylua lua/
   - `<leader>un` — Toggle line numbers
   - `<leader>ur` — Toggle relative numbers
   - `<leader>uc` — Toggle conceal
+  - `<leader>ug` — Toggle nvim-tree git status
 - `<leader>q*` — Session/Quit (save, load, quit)
 - `<leader>x*` — Diagnostics/Trouble
 - `<leader>S` — Spectre (project-wide search and replace)

@@ -10,6 +10,7 @@ local defaults = {
   number = true,
   relativenumber = true,
   conceallevel = 2,
+  tree_git = true, -- Show git status in nvim-tree by default
 }
 
 -- JSON config file path and cache
@@ -91,7 +92,7 @@ function M.apply(win)
 end
 
 --- Toggle a UI option
----@param opt string Option name (wrap, spell, number, relativenumber, conceallevel)
+---@param opt string Option name (wrap, spell, number, relativenumber, conceallevel, tree_git)
 function M.toggle(opt)
   local global_key = "ui_" .. opt
   local current = vim.g[global_key]
@@ -113,8 +114,44 @@ function M.toggle(opt)
   cached_config[opt] = new_value
   save_config(cached_config)
 
-  -- Apply to current window
-  vim.wo[opt] = new_value
+  -- Special handling for tree_git: reload nvim-tree with new config
+  if opt == "tree_git" then
+    local ok, nvim_tree = pcall(require, "nvim-tree")
+    if ok and nvim_tree then
+      -- Get current nvim-tree state
+      local api = require "nvim-tree.api"
+      local tree_winid = nil
+      for _, win in ipairs(vim.api.nvim_list_wins()) do
+        local buf = vim.api.nvim_win_get_buf(win)
+        if vim.bo[buf].filetype == "NvimTree" then
+          tree_winid = win
+          break
+        end
+      end
+
+      -- Reload nvim-tree configuration with new git setting
+      -- Note: We defer the setup to avoid conflicts during toggle
+      vim.schedule(function()
+        -- Get the opts function from the plugin spec
+        local config_ok, config = pcall(require, "nvim-tree")
+        if config_ok then
+          -- Trigger a refresh if tree is open
+          if tree_winid and vim.api.nvim_win_is_valid(tree_winid) then
+            api.tree.reload()
+          end
+        end
+      end)
+    end
+
+    local display = new_value and "on" or "off"
+    vim.notify(string.format("UI: tree git status = %s (reload nvim-tree to apply)", display), vim.log.levels.INFO)
+    return
+  end
+
+  -- Apply to current window (for standard vim options)
+  if opt ~= "tree_git" then
+    vim.wo[opt] = new_value
+  end
 
   -- Notify user
   local display = type(new_value) == "boolean" and (new_value and "on" or "off") or tostring(new_value)

@@ -34,6 +34,9 @@ end, { desc = "UI: Toggle relative numbers" })
 map("n", "<leader>uc", function()
   require("core.ui_toggle").toggle "conceallevel"
 end, { desc = "UI: Toggle conceal" })
+map("n", "<leader>ug", function()
+  require("core.ui_toggle").toggle "tree_git"
+end, { desc = "UI: Toggle nvim-tree git status" })
 
 -- User Mappings from mappings.lua
 map("n", ";", ":", { desc = "Command mode" })
