@@ -1,12 +1,10 @@
 -- Document preparation systems: LaTeX (vimtex) and Typst
-local lang_toggle = require "core.lang_toggle"
-
-local specs = {}
-
--- LaTeX support with vimtex
-if lang_toggle.is_enabled "latex" then
-  table.insert(specs, {
+return {
+  {
     "lervag/vimtex",
+    cond = function()
+      return require("core.lang_toggle").is_enabled "latex"
+    end,
     ft = "tex",
     lazy = true,
     config = function()
@@ -35,31 +33,35 @@ if lang_toggle.is_enabled "latex" then
         },
       }
 
-      -- Configure diagnostic display settings
-      vim.diagnostic.config {
-        virtual_text = true, -- Show inline warnings/errors
-        signs = true, -- Show signs in the gutter
-        underline = true, -- Underline problematic text
-        severity_sort = true, -- Sort diagnostics by severity
-        update_in_insert = false,
-      }
+      -- Buffer-local diagnostic config for TeX files only
+      vim.api.nvim_create_autocmd("FileType", {
+        pattern = "tex",
+        group = vim.api.nvim_create_augroup("VimtexDiagnostics", { clear = true }),
+        callback = function()
+          vim.diagnostic.config({
+            virtual_text = true,
+            signs = true,
+            underline = true,
+            severity_sort = true,
+            update_in_insert = false,
+          }, vim.api.nvim_create_namespace "vimtex")
+        end,
+      })
 
       -- Automatically open the quickfix window on warnings
       vim.g.vimtex_quickfix_open_on_warning = 1
     end,
-  })
-end
+  },
 
--- Typst support with live preview
-if lang_toggle.is_enabled "typst" then
-  table.insert(specs, {
+  {
     "chomosuke/typst-preview.nvim",
+    cond = function()
+      return require("core.lang_toggle").is_enabled "typst"
+    end,
     ft = "typst",
     version = "1.*",
     build = function()
       require("typst-preview").update()
     end,
-  })
-end
-
-return specs
+  },
+}

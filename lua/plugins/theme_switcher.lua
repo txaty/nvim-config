@@ -8,7 +8,15 @@ return {
   {
     dir = vim.fn.stdpath "config",
     name = "theme-switcher",
-    event = "VeryLazy",
+    cmd = { "ThemeSwitch", "ThemeDark", "ThemeLight", "ThemeTxaty", "ThemeNext", "ThemePrev" },
+    keys = {
+      { "<leader>cc", "<cmd>ThemeSwitch<cr>", desc = "Color: choose colorscheme" },
+      { "<leader>cd", "<cmd>ThemeDark<cr>", desc = "Color: switch to dark" },
+      { "<leader>cl", "<cmd>ThemeLight<cr>", desc = "Color: switch to light" },
+      { "<leader>cp", "<cmd>ThemeTxaty<cr>", desc = "Color: switch to txaty" },
+      { "<leader>cn", "<cmd>ThemeNext<cr>", desc = "Color: next theme" },
+      { "<leader>cN", "<cmd>ThemePrev<cr>", desc = "Color: previous theme" },
+    },
     config = function()
       local theme = require "core.theme"
 
@@ -103,41 +111,6 @@ return {
         end
       end
 
-      -- Create commands for theme switching
-      vim.api.nvim_create_user_command("ThemeSwitch", open_theme_picker, {})
-
-      -- Smart dark/light switching (remembers last-used theme per category)
-      vim.api.nvim_create_user_command("ThemeDark", function()
-        require("core.theme").switch_to_dark()
-      end, {})
-
-      vim.api.nvim_create_user_command("ThemeLight", function()
-        require("core.theme").switch_to_light()
-      end, {})
-
-      vim.api.nvim_create_user_command("ThemeTxaty", function()
-        theme.apply_theme "txaty"
-      end, {})
-
-      -- Setup keymaps
-      local map = vim.keymap.set
-
-      -- Theme switching keymaps (using <leader>c* for colorscheme)
-      map("n", "<leader>cc", open_theme_picker, { desc = "Color: choose colorscheme", noremap = true, silent = true })
-
-      -- Smart dark/light switching (uses last-used theme per category)
-      map("n", "<leader>cd", function()
-        require("core.theme").switch_to_dark()
-      end, { desc = "Color: switch to dark theme", noremap = true, silent = true })
-
-      map("n", "<leader>cl", function()
-        require("core.theme").switch_to_light()
-      end, { desc = "Color: switch to light theme", noremap = true, silent = true })
-
-      map("n", "<leader>cp", function()
-        theme.apply_theme "txaty"
-      end, { desc = "Color: switch to txaty theme", noremap = true, silent = true })
-
       -- Helper for cycling themes (direction: 1 = next, -1 = previous)
       local function cycle_theme(direction)
         local all_themes = theme.get_all_themes()
@@ -161,14 +134,28 @@ return {
         theme.apply_theme(all_themes[new_idx])
       end
 
-      -- Next/Previous theme
-      map("n", "<leader>cn", function()
-        cycle_theme(1)
-      end, { desc = "Color: next theme", noremap = true, silent = true })
+      -- Create commands for theme switching
+      vim.api.nvim_create_user_command("ThemeSwitch", open_theme_picker, {})
 
-      map("n", "<leader>cN", function()
+      vim.api.nvim_create_user_command("ThemeDark", function()
+        require("core.theme").switch_to_dark()
+      end, {})
+
+      vim.api.nvim_create_user_command("ThemeLight", function()
+        require("core.theme").switch_to_light()
+      end, {})
+
+      vim.api.nvim_create_user_command("ThemeTxaty", function()
+        theme.apply_theme "txaty"
+      end, {})
+
+      vim.api.nvim_create_user_command("ThemeNext", function()
+        cycle_theme(1)
+      end, {})
+
+      vim.api.nvim_create_user_command("ThemePrev", function()
         cycle_theme(-1)
-      end, { desc = "Color: previous theme", noremap = true, silent = true })
+      end, {})
     end,
   },
 }
