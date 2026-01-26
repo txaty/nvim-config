@@ -649,6 +649,45 @@ function M.apply_theme(theme_name)
   return apply_theme_internal(theme_name, true)
 end
 
+-- Apply theme for preview only (no save, no notification).
+-- This version does NOT redraw to prevent UI drift in Telescope.
+function M.preview_theme(theme_name)
+  local info = M.registry[theme_name]
+  if not info then
+    return false
+  end
+
+  ensure_plugin_loaded(theme_name)
+
+  if info.custom then
+    require("core.theme_txaty").apply(info.custom_variant or "dark", { preview = true })
+    return true
+  end
+
+  if info.global then
+    for key, value in pairs(info.global) do
+      vim.g[key] = value
+    end
+  end
+
+  if info.background then
+    vim.o.background = info.background
+  end
+
+  if info.plugin_module and info.setup then
+    local ok, plugin = pcall(require, info.plugin_module)
+    if ok and plugin.setup then
+      plugin.setup(info.setup)
+    end
+  end
+
+  if info.colorscheme then
+    pcall(vim.cmd.colorscheme, info.colorscheme)
+  end
+
+  return true
+end
+
 -- Restore saved theme without saving again (used on startup)
 function M.restore_theme()
   local saved_theme = M.load_saved_theme()

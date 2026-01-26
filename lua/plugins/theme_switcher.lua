@@ -12,57 +12,95 @@ return {
     config = function()
       local theme = require "core.theme"
 
-      -- Create custom Telescope picker for themes
+      -- Create custom Telescope picker for themes with live preview
+      -- Follows Telescope's built-in colorscheme picker architecture:
+      -- hooks into set_selection (after pipeline) and close_windows (for cancel)
       local function open_theme_picker()
-        local pickers_ok, pickers = pcall(require, "telescope.pickers")
-        local finders_ok, finders = pcall(require, "telescope.finders")
-        local actions_ok, actions = pcall(require, "telescope.actions")
-        local action_state_ok, action_state = pcall(require, "telescope.actions.state")
-        local conf_ok, conf = pcall(function()
-          return require("telescope.config").values
+        local ok, err = pcall(function()
+          local pickers = require "telescope.pickers"
+          local finders = require "telescope.finders"
+          local actions = require "telescope.actions"
+          local action_state = require "telescope.actions.state"
+          local conf = require("telescope.config").values
+
+          local themes = theme.get_all_themes()
+          local before_bg = vim.o.background
+          local current = theme.load_saved_theme() or "catppuccin"
+          local need_restore = true
+
+          local picker = pickers.new({
+            prompt_title = "Switch Theme",
+            results_title = "Themes",
+            previewer = false,
+            sorting_strategy = "ascending",
+            layout_config = {
+              width = 0.5,
+              height = 0.6,
+            },
+            on_complete = {
+              function()
+                local selection = action_state.get_selected_entry()
+                if selection then
+                  theme.preview_theme(selection.value)
+                end
+              end,
+            },
+          }, {
+            finder = finders.new_table {
+              results = themes,
+              entry_maker = function(name)
+                local info = theme.registry[name] or {}
+                local variant = info.variant or "custom"
+                local desc = info.description or name
+                local marker = name == current and "*" or " "
+                local display = string.format("%s %-28s %-5s  %s", marker, name, variant, desc)
+                return {
+                  value = name,
+                  display = display,
+                  ordinal = name,
+                }
+              end,
+            },
+            sorter = conf.generic_sorter {},
+            attach_mappings = function(prompt_bufnr)
+              actions.select_default:replace(function()
+                need_restore = false
+                local selection = action_state.get_selected_entry()
+                actions.close(prompt_bufnr)
+                if selection then
+                  theme.apply_theme(selection.value)
+                end
+              end)
+              return true
+            end,
+          })
+
+          -- Override set_selection: preview after selection pipeline completes
+          local original_set_selection = picker.set_selection
+          picker.set_selection = function(self, row)
+            original_set_selection(self, row)
+            local entry = action_state.get_selected_entry()
+            if entry then
+              theme.preview_theme(entry.value)
+            end
+          end
+
+          -- Override close_windows: restore original theme on cancel
+          local original_close_windows = picker.close_windows
+          picker.close_windows = function(status)
+            original_close_windows(status)
+            if need_restore then
+              vim.o.background = before_bg
+              theme.apply_theme(current)
+            end
+          end
+
+          picker:find()
         end)
 
-        if not (pickers_ok and finders_ok and actions_ok and action_state_ok and conf_ok) then
-          vim.notify("Failed to load Telescope components", vim.log.levels.ERROR)
-          return
+        if not ok then
+          vim.notify("Failed to open theme picker: " .. tostring(err), vim.log.levels.ERROR)
         end
-
-        local themes = theme.get_all_themes()
-
-        local picker_opts = {
-          prompt_title = "  Switch Theme",
-          results_title = "Available Themes",
-          preview_title = "Theme Preview",
-          previewer = false,
-        }
-
-        local picker = pickers.new(picker_opts, {
-          finder = finders.new_table {
-            results = themes,
-            entry_maker = function(entry)
-              local info = theme.theme_info[entry] or {}
-              local variant = info.variant or "unknown"
-              local desc = info.description or entry
-              return {
-                value = entry,
-                display = string.format("%-20s [%s] %s", entry, variant, desc),
-                ordinal = entry,
-              }
-            end,
-          },
-          sorter = conf.generic_sorter(picker_opts),
-          attach_mappings = function(prompt_bufnr, _map)
-            actions.select_default:replace(function()
-              actions.close(prompt_bufnr)
-              local selection = action_state.get_selected_entry()
-              if selection then
-                theme.apply_theme(selection.value)
-              end
-            end)
-            return true
-          end,
-        })
-        picker:find()
       end
 
       -- Create commands for theme switching
