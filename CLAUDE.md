@@ -105,7 +105,6 @@ VimEnter Lifecycle (deterministic order):
     - `nvim_tree.lua` — NvimTree auto-open
   - `commands/` — User command definitions
     - `init.lua` — Command registry
-    - `theme.lua` — :ThemeSwitch, :ThemeDark, etc
     - `ai.lua` — :AIToggle, :AIEnable, etc
     - `lang.lua` — :LangToggle, :LangPanel, etc
     - `cleanup.lua` — :CleanupNvim
@@ -524,7 +523,7 @@ vim.g.disable_auto_cleanup = true
 
 ### Flutter
 - Uses flutter-tools.nvim for development workflow
-- Run: `<leader>FR`, Hot reload: `<leader>Fr`, Hot restart: `<leader>FR`
+- Run: `<leader>FR`, Hot restart: `<leader>Fr`, Hot reload: `<leader>Fl`
 - Emulator management and device selection available
 
 ### LaTeX (TeX)
@@ -534,7 +533,7 @@ vim.g.disable_auto_cleanup = true
 
 ### Typst
 - Modern alternative to LaTeX
-- LSP support via typst-lsp
+- Live preview via typst-preview.nvim
 
 ### Testing
 - Uses neotest framework for running tests
@@ -622,7 +621,7 @@ vim.g.disable_auto_cleanup = true
 
 ### nvim-lint (Linting)
 - Configured in `lua/plugins/tools.lua` (merged with formatting)
-- Runs on `BufEnter`, `BufWritePost`, `InsertLeave`
+- Runs on `BufWritePost`, `InsertLeave`
 - Language mappings managed via Mason
 
 **Luacheck Configuration** (`.luacheckrc`):

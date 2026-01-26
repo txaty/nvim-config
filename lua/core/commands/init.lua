@@ -14,7 +14,7 @@ function M.register_all()
   for _, mod_name in ipairs(command_modules) do
     local ok, mod = pcall(require, mod_name)
     if ok and mod.register then
-      mod.register()
+      pcall(mod.register)
     end
   end
 end

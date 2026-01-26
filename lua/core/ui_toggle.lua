@@ -119,7 +119,10 @@ function M.toggle(opt)
     local ok, nvim_tree = pcall(require, "nvim-tree")
     if ok and nvim_tree then
       -- Get current nvim-tree state
-      local api = require "nvim-tree.api"
+      local api_ok, api = pcall(require, "nvim-tree.api")
+      if not api_ok then
+        return
+      end
       local tree_winid = nil
       for _, win in ipairs(vim.api.nvim_list_wins()) do
         local buf = vim.api.nvim_win_get_buf(win)
