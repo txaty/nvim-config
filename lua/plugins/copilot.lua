@@ -1,12 +1,9 @@
--- Check AI toggle state - if disabled, don't load any AI plugins
-local ai_toggle = require "core.ai_toggle"
-if not ai_toggle.is_enabled() then
-  return {}
-end
-
 return {
   {
     "zbirenbaum/copilot.lua",
+    cond = function()
+      return require("core.ai_toggle").is_enabled()
+    end,
     cmd = "Copilot",
     event = "InsertEnter",
     opts = {
@@ -55,6 +52,9 @@ return {
   },
   {
     "CopilotC-Nvim/CopilotChat.nvim",
+    cond = function()
+      return require("core.ai_toggle").is_enabled()
+    end,
     branch = "main",
     dependencies = {
       { "zbirenbaum/copilot.lua" }, -- or github/copilot.vim

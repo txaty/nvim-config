@@ -3,7 +3,6 @@
 local M = {}
 
 local command_modules = {
-  "core.commands.theme",
   "core.commands.ai",
   "core.commands.lang",
   "core.commands.cleanup",
