@@ -581,11 +581,25 @@ local function safe_colorscheme(colorscheme_name)
 end
 
 -- ============================================================================
--- Theme Application
+-- Preview State
 -- ============================================================================
 
--- Apply theme (internal function that can skip saving)
-local function apply_theme_internal(theme_name, should_save)
+-- When true, the ColorScheme autocmd in autocmds.lua skips auto-saving.
+-- Set by the theme picker during live preview.
+M._previewing = false
+
+-- ============================================================================
+-- Theme Application (Unified)
+-- ============================================================================
+
+--- Apply a theme by registry name.
+--- Single codepath for all theme changes (preview, confirm, restore).
+---@param theme_name string  Registry key (e.g. "catppuccin", "txaty")
+---@param opts? {save: boolean, notify: boolean}  Defaults: save=true, notify=true
+---@return boolean success
+function M.apply(theme_name, opts)
+  opts = vim.tbl_extend("keep", opts or {}, { save = true, notify = true })
+
   local info = M.registry[theme_name]
   if not info then
     vim.notify("Theme '" .. theme_name .. "' not found in registry", vim.log.levels.WARN)
@@ -595,7 +609,7 @@ local function apply_theme_internal(theme_name, should_save)
   -- Ensure the plugin is loaded before applying
   ensure_plugin_loaded(theme_name)
 
-  -- Clear any previous colorscheme state to prevent conflicts
+  -- Always clear previous state for a clean slate (prevents highlight leaks)
   vim.cmd "highlight clear"
   if vim.fn.exists "syntax_on" then
     vim.cmd "syntax reset"
@@ -636,63 +650,30 @@ local function apply_theme_internal(theme_name, should_save)
 
   refresh_ui()
 
-  if should_save then
+  if opts.save then
     M.save_theme(theme_name)
+  end
+  if opts.notify then
     vim.notify("Theme: " .. theme_name, vim.log.levels.INFO)
   end
 
   return true
 end
 
--- Apply theme and save preference
+-- ============================================================================
+-- Backward-Compatibility Shims
+-- ============================================================================
+
+--- Apply theme and save preference (legacy API)
 function M.apply_theme(theme_name)
-  return apply_theme_internal(theme_name, true)
+  return M.apply(theme_name)
 end
 
--- Apply theme for preview only (no save, no notification).
--- This version does NOT redraw to prevent UI drift in Telescope.
-function M.preview_theme(theme_name)
-  local info = M.registry[theme_name]
-  if not info then
-    return false
-  end
-
-  ensure_plugin_loaded(theme_name)
-
-  if info.custom then
-    require("core.theme_txaty").apply(info.custom_variant or "dark", { preview = true })
-    return true
-  end
-
-  if info.global then
-    for key, value in pairs(info.global) do
-      vim.g[key] = value
-    end
-  end
-
-  if info.background then
-    vim.o.background = info.background
-  end
-
-  if info.plugin_module and info.setup then
-    local ok, plugin = pcall(require, info.plugin_module)
-    if ok and plugin.setup then
-      plugin.setup(info.setup)
-    end
-  end
-
-  if info.colorscheme then
-    pcall(vim.cmd.colorscheme, info.colorscheme)
-  end
-
-  return true
-end
-
--- Restore saved theme without saving again (used on startup)
+--- Restore saved theme without saving again (used on startup)
 function M.restore_theme()
   local saved_theme = M.load_saved_theme()
   if saved_theme then
-    return apply_theme_internal(saved_theme, false)
+    return M.apply(saved_theme, { save = false, notify = false })
   end
   return false
 end

@@ -1059,11 +1059,9 @@ end
 -- Theme Application
 -- ============================================================================
 
-function M.apply(variant, opts)
-  opts = opts or {}
+function M.apply(variant)
   variant = variant or "dark"
   local p = M.palettes[variant]
-  local is_preview = opts.preview
 
   if not p then
     vim.notify("txaty: Unknown variant '" .. variant .. "', using dark", vim.log.levels.WARN)
@@ -1071,36 +1069,17 @@ function M.apply(variant, opts)
     p = M.palettes.dark
   end
 
-  -- Reset (skip during preview to avoid destroying active Telescope/UI state)
-  if not is_preview then
-    vim.cmd "highlight clear"
-    if vim.fn.exists "syntax_on" then
-      vim.cmd "syntax reset"
-    end
-  end
-
   -- Set colorscheme metadata
   vim.g.colors_name = variant == "light" and "txaty-light" or "txaty"
-  if is_preview then
-    vim.cmd("noautocmd set background=" .. variant)
-  else
-    vim.o.background = variant
-  end
+  vim.o.background = variant
   vim.o.termguicolors = true
 
   -- Apply all highlights
   generate_highlights(p)
 
-  -- Enable syntax
-  if not is_preview then
-    vim.cmd "syntax on"
-  end
-
-  -- Trigger ColorScheme autocmd so plugins can refresh (skip during preview
-  -- to avoid cascading side effects that disrupt Telescope rendering)
-  if not is_preview then
-    vim.api.nvim_exec_autocmds("ColorScheme", { pattern = vim.g.colors_name })
-  end
+  -- Enable syntax and notify plugins
+  vim.cmd "syntax on"
+  vim.api.nvim_exec_autocmds("ColorScheme", { pattern = vim.g.colors_name })
 end
 
 -- ============================================================================

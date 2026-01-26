@@ -128,12 +128,16 @@ autocmd("VimLeavePre", {
   end,
 })
 
--- Auto-save theme whenever it changes
+-- Auto-save theme whenever it changes (skip during live preview)
 autocmd("ColorScheme", {
   group = augroup "ThemeAutoSave",
   callback = function()
     local ok, theme = pcall(require, "core.theme")
     if not ok then
+      return
+    end
+    -- Don't persist during theme picker preview
+    if theme._previewing then
       return
     end
     local current = vim.g.colors_name
