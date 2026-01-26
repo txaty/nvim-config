@@ -468,13 +468,32 @@ return {
 │   │   ├── init.lua         # Bootstrap loader
 │   │   ├── options.lua      # Vim options
 │   │   ├── keymaps.lua      # Global keybindings
-│   │   ├── autocmds.lua     # Autocommands + user commands
+│   │   ├── autocmds.lua     # Core autocommands (lifecycle handled by lifecycle/)
 │   │   ├── lazy.lua         # Lazy.nvim bootstrap
 │   │   ├── theme.lua        # Theme registry (50+ themes)
 │   │   ├── theme_txaty.lua  # Custom ergonomic theme
 │   │   ├── ai_toggle.lua    # AI features toggle
 │   │   ├── lang_toggle.lua  # Language support toggle
-│   │   └── lang_utils.lua   # Language utilities
+│   │   ├── lang_utils.lua   # Language utilities
+│   │   ├── buffers.lua      # Buffer close/management
+│   │   ├── cleanup.lua      # Automatic temp file cleanup
+│   │   ├── ui_toggle.lua    # UI toggle persistence
+│   │   ├── lifecycle/       # VimEnter orchestration
+│   │   │   ├── init.lua     # Lifecycle orchestrator
+│   │   │   ├── colorscheme.lua
+│   │   │   ├── session.lua
+│   │   │   ├── ui_state.lua
+│   │   │   └── nvim_tree.lua
+│   │   ├── commands/        # User command definitions
+│   │   │   ├── init.lua     # Command registry
+│   │   │   ├── ai.lua
+│   │   │   ├── lang.lua
+│   │   │   ├── cleanup.lua
+│   │   │   └── ui.lua
+│   │   └── util/            # Shared utilities
+│   │       ├── augroup.lua
+│   │       ├── keymap.lua
+│   │       └── safe_require.lua
 │   └── plugins/            # Plugin specifications
 │       ├── lsp.lua          # LSP + Mason
 │       ├── colorscheme.lua  # 40+ theme plugins

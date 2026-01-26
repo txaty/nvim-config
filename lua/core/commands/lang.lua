@@ -146,41 +146,23 @@ function M.register()
           end
         end)
 
-        -- Enable with 'e'
-        map("i", "e", function()
-          local selection = action_state.get_selected_entry()
-          if selection then
-            lang_toggle.enable(selection.value.lang)
-            local current_picker = action_state.get_current_picker(prompt_bufnr)
-            current_picker:refresh(make_finder(), { reset_prompt = false })
+        -- Helper to map an action for both insert and normal modes
+        local function map_action(key, action_fn)
+          local handler = function()
+            local selection = action_state.get_selected_entry()
+            if selection then
+              action_fn(selection.value.lang)
+              local current_picker = action_state.get_current_picker(prompt_bufnr)
+              current_picker:refresh(make_finder(), { reset_prompt = false })
+            end
           end
-        end)
-        map("n", "e", function()
-          local selection = action_state.get_selected_entry()
-          if selection then
-            lang_toggle.enable(selection.value.lang)
-            local current_picker = action_state.get_current_picker(prompt_bufnr)
-            current_picker:refresh(make_finder(), { reset_prompt = false })
-          end
-        end)
+          map("i", key, handler)
+          map("n", key, handler)
+        end
 
-        -- Disable with 'd'
-        map("i", "d", function()
-          local selection = action_state.get_selected_entry()
-          if selection then
-            lang_toggle.disable(selection.value.lang)
-            local current_picker = action_state.get_current_picker(prompt_bufnr)
-            current_picker:refresh(make_finder(), { reset_prompt = false })
-          end
-        end)
-        map("n", "d", function()
-          local selection = action_state.get_selected_entry()
-          if selection then
-            lang_toggle.disable(selection.value.lang)
-            local current_picker = action_state.get_current_picker(prompt_bufnr)
-            current_picker:refresh(make_finder(), { reset_prompt = false })
-          end
-        end)
+        -- Enable with 'e', Disable with 'd'
+        map_action("e", lang_toggle.enable)
+        map_action("d", lang_toggle.disable)
 
         return true
       end,

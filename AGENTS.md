@@ -7,7 +7,7 @@
     - `init.lua` — loads all core modules in sequence.
     - `options.lua` — vim options (vim.opt) and sane defaults.
     - `keymaps.lua` — general keybindings and navigation.
-    - `autocmds.lua` — event-driven logic (restore cursor, view saving, auto-open nvim-tree, user commands).
+    - `autocmds.lua` — core autocommands (restore cursor, view saving); lifecycle and commands handled by `lifecycle/` and `commands/` submodules.
     - `lazy.lua` — lazy.nvim bootstrap with custom performance settings.
     - `theme.lua` — unified theme registry with 50+ themes and smart switching.
     - `theme_txaty.lua` — custom ergonomic theme with factory pattern (dark/light variants).
@@ -94,7 +94,7 @@
 - **Self-Maintained**: All functionality is explicitly configured in `lua/core/` and `lua/plugins/`. No external dependencies on configuration frameworks.
 - **Modular Design**: Each plugin is self-contained with its own config, keymaps, and dependencies inlined in the plugin spec.
 - **Performance**: lazy.nvim is configured with custom performance settings in `lua/core/lazy.lua`.
-- **Startup**: `autocmds.lua` handles VimEnter logic to auto-open nvim-tree for directories/empty buffers (session-aware: won't open if session exists).
+- **Startup**: `lifecycle/init.lua` handles VimEnter via deterministic lifecycle sequence (theme restore, session restore, UI state, nvim-tree auto-open, command registration).
 - **Theme System**: 50+ themes (25+ dark, 20+ light, 2 custom txaty/txaty-light). Unified registry with metadata. Smart dark/light switching remembers last-used per category. Custom txaty theme uses factory pattern for dark/light variants with ergonomic design (low saturation, warm neutrals, WCAG 2.1 AA compliant).
 - **Session Management**: Auto-save on VimLeavePre, auto-restore when opening Neovim without arguments. Per-directory sessions maintain buffers, windows, tabs, and state.
 - **LSP Migration**: Migrated from deprecated `require('lspconfig')` to new `vim.lsp.config()` API (Neovim 0.11+). All servers managed through mason-lspconfig handlers.

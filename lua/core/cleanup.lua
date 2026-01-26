@@ -36,8 +36,9 @@ end
 
 -- Helper: safe delete with path validation
 local function safe_delete(path, expected_prefix)
-  -- Validate path starts with expected prefix
-  if not path:find("^" .. vim.pesc(expected_prefix)) then
+  -- Validate path starts with expected prefix (ensure trailing / to avoid prefix collisions)
+  local norm_prefix = expected_prefix:sub(-1) == "/" and expected_prefix or (expected_prefix .. "/")
+  if not path:find("^" .. vim.pesc(norm_prefix)) and path ~= expected_prefix then
     return false, "Path outside expected directory"
   end
 
@@ -150,7 +151,9 @@ function M.clean_swap()
       for _, buf in ipairs(vim.api.nvim_list_bufs()) do
         if vim.api.nvim_buf_is_loaded(buf) then
           local buf_name = vim.api.nvim_buf_get_name(buf)
-          if buf_name:find(vim.pesc(original_name), 1, true) then
+          if
+            buf_name == original_name or vim.fn.fnamemodify(buf_name, ":p") == vim.fn.fnamemodify(original_name, ":p")
+          then
             is_active = true
             break
           end

@@ -3,35 +3,29 @@ local M = {}
 -- Re-entrancy guard
 local closing_in_progress = false
 
--- Comprehensive special buffer detection
+-- Comprehensive special buffer detection (set for O(1) lookup)
 local SPECIAL_FILETYPES = {
-  "NvimTree",
-  "neo-tree",
-  "oil",
-  "help",
-  "qf",
-  "trouble",
-  "Trouble",
-  "lazy",
-  "mason",
-  "notify",
-  "toggleterm",
-  "dap-repl",
-  "dapui_scopes",
-  "dapui_breakpoints",
-  "dapui_stacks",
-  "dapui_watches",
-  "dapui_console",
-  "TelescopePrompt",
-  "alpha",
-  "dashboard",
+  NvimTree = true,
+  ["neo-tree"] = true,
+  oil = true,
+  help = true,
+  qf = true,
+  trouble = true,
+  Trouble = true,
+  lazy = true,
+  mason = true,
+  notify = true,
+  toggleterm = true,
+  ["dap-repl"] = true,
+  dapui_scopes = true,
+  dapui_breakpoints = true,
+  dapui_stacks = true,
+  dapui_watches = true,
+  dapui_console = true,
+  TelescopePrompt = true,
+  alpha = true,
+  dashboard = true,
 }
-
--- Build lookup table for O(1) checks
-local SPECIAL_FILETYPES_SET = {}
-for _, ft in ipairs(SPECIAL_FILETYPES) do
-  SPECIAL_FILETYPES_SET[ft] = true
-end
 
 ---Check if buffer is a normal file buffer
 ---@param bufnr integer
@@ -48,7 +42,7 @@ local function is_file_buffer(bufnr)
     return false
   end
   local ft = vim.bo[bufnr].filetype
-  if SPECIAL_FILETYPES_SET[ft] then
+  if SPECIAL_FILETYPES[ft] then
     return false
   end
   return true
