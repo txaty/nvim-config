@@ -15,18 +15,39 @@ local function log(msg)
   end
 end
 
---- Re-attach Treesitter highlighting for session-restored buffers.
---- Buffers restored by persistence.nvim are loaded before BufRead/BufNewFile
---- autocmds fire, so Treesitter highlighting is missing without this.
-local function reattach_treesitter()
+--- Re-trigger buffer events for session-restored buffers.
+--- persistence.nvim restores buffers via `:source` which does NOT fire
+--- BufReadPre/BufReadPost/FileType events.  Lazy-loaded plugins (LSP,
+--- treesitter, gitsigns, lint, …) depend on these events to load and
+--- attach.  This function emits the events synthetically so every
+--- buffer gets full editor support.
+local function retrigger_buffer_events()
   vim.schedule(function()
+    local bufs = {}
     for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-      if vim.api.nvim_buf_is_loaded(buf) and vim.bo[buf].buftype == "" then
-        local ft = vim.bo[buf].filetype
-        if ft and ft ~= "" then
-          pcall(vim.treesitter.stop, buf)
-          pcall(vim.treesitter.start, buf, ft)
-        end
+      if vim.api.nvim_buf_is_loaded(buf) and vim.bo[buf].buftype == "" and vim.api.nvim_buf_get_name(buf) ~= "" then
+        table.insert(bufs, buf)
+      end
+    end
+    if #bufs == 0 then
+      return
+    end
+
+    -- Phase 1: Emit BufReadPre/BufReadPost so lazy.nvim loads plugins
+    -- that trigger on these events (LSP, treesitter, gitsigns, lint, …).
+    for _, buf in ipairs(bufs) do
+      pcall(vim.api.nvim_exec_autocmds, "BufReadPre", { buffer = buf })
+    end
+    for _, buf in ipairs(bufs) do
+      pcall(vim.api.nvim_exec_autocmds, "BufReadPost", { buffer = buf, modeline = false })
+    end
+
+    -- Phase 2: Emit FileType so servers registered with vim.lsp.enable()
+    -- (which listens on FileType) attach to the restored buffers.
+    for _, buf in ipairs(bufs) do
+      local ft = vim.bo[buf].filetype
+      if ft and ft ~= "" then
+        pcall(vim.api.nvim_exec_autocmds, "FileType", { buffer = buf, pattern = ft })
       end
     end
   end)
@@ -46,7 +67,7 @@ function M.run_sequence()
   local session_restored = require("core.lifecycle.session").restore()
   log("session restore: " .. tostring(session_restored))
   if session_restored then
-    reattach_treesitter()
+    retrigger_buffer_events()
   end
 
   -- Step 3: UI state (apply to all windows including restored ones)
