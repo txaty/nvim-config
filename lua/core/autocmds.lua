@@ -17,12 +17,19 @@ require("core.lifecycle").setup()
 -- ============================================================================
 
 -- Apply UI state to new windows
+-- Cache module reference to avoid pcall(require) on every buffer switch
+local _ui_toggle
 autocmd({ "WinNew", "BufWinEnter" }, {
   group = augroup "ui_state",
   callback = function()
-    local ok, ui_toggle = pcall(require, "core.ui_toggle")
+    if _ui_toggle then
+      _ui_toggle.apply()
+      return
+    end
+    local ok, mod = pcall(require, "core.ui_toggle")
     if ok then
-      ui_toggle.apply()
+      _ui_toggle = mod
+      mod.apply()
     end
   end,
 })

@@ -71,14 +71,18 @@ function M.run_sequence()
   end
 
   -- Step 3: UI state (apply to all windows including restored ones)
-  require("core.lifecycle.ui_state").init()
-  log "ui_state init"
-  if session_restored then
-    -- Defer slightly to ensure session windows are ready
-    vim.schedule(function()
-      require("core.lifecycle.ui_state").apply_all()
-      log "ui_state apply_all (deferred)"
-    end)
+  -- Call core.ui_toggle directly (no wrapper indirection)
+  local ok_ui, ui_toggle = pcall(require, "core.ui_toggle")
+  if ok_ui then
+    ui_toggle.init()
+    log "ui_state init"
+    if session_restored then
+      -- Defer slightly to ensure session windows are ready
+      vim.schedule(function()
+        ui_toggle.apply_all()
+        log "ui_state apply_all (deferred)"
+      end)
+    end
   end
 
   -- Step 4: NvimTree (session-aware, uses single deferred call)

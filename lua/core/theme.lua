@@ -437,33 +437,50 @@ M.registry = {
 }
 
 -- ============================================================================
--- Backward-Compatible Computed Views
+-- Backward-Compatible Computed Views (lazy-initialized on first access)
 -- ============================================================================
--- These are computed from the registry for backward compatibility
 
--- Build M.themes (dark/light arrays) from registry
-M.themes = { dark = {}, light = {} }
-for name, info in pairs(M.registry) do
-  if not info.custom then
-    if info.variant == "dark" then
-      table.insert(M.themes.dark, name)
-    elseif info.variant == "light" then
-      table.insert(M.themes.light, name)
+local function build_themes()
+  local themes = { dark = {}, light = {} }
+  for name, info in pairs(M.registry) do
+    if not info.custom then
+      if info.variant == "dark" then
+        table.insert(themes.dark, name)
+      elseif info.variant == "light" then
+        table.insert(themes.light, name)
+      end
     end
   end
+  table.sort(themes.dark)
+  table.sort(themes.light)
+  return themes
 end
--- Sort for consistent ordering
-table.sort(M.themes.dark)
-table.sort(M.themes.light)
 
--- Build M.theme_info from registry (for backward compatibility)
-M.theme_info = {}
-for name, info in pairs(M.registry) do
-  M.theme_info[name] = {
-    variant = info.variant,
-    description = info.description,
-  }
+local function build_theme_info()
+  local info_map = {}
+  for name, info in pairs(M.registry) do
+    info_map[name] = {
+      variant = info.variant,
+      description = info.description,
+    }
+  end
+  return info_map
 end
+
+-- Lazy init: build on first access, then cache as regular fields
+setmetatable(M, {
+  __index = function(t, k)
+    if k == "themes" then
+      local v = build_themes()
+      rawset(t, k, v)
+      return v
+    elseif k == "theme_info" then
+      local v = build_theme_info()
+      rawset(t, k, v)
+      return v
+    end
+  end,
+})
 
 -- ============================================================================
 -- Persistence
@@ -472,23 +489,40 @@ local config_path = vim.fn.stdpath "data" .. "/theme_config.json"
 
 -- Load persisted theme preference (returns full config table)
 local function load_config()
-  if vim.fn.filereadable(config_path) == 1 then
-    local content = vim.fn.readfile(config_path)
-    local raw = table.concat(content, "")
-    local ok, result = pcall(vim.json.decode, raw)
-    if ok and type(result) == "table" then
-      return result
-    elseif raw ~= "" then
-      vim.notify("Theme config corrupted, using defaults. Delete " .. config_path .. " to reset.", vim.log.levels.WARN)
-    end
+  local stat = vim.uv.fs_stat(config_path)
+  if not stat then
+    return {}
   end
+
+  local fd = vim.uv.fs_open(config_path, "r", 438)
+  if not fd then
+    return {}
+  end
+
+  local content = vim.uv.fs_read(fd, stat.size, 0)
+  vim.uv.fs_close(fd)
+
+  if not content or content == "" then
+    return {}
+  end
+
+  local ok, result = pcall(vim.json.decode, content)
+  if ok and type(result) == "table" then
+    return result
+  end
+
+  vim.notify("Theme config corrupted, using defaults. Delete " .. config_path .. " to reset.", vim.log.levels.WARN)
   return {}
 end
 
 -- Save config to file
 local function save_config(config)
   local json_str = vim.json.encode(config)
-  vim.fn.writefile(vim.split(json_str, "\n"), config_path)
+  local fd = vim.uv.fs_open(config_path, "w", 438)
+  if fd then
+    vim.uv.fs_write(fd, json_str, 0)
+    vim.uv.fs_close(fd)
+  end
 end
 
 -- Load saved theme name (public API for backward compatibility)
