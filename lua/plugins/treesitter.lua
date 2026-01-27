@@ -47,8 +47,9 @@ return {
     config = function(_, opts)
       require("nvim-treesitter.configs").setup(opts)
       -- Set folding after treesitter loads (deferred from options.lua for faster startup)
+      -- Use native Neovim 0.11+ foldexpr (faster than vimscript nvim_treesitter#foldexpr)
       vim.opt.foldmethod = "expr"
-      vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
+      vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
     end,
   },
 }

@@ -90,7 +90,7 @@ init.lua (entry point)
 VimEnter Lifecycle (deterministic order):
   1. core/lifecycle/colorscheme.lua  (theme restore FIRST)
   2. core/lifecycle/session.lua      (session restore)
-  3. core/lifecycle/ui_state.lua     (apply UI toggles)
+  3. core/ui_toggle (inline)         (apply UI toggles)
   4. core/lifecycle/nvim_tree.lua    (file explorer auto-open)
   5. core/commands/init.lua          (register user commands)
 ```
@@ -98,10 +98,9 @@ VimEnter Lifecycle (deterministic order):
 ### Directory Structure
 - `lua/core/` — Fundamental Neovim settings and lazy.nvim bootstrap
   - `lifecycle/` — Initialization lifecycle modules (VimEnter orchestration)
-    - `init.lua` — Lifecycle orchestrator
+    - `init.lua` — Lifecycle orchestrator (calls core.ui_toggle directly)
     - `colorscheme.lua` — Theme restoration
     - `session.lua` — Session save/restore
-    - `ui_state.lua` — UI toggle application
     - `nvim_tree.lua` — NvimTree auto-open
   - `commands/` — User command definitions
     - `init.lua` — Command registry
