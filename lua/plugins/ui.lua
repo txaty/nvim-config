@@ -6,6 +6,10 @@ local nvim_tree_width = {
   cached_width = nil, -- In-memory cache to reduce disk I/O
   dirty = false, -- Track if cache differs from disk
 
+  max_width = function()
+    return math.max(60, math.floor(vim.o.columns * 0.4))
+  end,
+
   load = function(self)
     -- Return cached value if available
     if self.cached_width then
@@ -20,14 +24,14 @@ local nvim_tree_width = {
     f:close()
     local ok, data = pcall(vim.json.decode, content)
     if ok and data and type(data.width) == "number" and data.width >= 20 then
-      self.cached_width = data.width
-      return data.width
+      self.cached_width = math.min(data.width, self:max_width())
+      return self.cached_width
     end
     return nil
   end,
 
   save = function(self, width)
-    if type(width) ~= "number" or width < 20 then
+    if type(width) ~= "number" or width < 20 or width > self:max_width() then
       return
     end
     -- Update cache, mark dirty (persist later)
@@ -139,9 +143,10 @@ return {
         vim.defer_fn(function()
           local win = get_nvim_tree_win()
           if win then
-            -- Restore saved width
+            -- Restore saved width (clamped to max)
             local saved = nvim_tree_width:load()
             if saved and saved >= 20 then
+              saved = math.min(saved, nvim_tree_width:max_width())
               resize_guard = true
               pcall(api.tree.resize, { absolute = saved })
               vim.schedule(function()
@@ -156,7 +161,7 @@ return {
 
       -- 2. Save width on nvim-tree's own resize event (API calls)
       api.events.subscribe(api.events.Event.Resize, function(size)
-        if size and size >= 20 then
+        if size and size >= 20 and size <= nvim_tree_width:max_width() then
           nvim_tree_width:save(size) -- Updates cache, doesn't write to disk
           -- Re-apply winfixwidth after resize
           local win = get_nvim_tree_win()
@@ -195,7 +200,8 @@ return {
           for _, resized_win in ipairs(resized) do
             if resized_win == win then
               local width = vim.api.nvim_win_get_width(win)
-              if width >= 20 then
+              local max = nvim_tree_width:max_width()
+              if width >= 20 and width <= max then
                 nvim_tree_width:save(width)
                 resize_guard = true
                 pcall(api.tree.resize, { absolute = width })
