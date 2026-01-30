@@ -915,15 +915,19 @@ local function generate_highlights(p)
   hl("LeapBackdrop", { fg = p.fg_muted })
 
   -- ==========================================================================
-  -- Plugin: nvim-spectre
+  -- Plugin: grug-far.nvim
   -- ==========================================================================
-  hl("SpectreHeader", { fg = p.fg, bold = true })
-  hl("SpectreBody", { fg = p.fg })
-  hl("SpectreFile", { fg = p.accent3 })
-  hl("SpectreDir", { fg = p.fg_dim })
-  hl("SpectreSearch", { fg = p.bg, bg = p.error })
-  hl("SpectreReplace", { fg = p.bg, bg = p.success })
-  hl("SpectreBorder", { fg = p.border })
+  hl("GrugFarHelpHeader", { fg = p.fg, bold = true })
+  hl("GrugFarInputLabel", { fg = p.accent3, bold = true })
+  hl("GrugFarInputPlaceholder", { fg = p.fg_muted })
+  hl("GrugFarResultsHeader", { fg = p.fg_dim })
+  hl("GrugFarResultsStats", { fg = p.fg_dim })
+  hl("GrugFarResultsMatch", { fg = p.bg, bg = p.error })
+  hl("GrugFarResultsMatchAdded", { fg = p.bg, bg = p.success })
+  hl("GrugFarResultsMatchRemoved", { fg = p.bg, bg = p.error })
+  hl("GrugFarResultsPath", { fg = p.accent3, underline = true })
+  hl("GrugFarResultsLineNr", { fg = p.fg_muted })
+  hl("GrugFarResultsActionMessage", { fg = p.accent1 })
 
   -- ==========================================================================
   -- Plugin: neo-tree
