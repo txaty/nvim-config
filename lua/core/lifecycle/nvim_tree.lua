@@ -11,6 +11,15 @@ local function cleanup_stale_buffers()
     if vim.api.nvim_buf_is_valid(buf) then
       local name = vim.api.nvim_buf_get_name(buf)
       if name:match "NvimTree_" then
+        -- Close windows displaying this buffer before deleting it
+        -- to prevent orphan full-width windows from session restore
+        for _, win in ipairs(vim.api.nvim_list_wins()) do
+          if vim.api.nvim_win_is_valid(win) and vim.api.nvim_win_get_buf(win) == buf then
+            if #vim.api.nvim_list_wins() > 1 then
+              pcall(vim.api.nvim_win_close, win, true)
+            end
+          end
+        end
         pcall(vim.api.nvim_buf_delete, buf, { force = true })
         cleaned = true
       end
