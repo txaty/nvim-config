@@ -930,6 +930,12 @@ local function generate_highlights(p)
   hl("GrugFarResultsActionMessage", { fg = p.accent1 })
 
   -- ==========================================================================
+  -- Plugin: zen-mode.nvim / twilight.nvim
+  -- ==========================================================================
+  hl("ZenBg", { bg = p.bg })
+  hl("TwilightDimmed", { fg = p.fg_muted })
+
+  -- ==========================================================================
   -- Plugin: neo-tree
   -- ==========================================================================
   hl("NeoTreeNormal", { fg = p.fg, bg = p.bg })
