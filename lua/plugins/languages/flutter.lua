@@ -52,7 +52,14 @@ return {
         },
         lsp = {
           -- on_attach handled by LspAttach autocmd
-          capabilities = require("cmp_nvim_lsp").default_capabilities(),
+          capabilities = (function()
+            local caps = vim.lsp.protocol.make_client_capabilities()
+            local ok, blink = pcall(require, "blink.cmp")
+            if ok then
+              caps = blink.get_lsp_capabilities(caps)
+            end
+            return caps
+          end)(),
           settings = {
             showTodos = true,
             completeFunctionCalls = true,

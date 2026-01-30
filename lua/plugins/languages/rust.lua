@@ -30,10 +30,6 @@ return {
       vim.g.rustaceanvim = {
         -- LSP configuration
         server = {
-          on_attach = function(client, _bufnr)
-            -- Let rustaceanvim handle most settings, but we can add custom logic here
-            require("cmp_nvim_lsp").default_capabilities(client.server_capabilities)
-          end,
           settings = {
             ["rust-analyzer"] = {
               -- Workspace and discovery

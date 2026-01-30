@@ -108,10 +108,6 @@ VimEnter Lifecycle (deterministic order):
     - `lang.lua` — :LangToggle, :LangPanel, etc
     - `cleanup.lua` — :CleanupNvim
     - `ui.lua` — :UIStatus
-  - `util/` — Shared utilities
-    - `augroup.lua` — Augroup helper with registry
-    - `keymap.lua` — Keymap helper with conflict detection
-    - `safe_require.lua` — pcall wrapper with error handling
   - `theme.lua` — Unified theme registry with 50+ themes and smart switching
   - `theme_txaty.lua` — Custom ergonomic theme with factory pattern (dark/light variants)
   - `lang_utils.lua` — Shared utilities for language support (reduces boilerplate)
@@ -385,7 +381,7 @@ stylua lua/
   - `<leader>ug` — Toggle nvim-tree git status
 - `<leader>q*` — Session/Quit (save, load, quit)
 - `<leader>x*` — Diagnostics/Trouble
-- `<leader>S` — Spectre (project-wide search and replace)
+- `<leader>S` — Search & Replace (grug-far, project-wide)
 - `<leader>M*` — Minimap (toggle, enable, disable, refresh)
 - `s/S` — Flash navigation (jump to location/Treesitter node)
 - `<C-n>` — Toggle nvim-tree file explorer
@@ -550,7 +546,7 @@ vim.g.disable_auto_cleanup = true
 - **flash.nvim** — Fast navigation with `s` (jump) and `S` (Treesitter select)
 - **trouble.nvim** — Pretty diagnostics, references, quickfix list
 - **todo-comments.nvim** — Highlight TODO, FIXME, HACK, NOTE comments
-- **nvim-spectre** — Project-wide search and replace (`<leader>S`)
+- **grug-far.nvim** — Project-wide search and replace (`<leader>S`)
 - **which-key.nvim** — Popup showing available keybindings
 - **dressing.nvim** — Improve vim.ui.select and vim.ui.input interfaces
 

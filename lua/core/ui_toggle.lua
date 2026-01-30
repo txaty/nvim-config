@@ -152,9 +152,7 @@ function M.toggle(opt)
   end
 
   -- Apply to current window (for standard vim options)
-  if opt ~= "tree_git" then
-    vim.wo[opt] = new_value
-  end
+  vim.wo[opt] = new_value
 
   -- Notify user
   local display = type(new_value) == "boolean" and (new_value and "on" or "off") or tostring(new_value)

@@ -47,29 +47,37 @@ return {
       vim.api.nvim_create_autocmd("LspAttach", {
         group = vim.api.nvim_create_augroup("UserLspConfig", { clear = true }),
         callback = function(ev)
-          local keymap_opts = { buffer = ev.buf }
-
           -- Enable completion triggered by <c-x><c-o>
           vim.bo[ev.buf].omnifunc = "v:lua.vim.lsp.omnifunc"
 
           -- Buffer specific mappings
-          map("n", "gD", vim.lsp.buf.declaration, keymap_opts)
-          map("n", "gd", vim.lsp.buf.definition, keymap_opts)
-          map("n", "K", vim.lsp.buf.hover, keymap_opts)
-          map("n", "gi", vim.lsp.buf.implementation, keymap_opts)
-          map("n", "<leader>ls", vim.lsp.buf.signature_help, keymap_opts)
-          map("n", "<leader>wa", vim.lsp.buf.add_workspace_folder, keymap_opts)
-          map("n", "<leader>wr", vim.lsp.buf.remove_workspace_folder, keymap_opts)
+          map("n", "gD", vim.lsp.buf.declaration, { buffer = ev.buf, desc = "LSP: Go to declaration" })
+          map("n", "gd", vim.lsp.buf.definition, { buffer = ev.buf, desc = "LSP: Go to definition" })
+          map("n", "K", vim.lsp.buf.hover, { buffer = ev.buf, desc = "LSP: Hover documentation" })
+          map("n", "gi", vim.lsp.buf.implementation, { buffer = ev.buf, desc = "LSP: Go to implementation" })
+          map("n", "<leader>ls", vim.lsp.buf.signature_help, { buffer = ev.buf, desc = "LSP: Signature help" })
+          map(
+            "n",
+            "<leader>wa",
+            vim.lsp.buf.add_workspace_folder,
+            { buffer = ev.buf, desc = "LSP: Add workspace folder" }
+          )
+          map(
+            "n",
+            "<leader>wr",
+            vim.lsp.buf.remove_workspace_folder,
+            { buffer = ev.buf, desc = "LSP: Remove workspace folder" }
+          )
           map("n", "<leader>wl", function()
             print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
-          end, keymap_opts)
-          map("n", "<leader>D", vim.lsp.buf.type_definition, keymap_opts)
-          map("n", "<leader>lr", vim.lsp.buf.rename, keymap_opts)
-          map("n", "<leader>la", vim.lsp.buf.code_action, keymap_opts)
-          map("n", "gr", vim.lsp.buf.references, keymap_opts)
+          end, { buffer = ev.buf, desc = "LSP: List workspace folders" })
+          map("n", "<leader>D", vim.lsp.buf.type_definition, { buffer = ev.buf, desc = "LSP: Type definition" })
+          map("n", "<leader>lr", vim.lsp.buf.rename, { buffer = ev.buf, desc = "LSP: Rename symbol" })
+          map("n", "<leader>la", vim.lsp.buf.code_action, { buffer = ev.buf, desc = "LSP: Code action" })
+          map("n", "gr", vim.lsp.buf.references, { buffer = ev.buf, desc = "LSP: Show references" })
           map("n", "<leader>lf", function()
             vim.lsp.buf.format { async = true }
-          end, keymap_opts)
+          end, { buffer = ev.buf, desc = "LSP: Format document" })
 
           -- Diagnostic navigation
           map("n", "[d", vim.diagnostic.goto_prev, { buffer = ev.buf, desc = "LSP: Previous diagnostic" })

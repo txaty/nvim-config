@@ -482,18 +482,14 @@ return {
 │   │   │   ├── init.lua     # Lifecycle orchestrator
 │   │   │   ├── colorscheme.lua
 │   │   │   ├── session.lua
-│   │   │   ├── ui_state.lua
+│   │   │   ├── reconcile.lua
 │   │   │   └── nvim_tree.lua
-│   │   ├── commands/        # User command definitions
-│   │   │   ├── init.lua     # Command registry
-│   │   │   ├── ai.lua
-│   │   │   ├── lang.lua
-│   │   │   ├── cleanup.lua
-│   │   │   └── ui.lua
-│   │   └── util/            # Shared utilities
-│   │       ├── augroup.lua
-│   │       ├── keymap.lua
-│   │       └── safe_require.lua
+│   │   └── commands/        # User command definitions
+│   │       ├── init.lua     # Command registry
+│   │       ├── ai.lua
+│   │       ├── lang.lua
+│   │       ├── cleanup.lua
+│   │       └── ui.lua
 │   └── plugins/            # Plugin specifications
 │       ├── lsp.lua          # LSP + Mason
 │       ├── colorscheme.lua  # 40+ theme plugins
