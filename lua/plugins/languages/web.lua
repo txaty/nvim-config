@@ -25,4 +25,10 @@ return {
     cssls = {},
     jsonls = {},
   },
+  {
+    "windwp/nvim-ts-autotag",
+    event = { "BufReadPre", "BufNewFile" },
+    ft = { "html", "javascript", "javascriptreact", "typescript", "typescriptreact", "svelte", "vue", "xml" },
+    opts = {},
+  },
 }

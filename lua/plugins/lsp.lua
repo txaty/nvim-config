@@ -28,7 +28,7 @@ return {
     dependencies = {
       "williamboman/mason.nvim",
       "williamboman/mason-lspconfig.nvim",
-      "hrsh7th/cmp-nvim-lsp",
+      { "folke/lazydev.nvim", ft = "lua", opts = {} },
     },
     opts = {},
     config = function(_, opts)
@@ -38,9 +38,9 @@ return {
 
       -- Exporting capabilities for completion
       local capabilities = vim.lsp.protocol.make_client_capabilities()
-      local cmp_nvim_lsp_ok, cmp_nvim_lsp = pcall(require, "cmp_nvim_lsp")
-      if cmp_nvim_lsp_ok then
-        capabilities = cmp_nvim_lsp.default_capabilities(capabilities)
+      local blink_ok, blink = pcall(require, "blink.cmp")
+      if blink_ok then
+        capabilities = blink.get_lsp_capabilities(capabilities)
       end
 
       -- LspAttach Autocmd for Keymaps
