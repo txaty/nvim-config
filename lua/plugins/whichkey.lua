@@ -42,7 +42,7 @@ return {
         { "<leader>r", group = "Remote", icon = "󰢹" },
         { "<leader>R", group = "Rust", icon = "󱘗" },
         { "<leader>s", group = "Search", icon = "󰑑" },
-        { "<leader>S", group = "Spectre", icon = "󰛔" },
+        { "<leader>S", group = "Search", icon = "󰛔" },
         { "<leader>t", group = "Test", icon = "󰙨" },
         { "<leader>u", group = "UI/Display", icon = "󰙵" },
         { "<leader>w", group = "Windows", icon = "󰖲" },

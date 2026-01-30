@@ -12,11 +12,11 @@ This repository contains a custom, self-maintained Neovim configuration. It uses
 *   **LSP**: `vim.lsp.config` (new Neovim 0.11+ API, migrated from nvim-lspconfig)
 *   **Formatting**: `conform.nvim` (prettierd, prettier, stylua, black, isort, gofmt, rustfmt, clang-format, latexindent)
 *   **Linting**: `nvim-lint`
-*   **Completion**: `nvim-cmp` + `cmp-nvim-lsp`
+*   **Completion**: `blink.cmp`
 *   **Syntax**: `nvim-treesitter`
 *   **Diagnostics UI**: `trouble.nvim`
 *   **Todo Highlighting**: `todo-comments.nvim`
-*   **Search & Replace**: `nvim-spectre`
+*   **Search & Replace**: `grug-far.nvim`
 *   **Git TUI**: `lazygit.nvim`
 *   **AI**: `copilot.lua` + `CopilotChat.nvim`
 *   **UI Polish**: `noice.nvim` + `dressing.nvim`
@@ -53,7 +53,7 @@ This repository contains a custom, self-maintained Neovim configuration. It uses
 *   `lua/plugins/`: Plugin specifications (using lazy.nvim syntax), organized by domain
     *   `lsp.lua`: Mason + vim.lsp.config (new Neovim 0.11+ API) with LspAttach autocmd.
     *   `tools.lua`: conform.nvim (formatting) + nvim-lint (merged file).
-    *   `cmp.lua`: nvim-cmp completion configuration.
+    *   `cmp.lua`: blink.cmp completion configuration.
     *   `treesitter.lua`: Treesitter setup.
     *   `ui.lua`: nvim-tree, lualine, bufferline, vim-illuminate.
     *   `whichkey.lua`: Popup showing available keybindings.
@@ -67,7 +67,7 @@ This repository contains a custom, self-maintained Neovim configuration. It uses
     *   `session.lua`: persistence.nvim with auto-save/auto-restore.
     *   `bookmark.lua`: bookmarks.nvim with telescope extension.
     *   `documents.lua`: vimtex (LaTeX) + typst-preview (respects lang toggle).
-    *   `noice.lua`, `flash.lua`, `trouble.lua`, `todo.lua`, `spectre.lua`: UI/UX plugins.
+    *   `noice.lua`, `flash.lua`, `trouble.lua`, `todo.lua`, `search-replace.lua`: UI/UX plugins.
     *   `copilot.lua`: GitHub Copilot integration (respects AI toggle).
     *   `dap.lua`: Debug adapter protocol setup.
     *   `test.lua`: neotest testing framework (respects lang toggle).
@@ -112,15 +112,15 @@ Tools (LSP, Formatters, Linters, DAP) are managed by Mason.
     *   Servers use new `vim.lsp.config()` API (Neovim 0.11+, migrated from deprecated nvim-lspconfig).
     *   Configured via mason-lspconfig handlers in `lua/plugins/lsp.lua`.
     *   Buffer-local keymaps set in LspAttach autocmd.
-    *   Key mappings: `gd` (definition), `gr` (references), `K` (hover), `<leader>la` (code action), `<leader>rn` (rename), `<leader>lf` (format).
+    *   Key mappings: `gd` (definition), `gr` (references), `K` (hover), `<leader>la` (code action), `<leader>lr` (rename), `<leader>lf` (format).
     *   **CRITICAL**: NEVER set `cmd` or `root_dir` manually (conflicts with Mason). Rust is handled by `rustaceanvim`, not lspconfig.
 *   **Formatting**: `<leader>lf` or auto-format on save (via conform.nvim).
 *   **Diagnostics**: Use `trouble.nvim` (`<leader>xx`) to view and filter project-wide diagnostics.
 *   **Todo Comments**: Use keywords (`TODO`, `FIXME`, `HACK`, `NOTE`) in code. Search with `<leader>ft`.
-*   **Search & Replace**: Use `nvim-spectre` (`<leader>S`) for project-wide find and replace.
+*   **Search & Replace**: Use `grug-far` (`<leader>S`) for project-wide find and replace.
 *   **Git**: Use `lazygit` (`<leader>gg`) for staging, committing, amending, rebasing.
 *   **AI**:
-    *   Completion: GitHub Copilot (ghost text). Accept with `<C-l>`.
+    *   Completion: GitHub Copilot (ghost text). Accept with `<M-l>` (Alt+L).
     *   Chat: `<leader>aa` to toggle chat. `<leader>aq` (quick question), `<leader>ae` (explain), `<leader>at` (tests), `<leader>af` (fix), `<leader>ar` (review).
 *   **Navigation**:
     *   Flash: Press `s` to jump anywhere. Press `S` to select Treesitter nodes.
@@ -128,7 +128,7 @@ Tools (LSP, Formatters, Linters, DAP) are managed by Mason.
 *   **UI**:
     *   File Explorer: `<C-n>` to toggle nvim-tree.
     *   Statusline: lualine (auto theme).
-    *   Bufferline: Navigate buffers with `<Tab>` / `<S-Tab>` or `<leader>x` to close.
+    *   Bufferline: Navigate buffers with `<Tab>` / `<S-Tab>` or `<leader>bd` to close.
     *   Noice History: `<leader>nh`. Dismiss Notifications: `<leader>nd`.
 *   **Theme Switching** (uses `<leader>c*` prefix for "color"):
     *   Choose theme: `<leader>cc` (Telescope picker) or `:ThemeSwitch`

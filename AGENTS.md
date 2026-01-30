@@ -17,7 +17,7 @@
   - `plugins/` — modular plugin specs with inlined configurations:
     - `lsp.lua` — Mason + vim.lsp.config (new Neovim 0.11+ API) with LspAttach autocmd.
     - `tools.lua` — conform.nvim (formatting) + nvim-lint (merged file).
-    - `cmp.lua` — nvim-cmp completion setup.
+    - `cmp.lua` — blink.cmp completion setup.
     - `treesitter.lua` — syntax highlighting and parsing.
     - `ui.lua` — nvim-tree, lualine, bufferline, vim-illuminate.
     - `whichkey.lua` — Popup showing available keybindings.
@@ -31,7 +31,7 @@
     - `session.lua` — persistence.nvim with auto-save/auto-restore.
     - `bookmark.lua` — bookmarks.nvim with telescope extension.
     - `documents.lua` — vimtex (LaTeX) + typst-preview (respects lang toggle).
-    - `noice.lua`, `flash.lua`, `trouble.lua`, `todo.lua`, `spectre.lua` — UI/UX enhancements.
+    - `noice.lua`, `flash.lua`, `trouble.lua`, `todo.lua`, `search-replace.lua` — UI/UX enhancements.
     - `copilot.lua` — GitHub Copilot integration (respects AI toggle).
     - `dap.lua` — debug adapter protocol setup.
     - `test.lua` — neotest testing framework (respects lang toggle).

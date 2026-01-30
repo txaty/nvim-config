@@ -25,8 +25,8 @@
 | `<leader>r*` | **Remote Development** | `<leader>rc` = connect to server |
 | `<leader>R*` | **Rust** (language) | `<leader>Rr` = run, `<leader>Rc` = check |
 | `<leader>C*` | **Crates** (Cargo.toml) | `<leader>Cu` = upgrade crate |
-| `<leader>s*` | **Search & Replace** | `<leader>S` = Spectre search/replace |
-| `<leader>S*` | **Spectre** | `<leader>sw` = search current word |
+| `<leader>s*` | **Search & Replace** | `<leader>S` = grug-far search/replace |
+| `<leader>S*` | **Search** | `<leader>sw` = search current word |
 | `<leader>t*` | **Testing** | `<leader>tn` = run nearest test |
 | `<leader>u*` | **UI/Display** | `<leader>uw` = toggle wrap |
 | `<leader>w*` | **Windows** | `<leader>ws` = horizontal split |
@@ -356,27 +356,12 @@
 
 ## Search & Replace (`<leader>S`, `<leader>s*`)
 
-### Spectre Panel
+### grug-far (Project-wide Search & Replace)
 | Keybinding | Description |
 |---|---|
-| `<leader>S` | Toggle Spectre search/replace panel |
-| `<leader>sw` | Search current word in Spectre |
-
-### Inside Spectre Buffer
-| Keybinding | Description |
-|---|---|
-| `dd` | Toggle selected line for replace |
-| `<CR>` | Open file at result |
-| `<leader>c` | Replace command |
-| `<leader>o` | Show Spectre options |
-| `<leader>rc` | Replace current line |
-| `<leader>R` | Replace all matches |
-| `<leader>v` | Change view mode |
-| `trs` | Toggle regex (sed) engine |
-| `tu` | Toggle live update |
-| `ti` | Toggle ignore case |
-| `th` | Toggle ignore hidden files |
-| `<leader>q` | Send results to quickfix |
+| `<leader>S` | Open grug-far search/replace panel |
+| `<leader>sw` | Search current word in grug-far |
+| `<leader>S` (visual) | Search visual selection in grug-far |
 
 ### General Search
 | Keybinding | Description |
@@ -571,6 +556,7 @@
 |---|---|
 | `<leader>nl` | Show last message |
 | `<leader>nh` | Show message history |
+| `<leader>na` | Show all messages |
 | `<leader>nd` | Dismiss all notifications |
 
 ---
@@ -612,6 +598,7 @@
 | `<leader>ur` | Toggle relative numbers | ON |
 | `<leader>uc` | Toggle conceal (0/2) | ON (2) |
 | `<leader>ug` | Toggle nvim-tree git status | ON |
+| `<leader>uz` | Toggle zen mode | — |
 
 **Prose Override:** Markdown, text, TeX, and Typst files automatically enable word wrap regardless of session state.
 
