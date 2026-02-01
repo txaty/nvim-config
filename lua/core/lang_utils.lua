@@ -47,6 +47,19 @@ function M.extend_conform(formatters_map)
   }
 end
 
+-- Extend mason-lspconfig ensure_installed
+-- @param servers table: List of LSP server names for mason-lspconfig to install
+-- @return table: Plugin spec for mason-lspconfig.nvim
+function M.extend_mason_lspconfig(servers)
+  return {
+    "williamboman/mason-lspconfig.nvim",
+    opts = function(_, opts)
+      opts.ensure_installed = opts.ensure_installed or {}
+      vim.list_extend(opts.ensure_installed, servers)
+    end,
+  }
+end
+
 -- Configure LSP servers
 -- @param servers_map table: Map of server name to server config
 -- @return table: Plugin spec for nvim-lspconfig
