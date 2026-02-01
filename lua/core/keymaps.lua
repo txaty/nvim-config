@@ -65,9 +65,29 @@ map("n", "<TAB>", "<cmd>bnext<CR>", { desc = "Buffer Next" })
 map("n", "<S-TAB>", "<cmd>bprev<CR>", { desc = "Buffer Prev" })
 -- <leader>bd is defined in lua/plugins/ui.lua (centralized buffer close)
 
--- AI Feature Toggle
-map("n", "<leader>ai", "<cmd>AIToggle<cr>", { desc = "AI: Toggle AI features" })
+-- AI Feature Toggle (Lua function avoids race with VimEnter command registration)
+map("n", "<leader>ai", function()
+  local ok, ai = pcall(require, "core.ai_toggle")
+  if ok then
+    ai.toggle()
+  else
+    vim.notify("Failed to load ai_toggle module", vim.log.levels.ERROR)
+  end
+end, { desc = "AI: Toggle AI features" })
 
 -- Language Support Panel (uses capital L to avoid conflict with <leader>l* LSP keymaps)
-map("n", "<leader>Lp", "<cmd>LangPanel<cr>", { desc = "Language: toggle panel" })
-map("n", "<leader>Ls", "<cmd>LangStatus<cr>", { desc = "Language: show status" })
+-- Lua functions avoid race with VimEnter command registration
+map("n", "<leader>Lp", function()
+  local ok = pcall(vim.cmd, "LangPanel")
+  if not ok then
+    vim.notify("LangPanel not yet available, try again shortly", vim.log.levels.WARN)
+  end
+end, { desc = "Language: toggle panel" })
+map("n", "<leader>Ls", function()
+  local ok, lang = pcall(require, "core.lang_toggle")
+  if ok then
+    lang.show_all_status()
+  else
+    vim.notify("Failed to load lang_toggle module", vim.log.levels.ERROR)
+  end
+end, { desc = "Language: show status" })

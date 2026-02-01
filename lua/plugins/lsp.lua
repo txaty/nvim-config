@@ -74,7 +74,12 @@ return {
           map("n", "<leader>la", vim.lsp.buf.code_action, { buffer = ev.buf, desc = "LSP: Code action" })
           map("n", "gr", vim.lsp.buf.references, { buffer = ev.buf, desc = "LSP: Show references" })
           map("n", "<leader>lf", function()
-            vim.lsp.buf.format { async = true }
+            local ok, conform = pcall(require, "conform")
+            if ok then
+              conform.format { async = true, lsp_fallback = true }
+            else
+              vim.lsp.buf.format { async = true }
+            end
           end, { buffer = ev.buf, desc = "LSP: Format document" })
 
           -- Diagnostic navigation
