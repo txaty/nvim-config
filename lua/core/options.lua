@@ -12,6 +12,12 @@ g.loaded_netrw = 1
 g.loaded_netrwPlugin = 1
 
 --------------------------------------
+-- Security
+--------------------------------------
+opt.modeline = false -- Disable modeline execution (prevents untrusted files from setting options)
+opt.exrc = false -- Disable project-local .nvim.lua / .exrc execution
+
+--------------------------------------
 -- Options
 --------------------------------------
 opt.laststatus = 3 -- global statusline

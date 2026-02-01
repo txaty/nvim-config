@@ -633,6 +633,44 @@ luacheck lua/              # Lint all Lua config files
 $HOME/.luarocks/bin/luacheck lua/  # If installed via luarocks
 ```
 
+## Security Model
+
+### Principle
+Neovim must never execute untrusted code implicitly. All user input that flows into shell commands or vim commands must be sanitized.
+
+### Hardening Measures
+
+| Control | Implementation | File |
+|---------|---------------|------|
+| Modeline disabled | `opt.modeline = false` | `core/options.lua` |
+| Exrc disabled | `opt.exrc = false` | `core/options.lua` |
+| Plugin pinning | `lazy-lock.json` pins all plugins to exact commits | `lazy-lock.json` |
+| No auto-update | lazy.nvim defaults to lazy-loading, no auto-install | `core/lazy.lua` |
+| netrw disabled | `g.loaded_netrw = 1` removes netrw attack surface | `core/options.lua` |
+| Structured vim.cmd | User input passed via `vim.cmd { cmd, args }` not string concat | `plugins/remote.lua` |
+| List-form shell exec | External commands use `vim.system(argv)` not `vim.fn.system(string)` | `plugins/markdown.lua` |
+| Path validation | `safe_delete()` resolves symlinks and validates prefix before deletion | `core/cleanup.lua` |
+| XDG compliance | All persistent data stored under `stdpath()` directories | `plugins/bookmark.lua` |
+| No LSP cmd/root_dir | LSP servers never set `cmd` or `root_dir` manually (Mason manages) | `plugins/lsp.lua` |
+
+### Rules for New Code
+
+1. **Never** concatenate user input into `vim.cmd()` strings — use structured form `vim.cmd { cmd = "Foo", args = { input } }` or validate input for `|`, `\n`, `\r`
+2. **Never** interpolate file paths into shell command strings — use list-form `vim.system({"cmd", arg1, arg2})` instead of `vim.fn.system("cmd " .. path)`
+3. **Never** use `loadstring()`, `load()`, `dofile()`, `os.execute()`, or `io.popen()` in configuration code
+4. **Always** validate paths with `safe_delete()` pattern (resolve symlinks, check prefix) before filesystem operations in cleanup/maintenance code
+5. **Always** store persistent data under `stdpath("data")`, `stdpath("state")`, or `stdpath("cache")` — never write directly to `$HOME`
+6. Keep `modeline` and `exrc` disabled unless there is an explicit, documented reason to enable them
+
+### Forbidden Patterns (Audit Checklist)
+```lua
+-- NEVER do these:
+vim.cmd("SomeCommand " .. user_input)           -- command injection
+vim.fn.system("cmd '" .. filepath .. "'")       -- shell injection
+vim.fn.system(string.format("cmd '%s'", path))  -- shell injection (single-quote breakout)
+loadstring(untrusted_string)()                  -- arbitrary code execution
+```
+
 ## Commit Guidelines
 
 - Use Conventional Commits: `feat:`, `fix:`, `refactor:`, `chore:`
