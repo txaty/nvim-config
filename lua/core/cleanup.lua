@@ -75,39 +75,6 @@ local function list_files(dir, pattern)
   return files
 end
 
--- Helper: recursively list files in directory
-local function list_files_recursive(dir, pattern, max_depth, current_depth)
-  current_depth = current_depth or 0
-  max_depth = max_depth or 3
-  local files = {}
-
-  if current_depth > max_depth then
-    return files
-  end
-
-  local handle = vim.uv.fs_scandir(dir)
-  if not handle then
-    return files
-  end
-
-  while true do
-    local name, type = vim.uv.fs_scandir_next(handle)
-    if not name then
-      break
-    end
-    local full_path = dir .. "/" .. name
-    if type == "file" and (not pattern or name:match(pattern)) then
-      table.insert(files, full_path)
-    elseif type == "directory" then
-      local sub_files = list_files_recursive(full_path, pattern, max_depth, current_depth + 1)
-      for _, f in ipairs(sub_files) do
-        table.insert(files, f)
-      end
-    end
-  end
-  return files
-end
-
 -- Clean log files older than 7 days
 function M.clean_logs()
   local log_files = {
@@ -313,7 +280,13 @@ function M.clean_all(verbose)
 
   if verbose then
     local msg = string.format(
-      "Cleanup complete:\n  - Log files: %d\n  - Swap files: %d\n  - View files: %d\n  - Luac cache: %d\n  - LSP logs: %d\n  - Total: %d files removed",
+      "Cleanup complete:\n"
+        .. "  - Log files: %d\n"
+        .. "  - Swap files: %d\n"
+        .. "  - View files: %d\n"
+        .. "  - Luac cache: %d\n"
+        .. "  - LSP logs: %d\n"
+        .. "  - Total: %d files removed",
       results.logs,
       results.swap,
       results.views,

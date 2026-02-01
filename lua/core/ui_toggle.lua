@@ -144,7 +144,7 @@ function M.toggle(opt)
       -- Note: We defer the setup to avoid conflicts during toggle
       vim.schedule(function()
         -- Get the opts function from the plugin spec
-        local config_ok, config = pcall(require, "nvim-tree")
+        local config_ok, _ = pcall(require, "nvim-tree")
         if config_ok then
           -- Trigger a refresh if tree is open
           if tree_winid and vim.api.nvim_win_is_valid(tree_winid) then

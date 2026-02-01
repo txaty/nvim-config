@@ -16,13 +16,14 @@ local nvim_tree_width = {
       return self.cached_width
     end
 
-    local f = io.open(self.path, "r")
-    if not f then
+    if vim.fn.filereadable(self.path) ~= 1 then
       return nil
     end
-    local content = f:read "*a"
-    f:close()
-    local ok, data = pcall(vim.json.decode, content)
+    local lines = vim.fn.readfile(self.path)
+    if #lines == 0 then
+      return nil
+    end
+    local ok, data = pcall(vim.json.decode, lines[1])
     if ok and data and type(data.width) == "number" and data.width >= 20 then
       self.cached_width = math.min(data.width, self:max_width())
       return self.cached_width
@@ -46,12 +47,8 @@ local nvim_tree_width = {
     if not self.dirty or not self.cached_width then
       return
     end
-    local f = io.open(self.path, "w")
-    if f then
-      f:write(vim.json.encode { width = self.cached_width })
-      f:close()
-      self.dirty = false
-    end
+    vim.fn.writefile({ vim.json.encode { width = self.cached_width } }, self.path)
+    self.dirty = false
   end,
 }
 
