@@ -61,21 +61,29 @@ return {
     lazy = true,
   },
 
+  -- Gruvbox Material - replaces morhetz/gruvbox (Vimscript)
   {
-    "morhetz/gruvbox",
+    "sainnhe/gruvbox-material",
     lazy = true,
+    config = function()
+      vim.g.gruvbox_material_background = "medium"
+      vim.g.gruvbox_material_foreground = "material"
+      vim.g.gruvbox_material_better_performance = 1
+    end,
   },
 
+  -- Nordic - replaces arcticicestudio/nord-vim (Vimscript)
   {
-    "arcticicestudio/nord-vim",
-    name = "nord",
+    "AlexvZyl/nordic.nvim",
     lazy = true,
+    opts = {},
   },
 
+  -- Dracula (Lua) - replaces dracula/vim (Vimscript)
   {
-    "dracula/vim",
-    name = "dracula",
+    "Mofiqul/dracula.nvim",
     lazy = true,
+    opts = {},
   },
 
   -- === Light themes ===
@@ -97,10 +105,11 @@ return {
     lazy = true,
   },
 
+  -- Solarized Osaka - replaces altercation/vim-colors-solarized (Vimscript)
   {
-    "altercation/vim-colors-solarized",
-    name = "solarized",
+    "craftzdog/solarized-osaka.nvim",
     lazy = true,
+    opts = {},
   },
 
   {
@@ -135,7 +144,7 @@ return {
     end,
   },
 
-  -- === New themes (added in redesign) ===
+  -- === Additional themes ===
 
   -- Everforest - very popular green-based comfortable theme
   {
@@ -216,5 +225,45 @@ return {
     "nyoom-engineering/oxocarbon.nvim",
     name = "oxocarbon.nvim",
     lazy = true,
+  },
+
+  -- === New colorschemes ===
+
+  -- Sonokai - Monokai Pro-inspired with 6 style variants
+  {
+    "sainnhe/sonokai",
+    lazy = true,
+    config = function()
+      vim.g.sonokai_better_performance = 1
+    end,
+  },
+
+  -- Edge - Atom One + Material hybrid with dark and light variants
+  {
+    "sainnhe/edge",
+    lazy = true,
+    config = function()
+      vim.g.edge_better_performance = 1
+    end,
+  },
+
+  -- Lackluster - monochrome/minimal colorscheme with selective accents
+  {
+    "slugbyte/lackluster.nvim",
+    lazy = true,
+  },
+
+  -- Modus - WCAG AAA accessible themes with deuteranopia/tritanopia variants
+  {
+    "miikanissi/modus-themes.nvim",
+    lazy = true,
+    opts = {},
+  },
+
+  -- Bamboo - green-focused, low-blue eye comfort theme
+  {
+    "ribru17/bamboo.nvim",
+    lazy = true,
+    opts = {},
   },
 }
