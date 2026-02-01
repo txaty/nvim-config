@@ -9,6 +9,7 @@ local lang = require "core.lang_utils"
 return {
   lang.extend_treesitter { "python", "toml" },
   lang.extend_mason { "pyright", "ruff", "mypy", "black", "isort", "debugpy" },
+  lang.extend_mason_lspconfig { "pyright" },
   lang.extend_conform { python = { "black", "isort" } },
   lang.extend_lspconfig {
     pyright = {

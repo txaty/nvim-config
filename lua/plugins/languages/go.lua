@@ -9,6 +9,7 @@ local lang = require "core.lang_utils"
 return {
   lang.extend_treesitter { "go", "gomod", "gowork", "gosum" },
   lang.extend_mason { "gopls", "golangci-lint", "delve", "goimports", "gomodifytags", "impl" },
+  lang.extend_mason_lspconfig { "gopls" },
   lang.extend_conform { go = { "goimports", "gofmt" } },
   lang.extend_lspconfig {
     gopls = {

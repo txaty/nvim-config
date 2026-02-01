@@ -7,9 +7,6 @@ return {
       ensure_installed = {
         "lua-language-server",
         "stylua",
-        "html-lsp",
-        "css-lsp",
-        "prettier",
       },
     },
     config = function(_, opts)
@@ -29,6 +26,7 @@ return {
       "williamboman/mason.nvim",
       "williamboman/mason-lspconfig.nvim",
       { "folke/lazydev.nvim", ft = "lua", opts = {} },
+      { "saghen/blink.cmp", optional = true },
     },
     opts = {},
     config = function(_, opts)
@@ -89,7 +87,7 @@ return {
       -- Setup mason-lspconfig
       -- This will automatically enable installed servers
       mason_lspconfig.setup {
-        ensure_installed = { "lua_ls", "bashls", "pyright" },
+        ensure_installed = { "lua_ls", "bashls" },
         -- Don't add rust_analyzer here - let rustaceanvim manage it
         handlers = {
           -- Default handler: auto-enable all servers

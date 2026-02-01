@@ -9,6 +9,7 @@ local lang = require "core.lang_utils"
 return {
   lang.extend_treesitter { "javascript", "typescript", "tsx", "html", "css", "json" },
   lang.extend_mason { "typescript-language-server", "css-lsp", "html-lsp", "json-lsp", "prettier", "eslint_d" },
+  lang.extend_mason_lspconfig { "ts_ls", "cssls", "html", "jsonls" },
   lang.extend_conform {
     javascript = { "prettier" },
     typescript = { "prettier" },
