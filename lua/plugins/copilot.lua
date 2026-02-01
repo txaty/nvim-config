@@ -10,7 +10,9 @@ return {
       require("copilot").setup(opts)
 
       -- Dismiss Copilot ghost text when blink.cmp menu is visible
+      local group = vim.api.nvim_create_augroup("CopilotBlinkCompat", { clear = true })
       vim.api.nvim_create_autocmd("User", {
+        group = group,
         pattern = "BlinkCmpMenuOpen",
         callback = function()
           local ok, suggestion = pcall(require, "copilot.suggestion")
@@ -21,6 +23,7 @@ return {
         end,
       })
       vim.api.nvim_create_autocmd("User", {
+        group = group,
         pattern = "BlinkCmpMenuClose",
         callback = function()
           vim.b.copilot_suggestion_hidden = false

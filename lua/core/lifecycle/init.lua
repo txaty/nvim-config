@@ -96,6 +96,9 @@ function M.run_sequence()
   end
   log "commands registered"
 
+  -- Step 5b: Keymap conflict audit (opt-in via vim.g.debug_keymaps)
+  require("core.keymap_audit").check()
+
   -- Step 6: Focus reconciliation after all UI plugins load
   -- Bufferline highlights the active tab by comparing nvim_get_current_buf()
   -- against its tab list. If the cursor lands on a stale NvimTree buffer that

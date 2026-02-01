@@ -57,9 +57,17 @@ end
 -- Note: load_config_once() is called lazily in init() or on first access
 -- This avoids disk I/O at require-time for faster startup
 
+local initialized = false
+
 --- Initialize UI state from JSON config, session globals, or defaults
 --- Precedence: JSON file > vim.g global (session) > default
+--- Idempotent: safe to call multiple times (early returns after first run)
 function M.init()
+  if initialized then
+    return
+  end
+  initialized = true
+
   load_config_once()
 
   for opt, default in pairs(defaults) do
@@ -160,9 +168,13 @@ function M.toggle(opt)
 end
 
 --- Get current state of an option
+--- Auto-initializes on first access if init() hasn't been called yet
 ---@param opt string Option name
 ---@return any
 function M.get(opt)
+  if not initialized then
+    M.init()
+  end
   return vim.g["ui_" .. opt]
 end
 

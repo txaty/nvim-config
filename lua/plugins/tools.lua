@@ -58,6 +58,11 @@ return {
           lint.try_lint()
         end,
       })
+
+      -- Run lint immediately for the buffer that triggered lazy-load.
+      -- The event that caused lazy.nvim to load this plugin is consumed
+      -- before config runs, so without this the first save would be missed.
+      lint.try_lint()
     end,
   },
 }

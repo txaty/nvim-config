@@ -65,12 +65,8 @@ return {
     },
     opts = function()
       local width = nvim_tree_width:load() or 30
-      -- Load git status preference from ui_toggle
-      local ui_toggle = require "core.ui_toggle"
-      local show_git = ui_toggle.get "tree_git"
-      if show_git == nil then
-        show_git = true -- Default to showing git status
-      end
+      -- Load git status preference from ui_toggle (auto-inits if needed)
+      local show_git = require("core.ui_toggle").get "tree_git"
 
       return {
         filters = { dotfiles = false },
