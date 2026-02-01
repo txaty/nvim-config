@@ -25,8 +25,9 @@
 | `<leader>r*` | **Remote Development** | `<leader>rc` = connect to server |
 | `<leader>R*` | **Rust** (language) | `<leader>Rr` = run, `<leader>Rc` = check |
 | `<leader>C*` | **Crates** (Cargo.toml) | `<leader>Cu` = upgrade crate |
-| `<leader>s*` | **Search & Replace** | `<leader>S` = grug-far search/replace |
+| `<leader>s*` | **Search & Symbols** | `<leader>ss` = jump to symbol, `<leader>S` = search/replace |
 | `<leader>S*` | **Search** | `<leader>sw` = search current word |
+| `<leader>T*` | **Terminal** | `<leader>Tf` = float terminal |
 | `<leader>t*` | **Testing** | `<leader>tn` = run nearest test |
 | `<leader>u*` | **UI/Display** | `<leader>uw` = toggle wrap |
 | `<leader>w*` | **Windows** | `<leader>ws` = horizontal split |
@@ -354,6 +355,61 @@
 
 ---
 
+## Surround (nvim-surround)
+
+**Note:** Works in normal, visual, and operator-pending modes with zero configuration.
+
+| Keybinding | Description |
+|---|---|
+| `ys{motion}{char}` | Add surround (e.g., `ysiw"` wraps word in quotes) |
+| `ds{char}` | Delete surround (e.g., `ds"` removes surrounding quotes) |
+| `cs{old}{new}` | Change surround (e.g., `cs"'` changes `"` to `'`) |
+| `S{char}` (visual) | Surround visual selection |
+
+**Supported characters:** `(`, `)`, `[`, `]`, `{`, `}`, `"`, `'`, `` ` ``, `t` (HTML tags), `f` (function calls)
+
+---
+
+## Code Outline (`<leader>lo`)
+
+| Keybinding | Description |
+|---|---|
+| `<leader>lo` | Toggle code outline sidebar (symbols from LSP) |
+
+**Features:** Shows functions, classes, types in a sidebar. Auto-highlights current symbol as cursor moves.
+
+---
+
+## Symbol Navigation (`<leader>ss`)
+
+| Keybinding | Description |
+|---|---|
+| `<leader>ss` | Jump to symbol (namu - preserves code order) |
+| `<leader>sS` | Jump to workspace symbol |
+
+**Inside namu picker:**
+| Keybinding | Description |
+|---|---|
+| `<C-j>` / `<Down>` | Next symbol |
+| `<C-k>` / `<Up>` | Previous symbol |
+
+**Advantages over Telescope symbol pickers:** Preserves symbol order in code, shows hierarchy context, live preview.
+
+---
+
+## Terminal (`<C-\>`, `<leader>T*`)
+
+| Keybinding | Description |
+|---|---|
+| `<C-\>` | Toggle terminal (works in normal and terminal mode) |
+| `<leader>Tf` | Open floating terminal |
+| `<leader>Th` | Open horizontal terminal |
+| `<leader>Tv` | Open vertical terminal (80 columns) |
+
+**Features:** Persistent terminals that survive buffer switching, multiple named terminals, float/horizontal/vertical layouts.
+
+---
+
 ## Search & Replace (`<leader>S`, `<leader>s*`)
 
 ### grug-far (Project-wide Search & Replace)
@@ -631,6 +687,7 @@
 | `<leader>x*` | "X" for eXtensions - diagnostics, trouble, quickfix management |
 | `<leader>d*` | "D" for Debug - DAP operations for all supported languages |
 | `<leader>t*` | "T" for Testing - test runner operations across all languages |
+| `<leader>T*` | Capital "T" for Terminal - toggleterm layouts, avoids collision with Testing (`<leader>t*`) |
 | `<leader>u*` | "U" for UI - display toggle operations (wrap, spell, numbers, conceal) |
 | `<leader>n*` | "N" for Notifications - Noice message/notification management |
 | `<leader>r*` | "r" for Remote - distant.nvim remote development operations |
