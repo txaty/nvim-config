@@ -89,15 +89,20 @@ function M.run_sequence()
   require("core.lifecycle.nvim_tree").auto_open(session_restored)
   log "nvim_tree auto_open"
 
-  -- Step 5: Commands (after plugins ready)
-  local ok, commands = pcall(require, "core.commands")
-  if ok and commands.register_all then
-    commands.register_all()
-  end
-  log "commands registered"
+  -- Step 5: Commands (deferred — rarely needed in first ms after VimEnter)
+  vim.schedule(function()
+    local ok_cmd, commands = pcall(require, "core.commands")
+    if ok_cmd and commands.register_all then
+      commands.register_all()
+    end
+    log "commands registered (deferred)"
+  end)
 
   -- Step 5b: Keymap conflict audit (opt-in via vim.g.debug_keymaps)
-  require("core.keymap_audit").check()
+  -- Guard the require to avoid loading the module when audit is disabled
+  if vim.g.debug_keymaps then
+    require("core.keymap_audit").check()
+  end
 
   -- Step 6: Focus reconciliation after all UI plugins load
   -- Bufferline highlights the active tab by comparing nvim_get_current_buf()
@@ -119,13 +124,14 @@ function M.run_sequence()
   end
 
   -- Step 7: Cleanup (throttled, background - low priority)
-  vim.schedule(function()
+  -- Defer by 2s to avoid loading 340-line module near startup
+  vim.defer_fn(function()
     local cleanup_ok, cleanup = pcall(require, "core.cleanup")
     if cleanup_ok then
       pcall(cleanup.auto_cleanup)
     end
     log "cleanup (deferred)"
-  end)
+  end, 2000)
 
   log "run_sequence complete (sync portion)"
 end
