@@ -14,7 +14,7 @@ return {
 
       -- Custom command to clean install
       vim.api.nvim_create_user_command("MasonInstallAll", function()
-        vim.cmd("MasonInstall " .. table.concat(opts.ensure_installed, " "))
+        vim.cmd { cmd = "MasonInstall", args = opts.ensure_installed }
       end, {})
     end,
   },
@@ -82,9 +82,13 @@ return {
             end
           end, { buffer = ev.buf, desc = "LSP: Format document" })
 
-          -- Diagnostic navigation
-          map("n", "[d", vim.diagnostic.goto_prev, { buffer = ev.buf, desc = "LSP: Previous diagnostic" })
-          map("n", "]d", vim.diagnostic.goto_next, { buffer = ev.buf, desc = "LSP: Next diagnostic" })
+          -- Diagnostic navigation (vim.diagnostic.jump replaces deprecated goto_prev/goto_next)
+          map("n", "[d", function()
+            vim.diagnostic.jump { count = -1 }
+          end, { buffer = ev.buf, desc = "LSP: Previous diagnostic" })
+          map("n", "]d", function()
+            vim.diagnostic.jump { count = 1 }
+          end, { buffer = ev.buf, desc = "LSP: Next diagnostic" })
           map("n", "<leader>ld", vim.diagnostic.open_float, { buffer = ev.buf, desc = "LSP: Show diagnostics" })
         end,
       })

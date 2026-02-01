@@ -432,7 +432,7 @@ Changes require Neovim restart to take effect. State persisted across sessions.
 
 **50+ themes available:**
 - **Dark (25+):** tokyonight, kanagawa, catppuccin, rose-pine, nightfox, onedark, cyberdream, gruvbox, nord, dracula, github_dark variants, everforest, material, vscode, and more
-- **Light (20+):** tokyonight-day, rose-pine-dawn, kanagawa-lotus, onelight, ayu-light, solarized-light, papercolor, github_light variants, and more
+- **Light (20+):** tokyonight-day, rose-pine-dawn, kanagawa-lotus, onelight, ayu-light, papercolor, github_light variants, and more
 - **Custom:** txaty (ergonomic dark), txaty-light (ergonomic light)
 
 Theme preference is automatically saved and restored on next startup.

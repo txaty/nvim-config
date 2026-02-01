@@ -408,7 +408,7 @@ The configuration features a seamless theme switching system with 50+ themes:
    - Color palette: 5-6 semantic colors (accent1-5 for strings, types, functions, keywords, special)
    - WCAG 2.1 AA compliant contrast ratios
    - No pure black/white (reduces eye strain)
-   - Dark variant: #0f1419 background
+   - Dark variant: #1c1e22 background
    - Light variant: #fafafa background
 
 3. **Theme Switcher** (`lua/plugins/theme_switcher.lua`)
@@ -418,7 +418,7 @@ The configuration features a seamless theme switching system with 50+ themes:
 
 **Available Themes:**
 - **Dark (25+):** tokyonight, kanagawa, catppuccin, rose-pine, nightfox, onedark, cyberdream, gruvbox, nord, dracula, ayu, solarized, jellybeans, everforest, duskfox, nordfox, terafox, carbonfox, material, vscode, moonfly, nightfly, melange, zenbones, oxocarbon, github_dark variants
-- **Light (20+):** tokyonight-day, rose-pine-dawn, kanagawa-lotus, onelight, ayu-light, solarized-light, papercolor, omni, jellybeans-light, dayfox, gruvbox-light, everforest-light, dawnfox, material-lighter, vscode-light, zenbones-light, github_light variants
+- **Light (20+):** tokyonight-day, rose-pine-dawn, kanagawa-lotus, onelight, ayu-light, papercolor, omni, jellybeans-light, dayfox, gruvbox-light, everforest-light, dawnfox, material-lighter, vscode-light, zenbones-light, github_light variants
 - **Custom:** txaty (ergonomic dark), txaty-light (ergonomic light)
 
 ### Usage

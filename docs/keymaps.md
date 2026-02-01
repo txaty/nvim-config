@@ -485,7 +485,6 @@
 - `kanagawa-lotus` — Kanagawa lotus - minimal light variant
 - `onelight` — Atom one light theme
 - `ayu-light` — Ayu light - minimalist design
-- `solarized-light` — Solarized light - scientific color palette
 - `papercolor` — PaperColor - clean paper-like appearance
 - `gruvbox-light` — Retro groove light - warm colors
 - `dayfox`, `dawnfox` — Nightfox light variants
@@ -496,7 +495,7 @@
 - `github_light*` — GitHub light variants (default, high contrast, colorblind)
 
 **Custom Themes:**
-- `txaty` — Low-saturation ergonomic dark theme (#0f1419 background) designed for reduced eye strain
+- `txaty` — Low-saturation ergonomic dark theme (#1c1e22 background) designed for reduced eye strain
 - `txaty-light` — Low-saturation ergonomic light theme (#fafafa background) with same design principles
 
 ---
