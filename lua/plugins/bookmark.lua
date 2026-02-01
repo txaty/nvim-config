@@ -5,7 +5,7 @@ return {
     config = function()
       local bookmarks = require "bookmarks"
       bookmarks.setup {
-        save_file = vim.fn.expand "$HOME/.bookmarks",
+        save_file = vim.fn.stdpath "data" .. "/bookmarks",
         keywords = {
           ["@t"] = "[TODO]",
           ["@w"] = "[WARN]",

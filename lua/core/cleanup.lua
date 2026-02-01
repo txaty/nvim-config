@@ -36,9 +36,16 @@ end
 
 -- Helper: safe delete with path validation
 local function safe_delete(path, expected_prefix)
-  -- Validate path starts with expected prefix (ensure trailing / to avoid prefix collisions)
-  local norm_prefix = expected_prefix:sub(-1) == "/" and expected_prefix or (expected_prefix .. "/")
-  if not path:find("^" .. vim.pesc(norm_prefix)) and path ~= expected_prefix then
+  -- Resolve symlinks to prevent traversal via symlinked paths
+  local real_path = vim.uv.fs_realpath(path)
+  local real_prefix = vim.uv.fs_realpath(expected_prefix)
+  if not real_path or not real_prefix then
+    return false, "Could not resolve path"
+  end
+
+  -- Validate resolved path starts with resolved prefix (ensure trailing / to avoid prefix collisions)
+  local norm_prefix = real_prefix:sub(-1) == "/" and real_prefix or (real_prefix .. "/")
+  if not real_path:find("^" .. vim.pesc(norm_prefix)) and real_path ~= real_prefix then
     return false, "Path outside expected directory"
   end
 
