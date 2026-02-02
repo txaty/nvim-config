@@ -43,13 +43,26 @@ This repository contains a custom, self-maintained Neovim configuration. It uses
     *   `init.lua`: Loads all core modules (options, keymaps, autocmds, lazy).
     *   `options.lua`: Vim options (vim.opt) and sane defaults.
     *   `keymaps.lua`: General keybindings and navigation shortcuts.
-    *   `autocmds.lua`: Event-driven logic (cursor restoration, view saving, auto-open nvim-tree, user commands).
+    *   `autocmds.lua`: Event-driven logic (cursor restoration, view saving); lifecycle and commands handled by submodules.
+    *   `lifecycle/` — Initialization lifecycle modules (VimEnter orchestration):
+        *   `init.lua` — Lifecycle orchestrator (theme, session, UI state, nvim-tree, commands).
+        *   `colorscheme.lua` — Theme restoration (runs first).
+        *   `session.lua` — Session save/restore.
+        *   `nvim_tree.lua` — NvimTree auto-open logic.
+    *   `commands/` — User command definitions:
+        *   `init.lua` — Command registry.
+        *   `ai.lua` — :AIToggle, :AIEnable, :AIDisable, :AIStatus.
+        *   `lang.lua` — :LangPanel, :LangToggle, :LangEnable, :LangDisable, :LangStatus.
+        *   `cleanup.lua` — :CleanupNvim.
+        *   `ui.lua` — :UIStatus.
     *   `lazy.lua`: Bootstraps lazy.nvim with custom performance settings.
     *   `theme.lua`: Unified theme registry with 50+ themes and smart switching.
     *   `theme_txaty.lua`: Custom ergonomic theme with factory pattern (dark/light variants).
     *   `ai_toggle.lua`: AI features toggle module (enables/disables Copilot).
     *   `lang_toggle.lua`: Language support toggle module (enables/disables language tooling).
     *   `lang_utils.lua`: Shared utilities for language support (reduces boilerplate).
+    *   `ui_toggle.lua`: UI/display toggles module (session-persistent state).
+    *   `cleanup.lua`: Automatic cleanup for temporary/cache files (minimizes disk footprint).
 *   `lua/plugins/`: Plugin specifications (using lazy.nvim syntax), organized by domain
     *   `lsp.lua`: Mason + vim.lsp.config (new Neovim 0.11+ API) with LspAttach autocmd.
     *   `tools.lua`: conform.nvim (formatting) + nvim-lint (merged file).
@@ -113,6 +126,7 @@ Tools (LSP, Formatters, Linters, DAP) are managed by Mason.
     *   Configured via mason-lspconfig handlers in `lua/plugins/lsp.lua`.
     *   Buffer-local keymaps set in LspAttach autocmd.
     *   Key mappings: `gd` (definition), `gr` (references), `K` (hover), `<leader>la` (code action), `<leader>lr` (rename), `<leader>lf` (format).
+    *   Diagnostic navigation: `[d` (previous), `]d` (next) using `vim.diagnostic.jump()` (replaces deprecated goto_prev/goto_next).
     *   **CRITICAL**: NEVER set `cmd` or `root_dir` manually (conflicts with Mason). Rust is handled by `rustaceanvim`, not lspconfig.
 *   **Formatting**: `<leader>lf` or auto-format on save (via conform.nvim).
 *   **Diagnostics**: Use `trouble.nvim` (`<leader>xx`) to view and filter project-wide diagnostics.
@@ -150,6 +164,21 @@ Tools (LSP, Formatters, Linters, DAP) are managed by Mason.
     *   Supported: python, rust, go, web, flutter, latex, typst
     *   State persisted to `$XDG_DATA_HOME/language_config.json`
     *   **Requires restart** to apply changes
+*   **UI/Display Toggles** (uses `<leader>u*` prefix, session-persistent):
+    *   Toggle line wrap: `<leader>uw`
+    *   Toggle spell check: `<leader>us`
+    *   Toggle line numbers: `<leader>un`
+    *   Toggle relative numbers: `<leader>ur`
+    *   Toggle conceal: `<leader>uc`
+    *   Toggle nvim-tree git status: `<leader>ug`
+    *   Check UI status: `:UIStatus`
+*   **Automatic Cleanup**:
+    *   Runs automatically on startup (throttled to once per 24 hours)
+    *   Removes stale temporary and cache files to minimize disk footprint
+    *   Targets: log files (>7 days), swap files (orphaned >1 day), view files (missing source), luac cache (>30 days), LSP logs (>7 days)
+    *   Manual trigger: `:CleanupNvim` (verbose output)
+    *   Opt-out: set `vim.g.disable_auto_cleanup = true`
+    *   Timestamp stored in `~/.local/state/nvim/cleanup_last_run`
 *   **Remote Development** (uses `<leader>r*` prefix):
     *   Connect: `<leader>rc` (SSH connection)
     *   Disconnect: `<leader>rd`

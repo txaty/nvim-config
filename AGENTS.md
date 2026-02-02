@@ -8,12 +8,16 @@
     - `options.lua` — vim options (vim.opt) and sane defaults.
     - `keymaps.lua` — general keybindings and navigation.
     - `autocmds.lua` — core autocommands (restore cursor, view saving); lifecycle and commands handled by `lifecycle/` and `commands/` submodules.
+    - `lifecycle/` — VimEnter orchestration (theme, session, UI state, nvim-tree, commands).
+    - `commands/` — user command definitions (AI, language, cleanup, UI).
     - `lazy.lua` — lazy.nvim bootstrap with custom performance settings.
     - `theme.lua` — unified theme registry with 50+ themes and smart switching.
     - `theme_txaty.lua` — custom ergonomic theme with factory pattern (dark/light variants).
     - `ai_toggle.lua` — AI features toggle module (enables/disables Copilot).
     - `lang_toggle.lua` — language support toggle module (enables/disables language tooling).
     - `lang_utils.lua` — shared utilities for language support (reduces boilerplate).
+    - `ui_toggle.lua` — UI/display toggles module (session-persistent state).
+    - `cleanup.lua` — automatic cleanup for temporary/cache files (minimizes disk footprint).
   - `plugins/` — modular plugin specs with inlined configurations:
     - `lsp.lua` — Mason + vim.lsp.config (new Neovim 0.11+ API) with LspAttach autocmd.
     - `tools.lua` — conform.nvim (formatting) + nvim-lint (merged file).
@@ -51,6 +55,8 @@
 - Theme testing: `:ThemeSwitch`, `<leader>cc` (picker), `<leader>cd/cl/cp` (quick switch), `<leader>cn/cN` (cycle themes).
 - AI toggle: `:AIToggle`, `:AIStatus`, `<leader>ai` (requires restart).
 - Language toggle: `:LangPanel`, `:LangToggle <lang>`, `<leader>Lp` (panel), `<leader>Ls` (status).
+- UI toggles: `<leader>u*` prefix (`<leader>uw` wrap, `<leader>us` spell, `<leader>un` numbers, `<leader>ur` relative, `<leader>uc` conceal, `<leader>ug` git status).
+- Cleanup: `:CleanupNvim` (manual trigger with verbose output, auto-runs on startup throttled to once per 24 hours).
 - Rust operations: `<leader>R*` prefix (e.g., `<leader>Rr` run, `<leader>Rc` check, `<leader>Rt` test).
 - Crates (Cargo.toml): `<leader>C*` prefix (e.g., `<leader>Cu` upgrade, `<leader>Cv` versions).
 
@@ -65,9 +71,11 @@
 - Manual: launch Neovim, open representative files (py, go, rs, ts, tex, typst, lua) and verify LSP (`:LspInfo`), formatting (on save or `<leader>lf`), and linting.
 - Headless: run the health, sync, and Treesitter commands above to catch startup issues.
 - DAP: adapters are managed by `mason-nvim-dap`; verify via `:Mason` and test with sample launch configs and breakpoints (`<leader>db`).
-- UI: Test lualine, bufferline, nvim-tree, and theme switching (21+ themes available).
+- UI: Test lualine, bufferline, nvim-tree, and theme switching (50+ themes available).
 - Theme System: Test `:ThemeSwitch`, `<leader>cc` (picker), `<leader>cd/cl/cp` (quick switch), `<leader>cn/cN` (cycle). Verify persistence across sessions.
 - Session: Test auto-save on exit and auto-restore on `nvim` (no args). Test manual controls (`<leader>qs`, `<leader>ql`). Verify nvim-tree doesn't auto-open when session exists.
+- UI Toggles: Test `<leader>u*` keymaps (wrap, spell, numbers, relative, conceal, git status). Verify persistence across sessions via `:UIStatus`.
+- Cleanup: Test `:CleanupNvim` command. Verify automatic cleanup runs on startup (check timestamp in `~/.local/state/nvim/cleanup_last_run`).
 - Minimap: Test `<leader>MM` (toggle), verify neominimap.nvim integration.
 
 ## Commit & Pull Request Guidelines
@@ -85,7 +93,7 @@
 - Don't commit secrets (DAP/API keys, tokens). Prefer env vars or local files.
 - Use project-local configs where possible (e.g., `.prettierrc`, `pyproject.toml`, `.editorconfig`).
 - Python: prefer per-project venvs via `venv-selector.nvim` (`<leader>pv`) over global `python3_host_prog` edits.
-- LSP: All server configs use the new `vim.lsp.config()` API (Neovim 0.11+). NEVER set `cmd` or `root_dir` manually (conflicts with Mason). Rust is handled by `rustaceanvim`, not lspconfig.
+- LSP: All server configs use the new `vim.lsp.config()` API (Neovim 0.11+). Diagnostic navigation uses `vim.diagnostic.jump()` (replaces deprecated goto_prev/goto_next). NEVER set `cmd` or `root_dir` manually (conflicts with Mason). Rust is handled by `rustaceanvim`, not lspconfig.
 - Theme: Preference saved to `$XDG_DATA_HOME/theme_config.json`. Clear if experiencing glitches.
 - Session: Files stored in `~/.local/state/nvim/sessions/`. Auto-restore only when opening Neovim without arguments.
 
