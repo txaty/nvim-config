@@ -139,37 +139,52 @@ return {
     end,
     config = function()
       -- Keymaps specific to Rust (use <leader>R to avoid conflict with Remote <leader>r)
+      -- Uses rustaceanvim's :RustLsp command API (not deprecated rust-tools.nvim commands)
       local map = vim.keymap.set
       local opts = { noremap = true, silent = true }
-      map("n", "<leader>Rr", "<cmd>RustRun<cr>", vim.tbl_extend("force", opts, { desc = "Rust: Run" }))
-      map(
-        "n",
-        "<leader>RR",
-        "<cmd>RustRun release<cr>",
-        vim.tbl_extend("force", opts, { desc = "Rust: Run (release)" })
-      )
-      map("n", "<leader>Rt", "<cmd>RustTest<cr>", vim.tbl_extend("force", opts, { desc = "Rust: Test" }))
+
+      -- Run/Build operations
+      map("n", "<leader>Rr", function()
+        vim.cmd.RustLsp "runnables"
+      end, vim.tbl_extend("force", opts, { desc = "Rust: Runnables" }))
+      map("n", "<leader>RR", function()
+        vim.cmd.RustLsp { "runnables", bang = true }
+      end, vim.tbl_extend("force", opts, { desc = "Rust: Rerun last" }))
+      map("n", "<leader>Rt", function()
+        vim.cmd.RustLsp "testables"
+      end, vim.tbl_extend("force", opts, { desc = "Rust: Testables" }))
       map("n", "<leader>RT", function()
-        vim.cmd.RustTest { args = "--release" }
-      end, vim.tbl_extend("force", opts, { desc = "Rust: Test (release)" }))
-      map("n", "<leader>Rc", "<cmd>RustCheck<cr>", vim.tbl_extend("force", opts, { desc = "Rust: Check" }))
-      map("n", "<leader>Rb", "<cmd>RustBuild<cr>", vim.tbl_extend("force", opts, { desc = "Rust: Build" }))
-      map("n", "<leader>Ra", "<cmd>RustExpandMacro<cr>", vim.tbl_extend("force", opts, { desc = "Rust: Expand macro" }))
-      map(
-        "n",
-        "<leader>Rx",
-        "<cmd>RustExplainError<cr>",
-        vim.tbl_extend("force", opts, { desc = "Rust: Explain error" })
-      )
-      map("n", "<leader>RD", "<cmd>RustDebuggables<cr>", vim.tbl_extend("force", opts, { desc = "Rust: Debuggables" }))
-      map("n", "<leader>RH", "<cmd>RustHoverAction<cr>", vim.tbl_extend("force", opts, { desc = "Rust: Hover action" }))
-      map("n", "<leader>Rl", "<cmd>RustLint<cr>", vim.tbl_extend("force", opts, { desc = "Rust: Lint (clippy)" }))
-      map(
-        "n",
-        "<leader>Rd",
-        "<cmd>RustToggleInlayHints<cr>",
-        vim.tbl_extend("force", opts, { desc = "Rust: Toggle inlay hints" })
-      )
+        vim.cmd.RustLsp { "testables", bang = true }
+      end, vim.tbl_extend("force", opts, { desc = "Rust: Rerun last test" }))
+
+      -- Analysis/Debugging
+      map("n", "<leader>Ra", function()
+        vim.cmd.RustLsp "expandMacro"
+      end, vim.tbl_extend("force", opts, { desc = "Rust: Expand macro" }))
+      map("n", "<leader>Rx", function()
+        vim.cmd.RustLsp "explainError"
+      end, vim.tbl_extend("force", opts, { desc = "Rust: Explain error" }))
+      map("n", "<leader>RD", function()
+        vim.cmd.RustLsp "debuggables"
+      end, vim.tbl_extend("force", opts, { desc = "Rust: Debuggables" }))
+      map("n", "<leader>Rd", function()
+        vim.cmd.RustLsp "debug"
+      end, vim.tbl_extend("force", opts, { desc = "Rust: Debug target" }))
+      map("n", "<leader>RH", function()
+        vim.cmd.RustLsp { "hover", "actions" }
+      end, vim.tbl_extend("force", opts, { desc = "Rust: Hover actions" }))
+      map("n", "<leader>Rc", function()
+        vim.cmd.RustLsp "openCargo"
+      end, vim.tbl_extend("force", opts, { desc = "Rust: Open Cargo.toml" }))
+      map("n", "<leader>Rp", function()
+        vim.cmd.RustLsp "parentModule"
+      end, vim.tbl_extend("force", opts, { desc = "Rust: Parent module" }))
+      map("n", "<leader>Rj", function()
+        vim.cmd.RustLsp "joinLines"
+      end, vim.tbl_extend("force", opts, { desc = "Rust: Join lines" }))
+      map("n", "<leader>Rs", function()
+        vim.cmd.RustLsp "ssr"
+      end, vim.tbl_extend("force", opts, { desc = "Rust: Structural search/replace" }))
     end,
   },
 

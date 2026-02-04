@@ -402,19 +402,20 @@ nvim --headless '+checkhealth lazy' +qa 2>&1 | grep -E '(OK|ERROR|WARNING)'
   - `<leader>rg` — Live grep on remote
   - `<leader>rs` — System info
   - `<leader>rS` — Shell on remote
-- `<leader>R*` — Rust operations (rustaceanvim)
-  - `<leader>Rr` — Run
-  - `<leader>RR` — Run (release)
-  - `<leader>Rt` — Test
-  - `<leader>RT` — Test (release)
-  - `<leader>Rc` — Check
-  - `<leader>Rb` — Build
+- `<leader>R*` — Rust operations (rustaceanvim, uses `:RustLsp` commands)
+  - `<leader>Rr` — Runnables picker
+  - `<leader>RR` — Rerun last runnable
+  - `<leader>Rt` — Testables picker
+  - `<leader>RT` — Rerun last test
   - `<leader>Ra` — Expand macro
   - `<leader>Rx` — Explain error
-  - `<leader>RD` — Debuggables
-  - `<leader>RH` — Hover action
-  - `<leader>Rl` — Lint (clippy)
-  - `<leader>Rd` — Toggle inlay hints
+  - `<leader>Rc` — Open Cargo.toml
+  - `<leader>Rp` — Parent module
+  - `<leader>Rj` — Join lines
+  - `<leader>Rs` — Structural search/replace
+  - `<leader>RD` — Debuggables picker
+  - `<leader>Rd` — Debug target at cursor
+  - `<leader>RH` — Hover actions
 - `<leader>C*` — Crates management (in Cargo.toml)
   - `<leader>Cv` — Show versions popup
   - `<leader>Cf` — Show features popup

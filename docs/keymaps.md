@@ -23,7 +23,7 @@
 | `<leader>p*` | **Python** (venv) | `<leader>pv` = select virtualenv |
 | `<leader>q*` | **Quit/Session** | `<leader>qq` = quit window |
 | `<leader>r*` | **Remote Development** | `<leader>rc` = connect to server |
-| `<leader>R*` | **Rust** (language) | `<leader>Rr` = run, `<leader>Rc` = check |
+| `<leader>R*` | **Rust** (language) | `<leader>Rr` = runnables, `<leader>Rt` = testables |
 | `<leader>C*` | **Crates** (Cargo.toml) | `<leader>Cu` = upgrade crate |
 | `<leader>s*` | **Search & Symbols** | `<leader>ss` = jump to symbol, `<leader>S` = search/replace |
 | `<leader>S*` | **Search** | `<leader>sw` = search current word |
@@ -149,14 +149,26 @@
 
 ## Windows (`<leader>w*`)
 
+### Navigation
 | Keybinding | Description |
 |---|---|
 | `<C-h>` / `<C-j>` / `<C-k>` / `<C-l>` | Navigate to window (left/down/up/right) |
+
+### Split & Layout
+| Keybinding | Description |
+|---|---|
 | `<leader>ws` | Split window horizontally |
 | `<leader>wv` | Split window vertically |
-| `<leader>wa` | Add workspace folder (LSP) |
-| `<leader>wr` | Remove workspace folder (LSP) |
-| `<leader>wl` | List workspace folders (LSP) |
+| `<leader>w=` | Equalize window sizes |
+| `<leader>wo` | Close other windows |
+| `<leader>wz` | Toggle zoom (maximize/restore) |
+
+### LSP Workspace Folders
+| Keybinding | Description |
+|---|---|
+| `<leader>wa` | Add workspace folder |
+| `<leader>wr` | Remove workspace folder |
+| `<leader>wl` | List workspace folders |
 
 ---
 
@@ -258,27 +270,32 @@
 
 ## Rust (`<leader>R*`)
 
-**Note:** Only available in `.rs` (Rust) files. Uses capital `R` to avoid conflict with Remote (`<leader>r*`).
+**Note:** Only available in `.rs` (Rust) files. Uses capital `R` to avoid conflict with Remote (`<leader>r*`). Powered by [rustaceanvim](https://github.com/mrcjkb/rustaceanvim).
 
-### Build & Run
+### Run & Test
 | Keybinding | Description |
 |---|---|
-| `<leader>Rr` | Run Rust project |
-| `<leader>RR` | Run Rust project (release mode) |
-| `<leader>Rt` | Run tests |
-| `<leader>RT` | Run tests (release mode) |
-| `<leader>Rc` | Check project (cargo check) |
-| `<leader>Rb` | Build project (cargo build) |
+| `<leader>Rr` | Show runnables picker |
+| `<leader>RR` | Rerun last runnable |
+| `<leader>Rt` | Show testables picker |
+| `<leader>RT` | Rerun last test |
 
-### Debugging & Analysis
+### Navigation & Analysis
 | Keybinding | Description |
 |---|---|
 | `<leader>Ra` | Expand macro at cursor |
 | `<leader>Rx` | Explain error under cursor |
+| `<leader>Rc` | Open Cargo.toml |
+| `<leader>Rp` | Go to parent module |
+| `<leader>Rj` | Join lines |
+| `<leader>Rs` | Structural search/replace |
+
+### Debugging
+| Keybinding | Description |
+|---|---|
 | `<leader>RD` | Show debuggables picker |
-| `<leader>RH` | Hover action |
-| `<leader>Rl` | Run clippy (lint) |
-| `<leader>Rd` | Toggle inlay hints |
+| `<leader>Rd` | Debug target at cursor |
+| `<leader>RH` | Show hover actions |
 
 ---
 
