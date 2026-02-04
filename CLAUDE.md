@@ -107,11 +107,17 @@ Plugin Load Layers (deterministic):
 VimEnter Lifecycle (deterministic order):
   1. core/lifecycle/colorscheme.lua  (theme restore FIRST)
   2. core/lifecycle/session.lua      (session restore)
-  3. core/ui_toggle (inline)         (apply UI toggles)
-  4. core/lifecycle/nvim_tree.lua    (file explorer auto-open)
-  5. core/commands/init.lua          (register user commands)
+  3. core/ui_toggle.init()           (initialize globals only)
+  4. retrigger_buffer_events()       (ASYNC - triggers BufReadPre/Post/FileType)
+     └─ on_complete callback:
+        4a. core/ui_toggle.apply_all() (apply UI state to windows)
+        4b. core/lifecycle/nvim_tree.lua (file explorer auto-open)
+  5. core/commands/init.lua          (register user commands, deferred)
   6. core/lifecycle/reconcile.lua    (focus fix, waits for VeryLazy)
   7. core/cleanup.lua                (deferred 2s, low priority)
+
+Note: Steps 4a and 4b wait for buffer events to complete, preventing race
+conditions where UI operations would access uninitialized buffer state.
 ```
 
 ### Directory Structure
@@ -511,8 +517,11 @@ The configuration uses `persistence.nvim` with automatic session management:
 - Tab pages
 - Current working directory
 - Window sizes
-- Global variables
 - Help windows
+
+**Note:** Global variables (vim.g.*) are NOT included in sessions. UI state is persisted
+separately via JSON config files (ui_config.json, ai_config.json, etc.) to maintain a
+single source of truth and avoid conflicts during session restore.
 
 **Manual Controls:**
 - `<leader>qs` — Restore/save current session

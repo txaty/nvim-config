@@ -69,7 +69,9 @@ end
 --- treesitter, gitsigns, lint, …) depend on these events to load and
 --- attach.  This function emits the events synthetically so every
 --- buffer gets full editor support.
-local function retrigger_buffer_events()
+---
+---@param on_complete? function Optional callback invoked after all events are triggered
+local function retrigger_buffer_events(on_complete)
   vim.schedule(function()
     local bufs = {}
     for _, buf in ipairs(vim.api.nvim_list_bufs()) do
@@ -78,6 +80,9 @@ local function retrigger_buffer_events()
       end
     end
     if #bufs == 0 then
+      if on_complete then
+        on_complete()
+      end
       return
     end
 
@@ -98,6 +103,12 @@ local function retrigger_buffer_events()
         pcall(vim.api.nvim_exec_autocmds, "FileType", { buffer = buf, pattern = ft })
       end
     end
+
+    -- Signal completion to allow dependent operations to proceed
+    if on_complete then
+      -- Defer callback one more tick to ensure plugin handlers have run
+      vim.schedule(on_complete)
+    end
   end)
 end
 
@@ -117,28 +128,39 @@ function M.run_sequence()
   -- Step 2: Session (may change buffers/windows)
   local session_restored = require("core.lifecycle.session").restore()
   log("session restore: " .. tostring(session_restored))
-  if session_restored then
-    retrigger_buffer_events()
-  end
 
-  -- Step 3: UI state (apply to all windows including restored ones)
+  -- Step 3: UI state initialization (sets vim.g globals only, no window ops)
   -- Call core.ui_toggle directly (no wrapper indirection)
   local ok_ui, ui_toggle = pcall(require, "core.ui_toggle")
   if ok_ui then
     ui_toggle.init()
     log "ui_state init"
-    if session_restored then
-      -- Defer slightly to ensure session windows are ready
-      vim.schedule(function()
-        ui_toggle.apply_all()
-        log "ui_state apply_all (deferred)"
-      end)
-    end
   end
 
-  -- Step 4: NvimTree (session-aware, uses single deferred call)
-  require("core.lifecycle.nvim_tree").auto_open(session_restored)
-  log "nvim_tree auto_open"
+  -- Step 4: Buffer events and dependent UI operations
+  -- IMPORTANT: retrigger_buffer_events() is async. UI operations that depend on
+  -- fully initialized buffers (ui_toggle.apply_all, nvim_tree.auto_open) must
+  -- wait until buffer events settle to avoid race conditions.
+  if session_restored then
+    retrigger_buffer_events(function()
+      -- This callback runs AFTER all buffer events have been triggered
+      log "buffer events complete"
+
+      -- Apply UI state to all windows (now safe, buffers are initialized)
+      if ok_ui then
+        ui_toggle.apply_all()
+        log "ui_state apply_all (after buffer events)"
+      end
+
+      -- NvimTree auto-open (session-aware)
+      require("core.lifecycle.nvim_tree").auto_open(session_restored)
+      log "nvim_tree auto_open (after buffer events)"
+    end)
+  else
+    -- No session restored: run UI operations immediately
+    require("core.lifecycle.nvim_tree").auto_open(false)
+    log "nvim_tree auto_open (no session)"
+  end
 
   -- Step 5: Commands (deferred — rarely needed in first ms after VimEnter)
   vim.schedule(function()

@@ -27,6 +27,9 @@ return {
       "williamboman/mason-lspconfig.nvim",
       { "folke/lazydev.nvim", ft = "lua", opts = {} },
       { "saghen/blink.cmp", optional = true },
+      -- navic must load BEFORE lspconfig so its LspAttach handler is registered
+      -- before any LSP clients attach (required for breadcrumb support on first buffer)
+      { "SmiteshP/nvim-navic", optional = true },
     },
     opts = {},
     config = function(_, opts)
@@ -42,8 +45,10 @@ return {
       end
 
       -- LspAttach Autocmd for Keymaps
+      -- Use a unique augroup name to avoid conflicts with other plugins
+      -- The augroup is created once with clear=true to ensure a clean slate
       vim.api.nvim_create_autocmd("LspAttach", {
-        group = vim.api.nvim_create_augroup("UserLspConfig", { clear = true }),
+        group = vim.api.nvim_create_augroup("NvimConfig_LspKeymaps", { clear = true }),
         callback = function(ev)
           -- Enable completion triggered by <c-x><c-o>
           vim.bo[ev.buf].omnifunc = "v:lua.vim.lsp.omnifunc"
@@ -97,10 +102,14 @@ return {
       -- This will automatically enable installed servers
       mason_lspconfig.setup {
         ensure_installed = { "lua_ls", "bashls" },
-        -- Don't add rust_analyzer here - let rustaceanvim manage it
         handlers = {
-          -- Default handler: auto-enable all servers
+          -- Default handler: auto-enable all servers EXCEPT rust_analyzer
+          -- rust_analyzer is managed exclusively by rustaceanvim to avoid
+          -- double-initialization conflicts
           function(server_name)
+            if server_name == "rust_analyzer" then
+              return -- Skip: rustaceanvim handles this server
+            end
             vim.lsp.enable(server_name)
           end,
         },
