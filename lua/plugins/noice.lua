@@ -4,7 +4,7 @@ return {
     event = "VeryLazy",
     dependencies = {
       "MunifTanjim/nui.nvim",
-      "rcarriga/nvim-notify",
+      -- nvim-notify replaced by snacks.notifier (lua/plugins/snacks.lua)
     },
     opts = {
       lsp = {
@@ -83,23 +83,7 @@ return {
     },
   },
 
-  -- Notification backend with minimal styling
-  {
-    "rcarriga/nvim-notify",
-    lazy = true,
-    opts = {
-      timeout = 3000,
-      max_height = function()
-        return math.floor(vim.o.lines * 0.75)
-      end,
-      max_width = function()
-        return math.floor(vim.o.columns * 0.75)
-      end,
-      render = "compact",
-      stages = "fade",
-      top_down = false,
-    },
-  },
+  -- nvim-notify replaced by snacks.notifier (lua/plugins/snacks.lua)
 
   -- Better select/input UIs
   {

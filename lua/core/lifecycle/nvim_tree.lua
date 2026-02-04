@@ -44,6 +44,11 @@ function M.auto_open(session_restored)
   local is_dir = vim.fn.isdirectory(file) == 1
   local is_file = vim.fn.filereadable(file) == 1
 
+  -- Skip if snacks dashboard is showing (dashboard handles its own UX)
+  if vim.bo.filetype == "snacks_dashboard" then
+    return
+  end
+
   -- Always cleanup stale buffers first
   local cleaned = cleanup_stale_buffers()
 
