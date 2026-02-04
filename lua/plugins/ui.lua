@@ -228,24 +228,40 @@ return {
       sections = {
         lualine_a = { { "mode", separator = { left = "" }, right_padding = 2 } },
         lualine_b = { "branch", "diff", "diagnostics" },
-        lualine_c = {
-          { "filetype", icon_only = true, separator = "", padding = { left = 1, right = 0 } },
-          { "filename", path = 1, symbols = { modified = " ●", readonly = " ", unnamed = "[No Name]" } },
-          {
-            -- Breadcrumb navigation (nvim-navic)
-            function()
-              local ok, navic = pcall(require, "nvim-navic")
-              if ok and navic.is_available() then
-                return navic.get_location()
-              end
-              return ""
-            end,
-            cond = function()
-              local ok, navic = pcall(require, "nvim-navic")
-              return ok and navic.is_available()
-            end,
-          },
-        },
+        lualine_c = (function()
+          -- Cache navic module reference outside the component functions
+          -- This avoids pcall overhead on every statusline refresh
+          local navic_cache = nil
+          local function get_navic()
+            if navic_cache then
+              return navic_cache
+            end
+            local ok, navic = pcall(require, "nvim-navic")
+            if ok then
+              navic_cache = navic
+            end
+            return navic_cache
+          end
+
+          return {
+            { "filetype", icon_only = true, separator = "", padding = { left = 1, right = 0 } },
+            { "filename", path = 1, symbols = { modified = " ●", readonly = " ", unnamed = "[No Name]" } },
+            {
+              -- Breadcrumb navigation (nvim-navic) with cached module reference
+              function()
+                local navic = get_navic()
+                if navic and navic.is_available() then
+                  return navic.get_location()
+                end
+                return ""
+              end,
+              cond = function()
+                local navic = get_navic()
+                return navic and navic.is_available()
+              end,
+            },
+          }
+        end)(),
         lualine_x = {
           {
             -- LSP client names - cached per statusline refresh to avoid duplicate API calls
