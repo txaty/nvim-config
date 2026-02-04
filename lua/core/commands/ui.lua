@@ -1,4 +1,4 @@
--- UI status command
+-- UI status and debug commands
 local M = {}
 
 function M.register()
@@ -17,6 +17,16 @@ function M.register()
     end
     vim.notify(table.concat(lines, "\n"), vim.log.levels.INFO)
   end, { desc = "Show UI toggle status" })
+
+  -- Debug command: Show plugin load order (requires vim.g.debug_plugin_load = true at startup)
+  vim.api.nvim_create_user_command("LoadOrder", function()
+    local ok, lifecycle = pcall(require, "core.lifecycle")
+    if ok and lifecycle.print_load_summary then
+      lifecycle.print_load_summary()
+    else
+      vim.notify("Lifecycle module not available", vim.log.levels.ERROR)
+    end
+  end, { desc = "Show plugin load order (debug)" })
 end
 
 return M
