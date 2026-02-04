@@ -9,8 +9,10 @@
 return {
   {
     "SmiteshP/nvim-navic",
-    -- Load on same events as lspconfig to ensure navic's LspAttach handler
-    -- is registered before any LSP client attaches
+    -- Load on same events as lspconfig; navic's LspAttach handler must be
+    -- registered BEFORE lspconfig attaches clients. This is achieved by adding
+    -- navic as a dependency OF lspconfig (see plugins/lsp.lua), ensuring navic's
+    -- setup() runs first.
     event = { "BufReadPre", "BufNewFile" },
     opts = {
       highlight = true,

@@ -3,9 +3,11 @@ return {
     "folke/persistence.nvim",
     lazy = true, -- Loaded on demand by autocmds
     opts = {
-      -- Session options: includes globals for UI toggle state persistence
+      -- Session options: UI state is persisted via ui_config.json (source of truth)
       -- Theme persistence is handled separately by theme.lua
-      options = { "buffers", "curdir", "tabpages", "winsize", "help", "skiprtp", "globals" },
+      -- NOTE: "globals" intentionally excluded to avoid conflicts with JSON configs
+      -- (vim.g.ui_* from session would override ui_config.json, causing inconsistencies)
+      options = { "buffers", "curdir", "tabpages", "winsize", "help", "skiprtp" },
     },
     config = function(_, opts)
       require("persistence").setup(opts)
