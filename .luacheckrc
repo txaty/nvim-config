@@ -7,6 +7,7 @@ std = "lua51"
 -- Neovim globals (both readable and writable)
 globals = {
   "vim",  -- Neovim API (can read and write: vim.g.var = value, etc.)
+  "Snacks",  -- snacks.nvim global (set by plugin at runtime)
 }
 
 -- Code style

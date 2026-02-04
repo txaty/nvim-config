@@ -6,6 +6,7 @@ return {
     event = { "BufReadPost", "BufNewFile" },
     dependencies = {
       "nvim-treesitter/nvim-treesitter-textobjects",
+      "nvim-treesitter/nvim-treesitter-context",
     },
     opts = {
       highlight = { enable = true },
@@ -91,5 +92,33 @@ return {
       vim.opt.foldmethod = "expr"
       vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
     end,
+  },
+
+  -- Sticky context header (shows function/class scope at top)
+  {
+    "nvim-treesitter/nvim-treesitter-context",
+    event = { "BufReadPost", "BufNewFile" },
+    opts = {
+      enable = true,
+      max_lines = 3,
+      min_window_height = 20,
+      mode = "cursor",
+    },
+    keys = {
+      {
+        "<leader>ut",
+        function()
+          require("treesitter-context").toggle()
+        end,
+        desc = "UI: Toggle context",
+      },
+      {
+        "gC",
+        function()
+          require("treesitter-context").go_to_context(vim.v.count1)
+        end,
+        desc = "Go to context",
+      },
+    },
   },
 }

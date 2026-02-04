@@ -87,9 +87,21 @@ map("n", "<leader>fN", function()
   end
 end, { desc = "Files: yank filename" })
 
--- Window Split
+-- Window Split and Layout
 map("n", "<leader>ws", "<cmd>split<cr>", { desc = "Window: horizontal split" })
 map("n", "<leader>wv", "<cmd>vsplit<cr>", { desc = "Window: vertical split" })
+map("n", "<leader>w=", "<C-w>=", { desc = "Window: equalize sizes" })
+map("n", "<leader>wo", "<cmd>only<cr>", { desc = "Window: close others" })
+map("n", "<leader>wz", function()
+  if vim.t.zoomed then
+    vim.cmd.wincmd "="
+    vim.t.zoomed = false
+  else
+    vim.cmd.wincmd "_"
+    vim.cmd.wincmd "|"
+    vim.t.zoomed = true
+  end
+end, { desc = "Window: toggle zoom" })
 
 -- Buffer navigation
 map("n", "<TAB>", "<cmd>bnext<CR>", { desc = "Buffer Next" })

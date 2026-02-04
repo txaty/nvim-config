@@ -216,14 +216,14 @@ return {
   {
     "nvim-lualine/lualine.nvim",
     event = "VeryLazy",
-    dependencies = { "nvim-tree/nvim-web-devicons" },
+    dependencies = { "nvim-tree/nvim-web-devicons", "SmiteshP/nvim-navic" },
     opts = {
       options = {
         theme = "auto",
         component_separators = { left = "", right = "" },
         section_separators = { left = "", right = "" },
         globalstatus = true,
-        disabled_filetypes = { statusline = { "dashboard", "alpha", "starter" } },
+        disabled_filetypes = { statusline = { "dashboard", "alpha", "starter", "snacks_dashboard" } },
       },
       sections = {
         lualine_a = { { "mode", separator = { left = "" }, right_padding = 2 } },
@@ -231,6 +231,20 @@ return {
         lualine_c = {
           { "filetype", icon_only = true, separator = "", padding = { left = 1, right = 0 } },
           { "filename", path = 1, symbols = { modified = " ●", readonly = " ", unnamed = "[No Name]" } },
+          {
+            -- Breadcrumb navigation (nvim-navic)
+            function()
+              local ok, navic = pcall(require, "nvim-navic")
+              if ok and navic.is_available() then
+                return navic.get_location()
+              end
+              return ""
+            end,
+            cond = function()
+              local ok, navic = pcall(require, "nvim-navic")
+              return ok and navic.is_available()
+            end,
+          },
         },
         lualine_x = {
           {
@@ -333,42 +347,6 @@ return {
   { "nvim-tree/nvim-web-devicons", lazy = true },
   { "MunifTanjim/nui.nvim", lazy = true },
 
-  -- Word illumination
-  {
-    "RRethy/vim-illuminate",
-    event = "BufReadPost",
-    config = function()
-      require("illuminate").configure {
-        delay = 200, -- Increased from 120ms for better performance
-        modes_denylist = { "i" },
-        large_file_cutoff = 2000,
-        large_file_overrides = { providers = { "lsp" } },
-      }
-    end,
-  },
-
-  -- Indent guides
-  {
-    "lukas-reineke/indent-blankline.nvim",
-    event = { "BufReadPost", "BufNewFile" },
-    main = "ibl",
-    opts = {
-      indent = { char = "│", tab_char = "│" },
-      scope = { show_start = false, show_end = false },
-      exclude = {
-        filetypes = {
-          "help",
-          "dashboard",
-          "neo-tree",
-          "NvimTree",
-          "Trouble",
-          "trouble",
-          "lazy",
-          "mason",
-          "notify",
-          "toggleterm",
-        },
-      },
-    },
-  },
+  -- Word illumination: replaced by snacks.words (lua/plugins/snacks.lua)
+  -- Indent guides: replaced by snacks.indent (lua/plugins/snacks.lua)
 }

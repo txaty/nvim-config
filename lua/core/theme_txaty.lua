@@ -337,6 +337,14 @@ local function generate_highlights(p)
   hl("@diff.delta", { fg = p.warning })
 
   -- ==========================================================================
+  -- Treesitter Context (sticky headers)
+  -- ==========================================================================
+  hl("TreesitterContext", { bg = p.bg_dark })
+  hl("TreesitterContextLineNumber", { fg = p.fg_muted, bg = p.bg_dark })
+  hl("TreesitterContextSeparator", { fg = p.bg_highlight })
+  hl("TreesitterContextBottom", { underline = true, sp = p.bg_highlight })
+
+  -- ==========================================================================
   -- LSP Semantic Tokens (~15 groups)
   -- ==========================================================================
   hl("@lsp.type.class", { link = "@type" })
@@ -752,6 +760,38 @@ local function generate_highlights(p)
   hl("TroubleIndentWs", { fg = p.fg_muted })
 
   -- ==========================================================================
+  -- Plugin: nvim-navic (breadcrumb navigation)
+  -- ==========================================================================
+  hl("NavicIconsFile", { fg = p.fg })
+  hl("NavicIconsModule", { fg = p.accent4 })
+  hl("NavicIconsNamespace", { fg = p.accent4 })
+  hl("NavicIconsPackage", { fg = p.accent4 })
+  hl("NavicIconsClass", { fg = p.accent2 })
+  hl("NavicIconsMethod", { fg = p.accent3 })
+  hl("NavicIconsProperty", { fg = p.accent1 })
+  hl("NavicIconsField", { fg = p.accent1 })
+  hl("NavicIconsConstructor", { fg = p.accent3 })
+  hl("NavicIconsEnum", { fg = p.accent2 })
+  hl("NavicIconsInterface", { fg = p.accent2 })
+  hl("NavicIconsFunction", { fg = p.accent3 })
+  hl("NavicIconsVariable", { fg = p.accent1 })
+  hl("NavicIconsConstant", { fg = p.accent1 })
+  hl("NavicIconsString", { fg = p.accent1 })
+  hl("NavicIconsNumber", { fg = p.accent5 })
+  hl("NavicIconsBoolean", { fg = p.accent5 })
+  hl("NavicIconsArray", { fg = p.accent4 })
+  hl("NavicIconsObject", { fg = p.accent4 })
+  hl("NavicIconsKey", { fg = p.accent4 })
+  hl("NavicIconsNull", { fg = p.fg_muted })
+  hl("NavicIconsEnumMember", { fg = p.accent1 })
+  hl("NavicIconsStruct", { fg = p.accent2 })
+  hl("NavicIconsEvent", { fg = p.accent5 })
+  hl("NavicIconsOperator", { fg = p.fg })
+  hl("NavicIconsTypeParameter", { fg = p.accent2 })
+  hl("NavicText", { fg = p.fg })
+  hl("NavicSeparator", { fg = p.fg_muted })
+
+  -- ==========================================================================
   -- Plugin: DAP (Debug Adapter Protocol)
   -- ==========================================================================
   hl("DapBreakpoint", { fg = p.error })
@@ -852,8 +892,9 @@ local function generate_highlights(p)
   hl("NeominimapCursorLineNr", { fg = p.fg })
 
   -- ==========================================================================
-  -- Plugin: nvim-notify
+  -- Plugin: snacks.nvim (notifier, indent, words, zen, dashboard)
   -- ==========================================================================
+  -- Notifier (replaces nvim-notify, uses same highlight names for compatibility)
   hl("NotifyERRORBorder", { fg = p.error })
   hl("NotifyWARNBorder", { fg = p.warning })
   hl("NotifyINFOBorder", { fg = p.info })
@@ -874,6 +915,42 @@ local function generate_highlights(p)
   hl("NotifyINFOBody", { fg = p.fg })
   hl("NotifyDEBUGBody", { fg = p.fg })
   hl("NotifyTRACEBody", { fg = p.fg })
+  -- Snacks-specific notifier highlights
+  hl("SnacksNotifierInfo", { fg = p.info })
+  hl("SnacksNotifierWarn", { fg = p.warning })
+  hl("SnacksNotifierError", { fg = p.error })
+  hl("SnacksNotifierDebug", { fg = p.fg_muted })
+  hl("SnacksNotifierTrace", { fg = p.accent5 })
+  hl("SnacksNotifierIconInfo", { fg = p.info })
+  hl("SnacksNotifierIconWarn", { fg = p.warning })
+  hl("SnacksNotifierIconError", { fg = p.error })
+  hl("SnacksNotifierIconDebug", { fg = p.fg_muted })
+  hl("SnacksNotifierIconTrace", { fg = p.accent5 })
+  hl("SnacksNotifierTitleInfo", { fg = p.info, bold = true })
+  hl("SnacksNotifierTitleWarn", { fg = p.warning, bold = true })
+  hl("SnacksNotifierTitleError", { fg = p.error, bold = true })
+  hl("SnacksNotifierTitleDebug", { fg = p.fg_muted, bold = true })
+  hl("SnacksNotifierTitleTrace", { fg = p.accent5, bold = true })
+  -- Indent guides (replaces indent-blankline)
+  hl("SnacksIndent", { fg = p.bg_highlight })
+  hl("SnacksIndentScope", { fg = p.accent3 })
+  -- Word highlighting (replaces vim-illuminate, uses LSP document highlights)
+  hl("SnacksWordsReference", { bg = p.bg_highlight })
+  hl("SnacksWordsReferenceRead", { bg = p.bg_highlight })
+  hl("SnacksWordsReferenceWrite", { bg = p.bg_highlight, underline = true })
+  -- Dashboard
+  hl("SnacksDashboardHeader", { fg = p.accent3 })
+  hl("SnacksDashboardFooter", { fg = p.fg_muted })
+  hl("SnacksDashboardDesc", { fg = p.fg })
+  hl("SnacksDashboardIcon", { fg = p.accent3 })
+  hl("SnacksDashboardKey", { fg = p.accent5, bold = true })
+  hl("SnacksDashboardFile", { fg = p.fg })
+  hl("SnacksDashboardDir", { fg = p.fg_muted })
+  hl("SnacksDashboardSpecial", { fg = p.accent1 })
+  -- Zen mode (replaces zen-mode.nvim)
+  hl("SnacksZen", { bg = p.bg })
+  -- Dim mode (replaces twilight.nvim)
+  hl("SnacksDim", { fg = p.fg_muted })
 
   -- ==========================================================================
   -- Plugin: nvim-dap-virtual-text
@@ -884,7 +961,8 @@ local function generate_highlights(p)
   hl("NvimDapVirtualTextInfo", { fg = p.info, italic = true })
 
   -- ==========================================================================
-  -- Plugin: vim-illuminate
+  -- Plugin: vim-illuminate (deprecated, kept for compatibility)
+  -- Replaced by snacks.words (see SnacksWords* above)
   -- ==========================================================================
   hl("IlluminatedWord", { bg = p.bg_highlight })
   hl("IlluminatedCurWord", { bg = p.bg_highlight })
@@ -930,7 +1008,8 @@ local function generate_highlights(p)
   hl("GrugFarResultsActionMessage", { fg = p.accent1 })
 
   -- ==========================================================================
-  -- Plugin: zen-mode.nvim / twilight.nvim
+  -- Plugin: zen-mode.nvim / twilight.nvim (deprecated, kept for compatibility)
+  -- Replaced by snacks.zen / snacks.dim (see SnacksZen/SnacksDim above)
   -- ==========================================================================
   hl("ZenBg", { bg = p.bg })
   hl("TwilightDimmed", { fg = p.fg_muted })
