@@ -1,10 +1,18 @@
 -- Lifecycle orchestrator
 -- Single point of control for post-startup initialization
 -- Ensures deterministic ordering of startup tasks
+--
+-- DEBUG LOGGING:
+--   vim.g.debug_lifecycle = true   -- log lifecycle steps
+--   vim.g.debug_plugin_load = true -- log every plugin load (via lazy.nvim)
+--
+-- Example: nvim --cmd "let g:debug_lifecycle=1" --cmd "let g:debug_plugin_load=1"
 local M = {}
 
 local debug_lifecycle = vim.g.debug_lifecycle or false
+local debug_plugin_load = vim.g.debug_plugin_load or false
 local t0 = 0
+local load_log = {} -- Accumulated plugin load events for summary
 
 local function log(msg)
   if debug_lifecycle then
@@ -13,6 +21,46 @@ local function log(msg)
       vim.notify(string.format("[lifecycle +%.1fms] %s", elapsed_ms, msg), vim.log.levels.DEBUG)
     end)
   end
+end
+
+--- Setup lazy.nvim plugin load event logging
+--- Must be called after lazy.nvim is available but before plugins load
+local function setup_plugin_load_logging()
+  if not debug_plugin_load then
+    return
+  end
+
+  local ok, _ = pcall(require, "lazy")
+  if not ok then
+    return
+  end
+
+  -- Hook into lazy.nvim's event system
+  vim.api.nvim_create_autocmd("User", {
+    pattern = "LazyLoad",
+    callback = function(ev)
+      local elapsed_ms = (vim.uv.hrtime() - t0) / 1e6
+      local plugin = ev.data or "unknown"
+      table.insert(load_log, { time = elapsed_ms, plugin = plugin })
+      vim.schedule(function()
+        vim.notify(string.format("[plugin +%.1fms] %s", elapsed_ms, plugin), vim.log.levels.DEBUG)
+      end)
+    end,
+  })
+end
+
+--- Print summary of plugin load order (for verification)
+function M.print_load_summary()
+  if #load_log == 0 then
+    vim.notify("No plugin load events recorded. Enable with vim.g.debug_plugin_load = true", vim.log.levels.WARN)
+    return
+  end
+
+  local lines = { "Plugin Load Order:" }
+  for i, entry in ipairs(load_log) do
+    table.insert(lines, string.format("  %2d. +%6.1fms  %s", i, entry.time, entry.plugin))
+  end
+  vim.notify(table.concat(lines, "\n"), vim.log.levels.INFO)
 end
 
 --- Re-trigger buffer events for session-restored buffers.
@@ -56,7 +104,10 @@ end
 --- Run the startup sequence in deterministic order
 --- Called from VimEnter autocmd
 function M.run_sequence()
-  t0 = vim.uv.hrtime()
+  -- Preserve t0 if already set by setup() for plugin load logging
+  if t0 == 0 then
+    t0 = vim.uv.hrtime()
+  end
   log "start"
 
   -- Step 1: Colorscheme (sync, before any UI renders)
@@ -138,6 +189,12 @@ end
 
 --- Setup the lifecycle VimEnter autocmd
 function M.setup()
+  -- Initialize timing reference point early for plugin load logging
+  t0 = vim.uv.hrtime()
+
+  -- Setup plugin load logging before any plugins load
+  setup_plugin_load_logging()
+
   vim.api.nvim_create_autocmd("VimEnter", {
     group = vim.api.nvim_create_augroup("NvimLifecycle", { clear = true }),
     once = true,

@@ -51,8 +51,16 @@ luacheck lua/
 :LangDisable <lang> " Disable language support
 :LangStatus [lang]  " Show language support status
 
-" Cleanup
+" UI and Debug
+:UIStatus           " Show UI toggle states (wrap, spell, numbers, etc.)
+:LoadOrder          " Show plugin load order (requires debug mode, see below)
 :CleanupNvim        " Clean up temporary and cache files (manual trigger)
+```
+
+### Debug Mode (Load Order Verification)
+```bash
+# Start with lifecycle and plugin load logging enabled
+nvim --cmd "let g:debug_lifecycle=1" --cmd "let g:debug_plugin_load=1"
 ```
 
 ## Critical Architectural Principles
@@ -87,12 +95,23 @@ init.lua (entry point)
       └─ core/lazy.lua       (plugin manager bootstrap)
           └─ plugins/*       (lazy-loaded plugin specs)
 
+Plugin Load Layers (deterministic):
+  A. require-time:     options, keymaps, autocmds, lazy bootstrap
+  B. lazy setup:       snacks.nvim (priority=1000, lazy=false)
+  C. VimEnter:         colorscheme → session → ui_toggle → nvim_tree → commands
+  D. BufReadPre:       navic, lspconfig, gitsigns (LSP foundation)
+  E. BufReadPost:      treesitter, treesitter-context (language parser)
+  F. VeryLazy:         lualine, bufferline, noice, which-key (UI polish)
+  G. InsertEnter:      blink.cmp, copilot, mini.pairs (typing features)
+
 VimEnter Lifecycle (deterministic order):
   1. core/lifecycle/colorscheme.lua  (theme restore FIRST)
   2. core/lifecycle/session.lua      (session restore)
   3. core/ui_toggle (inline)         (apply UI toggles)
   4. core/lifecycle/nvim_tree.lua    (file explorer auto-open)
   5. core/commands/init.lua          (register user commands)
+  6. core/lifecycle/reconcile.lua    (focus fix, waits for VeryLazy)
+  7. core/cleanup.lua                (deferred 2s, low priority)
 ```
 
 ### Directory Structure
@@ -317,6 +336,47 @@ stylua lua/
 4. Test DAP breakpoints (`<leader>db`)
 5. Test session save/restore (`<leader>qs` / `<leader>ql`)
 6. Verify nvim-tree auto-opens on empty buffers
+
+### Load Order Verification (Smoke Test)
+```bash
+# 1. Start fresh with debug logging
+nvim --cmd "let g:debug_lifecycle=1" --cmd "let g:debug_plugin_load=1" test.lua
+
+# 2. Expected load order (check :LoadOrder output):
+#    - snacks.nvim loads during lazy setup (priority=1000)
+#    - colorscheme loads at VimEnter
+#    - navic loads on BufReadPre (before LSP)
+#    - lspconfig loads on BufReadPre
+#    - treesitter loads on BufReadPost
+#    - lualine/bufferline load on VeryLazy
+#    - blink.cmp loads on InsertEnter
+
+# 3. Verify navic breadcrumbs work on first buffer:
+#    - Open a Lua file with functions
+#    - Navigate into a function
+#    - Check statusline shows breadcrumb path (via lualine)
+
+# 4. Verify LSP works:
+:LspInfo        " Should show attached client
+gd              " Go to definition should work
+K               " Hover should work
+
+# 5. Verify completion works:
+#    - Enter insert mode
+#    - Type a partial symbol, completion should appear
+```
+
+### Headless Smoke Test
+```bash
+# Verify no startup errors
+nvim --headless '+qa' 2>&1 | grep -i error
+
+# Verify lazy.nvim loads
+nvim --headless "+lua print(require('lazy').stats().count)" +qa
+
+# Verify health check passes critical items
+nvim --headless '+checkhealth lazy' +qa 2>&1 | grep -E '(OK|ERROR|WARNING)'
+```
 
 ## Key Keymap Groups
 
@@ -739,3 +799,30 @@ loadstring(untrusted_string)()                  -- arbitrary code execution
 3. Check persistence autocmds: `:autocmd PersistenceAutoRestore`
 4. Test manual restore: `<leader>qs` or `<leader>ql`
 5. Check nvim-tree isn't interfering with session restoration
+
+### Plugin Load Order Issues
+Debug mode for load order verification:
+```bash
+# Enable lifecycle and plugin load logging
+nvim --cmd "let g:debug_lifecycle=1" --cmd "let g:debug_plugin_load=1"
+
+# Inside Neovim, view load summary
+:LoadOrder
+```
+
+**Known Load Order Constraints:**
+- navic must load before LSP attaches (uses `event = { "BufReadPre", "BufNewFile" }`)
+- treesitter must load before treesitter-dependent plugins
+- mason must load before mason-lspconfig and lspconfig
+- colorscheme restores at VimEnter before UI plugins render
+
+**Known Limitation - blink.cmp Capabilities:**
+blink.cmp loads on `InsertEnter` for startup performance, while LSP starts on `BufReadPre`. This means LSP capabilities aren't enhanced with blink's extensions until the first InsertEnter. In practice, this rarely matters:
+- Basic completion works via omnifunc fallback
+- Most LSP features don't require enhanced capabilities
+- The tradeoff favors faster startup over theoretical capability enhancement
+
+If you need blink capabilities at LSP start, change `cmp.lua` event to `BufReadPre`:
+```lua
+event = { "BufReadPre", "BufNewFile" },  -- Instead of "InsertEnter"
+```
