@@ -698,6 +698,12 @@ $HOME/.luarocks/bin/luacheck lua/  # If installed via luarocks
 ### Principle
 Neovim must never execute untrusted code implicitly. All user input that flows into shell commands or vim commands must be sanitized.
 
+### Trust Model
+This configuration assumes:
+- **Trusted**: Code in this repository, pinned plugin commits in `lazy-lock.json`
+- **Untrusted**: Files opened in the editor, project directories, user input via prompts
+- **Semi-trusted**: Mason-installed tools (downloaded binaries from verified sources)
+
 ### Hardening Measures
 
 | Control | Implementation | File |
@@ -705,13 +711,40 @@ Neovim must never execute untrusted code implicitly. All user input that flows i
 | Modeline disabled | `opt.modeline = false` | `core/options.lua` |
 | Exrc disabled | `opt.exrc = false` | `core/options.lua` |
 | Plugin pinning | `lazy-lock.json` pins all plugins to exact commits | `lazy-lock.json` |
-| No auto-update | lazy.nvim defaults to lazy-loading, no auto-install | `core/lazy.lua` |
+| No auto-update | `checker = { enabled = false }` disables background checks | `core/lazy.lua` |
 | netrw disabled | `g.loaded_netrw = 1` removes netrw attack surface | `core/options.lua` |
+| RTP plugins disabled | gzip, tarPlugin, zipPlugin, rplugin, etc. | `core/lazy.lua` |
 | Structured vim.cmd | User input passed via `vim.cmd { cmd, args }` not string concat | `plugins/remote.lua` |
 | List-form shell exec | External commands use `vim.system(argv)` not `vim.fn.system(string)` | `plugins/markdown.lua` |
 | Path validation | `safe_delete()` resolves symlinks and validates prefix before deletion | `core/cleanup.lua` |
-| XDG compliance | All persistent data stored under `stdpath()` directories | `plugins/bookmark.lua` |
+| XDG compliance | All persistent data stored under `stdpath()` directories | All config files |
 | No LSP cmd/root_dir | LSP servers never set `cmd` or `root_dir` manually (Mason manages) | `plugins/lsp.lua` |
+| Input validation | Remote plugin rejects `\|`, `\n`, `\r` in connection strings | `plugins/remote.lua` |
+| Copilot secure | `allow_insecure = false` enforced | `plugins/copilot.lua` |
+
+### Build Hooks Inventory
+
+These plugins execute code during installation/update:
+
+| Plugin | Build Hook | What It Does | Risk |
+|--------|------------|--------------|------|
+| `nvim-treesitter` | `:TSUpdate` | Updates parser binaries via Neovim command | LOW - internal Vim command |
+| `telescope-fzf-native` | `make` | Compiles C extension in plugin directory | LOW - requires build tools |
+| `typst-preview.nvim` | Lua function | Calls plugin's `update()` method | LOW - downloads typst binary |
+
+**Note**: Build hooks only run during `:Lazy sync` or `:Lazy update`, never automatically.
+
+### Network Access Inventory
+
+| Plugin | When | Purpose | User Control |
+|--------|------|---------|--------------|
+| `copilot.lua` | InsertEnter | AI suggestions | Conditional load (`:AIToggle`) |
+| `CopilotChat.nvim` | On command | AI chat | Conditional load (`:AIToggle`) |
+| `distant.nvim` | User-initiated | Remote dev | Explicit connection required |
+| `mason.nvim` | User-initiated | Tool downloads | Explicit `:MasonInstall` required |
+| `lazy.nvim` | User-initiated | Plugin sync | Explicit `:Lazy sync` required |
+
+No plugins make network requests automatically on startup.
 
 ### Rules for New Code
 
@@ -721,6 +754,7 @@ Neovim must never execute untrusted code implicitly. All user input that flows i
 4. **Always** validate paths with `safe_delete()` pattern (resolve symlinks, check prefix) before filesystem operations in cleanup/maintenance code
 5. **Always** store persistent data under `stdpath("data")`, `stdpath("state")`, or `stdpath("cache")` — never write directly to `$HOME`
 6. Keep `modeline` and `exrc` disabled unless there is an explicit, documented reason to enable them
+7. **Never** add plugins without pinning them in `lazy-lock.json` immediately after installation
 
 ### Forbidden Patterns (Audit Checklist)
 ```lua
@@ -729,7 +763,65 @@ vim.cmd("SomeCommand " .. user_input)           -- command injection
 vim.fn.system("cmd '" .. filepath .. "'")       -- shell injection
 vim.fn.system(string.format("cmd '%s'", path))  -- shell injection (single-quote breakout)
 loadstring(untrusted_string)()                  -- arbitrary code execution
+os.execute(anything)                            -- arbitrary shell execution
+io.popen(anything)                              -- arbitrary shell execution
 ```
+
+### Security Checklist
+
+Use this checklist to verify security after modifications:
+
+**Startup Behavior:**
+- [ ] No shell commands run automatically on startup (verify with `:messages`)
+- [ ] No network requests on startup (verify with `nvim --startuptime /tmp/startup.log`)
+- [ ] `modeline` remains `false` (`:set modeline?`)
+- [ ] `exrc` remains `false` (`:set exrc?`)
+
+**Plugin Safety:**
+- [ ] All plugins pinned in `lazy-lock.json` (no floating versions)
+- [ ] `checker.enabled = false` in `core/lazy.lua`
+- [ ] New plugins reviewed for build hooks before installation
+- [ ] No plugins with `run` or `build` fields executing arbitrary shell commands
+
+**Filesystem Safety:**
+- [ ] All file writes go to `stdpath()` directories
+- [ ] No writes to `$HOME`, `/tmp`, or system paths
+- [ ] Cleanup operations use `safe_delete()` with path validation
+
+**Input Handling:**
+- [ ] All `vim.cmd` calls with user input use structured `{ cmd, args }` form
+- [ ] All shell commands use list-form (`vim.system({...})`)
+- [ ] User input validated for injection characters where applicable
+
+### Post-Update Audit
+
+After running `:Lazy sync` or `:Lazy update`:
+
+1. Review changed plugins in `:Lazy` (look for "Updated" entries)
+2. Check `lazy-lock.json` diff for commit changes
+3. For plugins with build hooks, verify the hook completed successfully
+4. Run `:checkhealth` to verify no new issues
+5. Commit `lazy-lock.json` with the plugin update
+
+### Shared Machine / Server Usage
+
+For use on shared machines or servers:
+
+1. **Disable AI features**: Run `:AIDisable` before use on sensitive systems
+2. **Disable language toggles**: Run `:LangDisable <lang>` for unused languages
+3. **Verify no credentials**: Check `~/.config/nvim/` contains no secrets
+4. **Session isolation**: Sessions are per-directory, avoid session restore on shared machines
+5. **Cleanup audit**: Review `~/.local/share/nvim/` and `~/.local/state/nvim/` for sensitive data
+
+### Intentionally Disabled Features
+
+| Feature | Why Disabled | How to Re-enable |
+|---------|--------------|------------------|
+| Modelines | Arbitrary option setting from untrusted files | `opt.modeline = true` (NOT RECOMMENDED) |
+| Exrc | Auto-execution of `.nvim.lua` in project dirs | `opt.exrc = true` (NOT RECOMMENDED) |
+| Netrw | Attack surface, replaced by nvim-tree | Remove `g.loaded_netrw` lines |
+| Auto-updates | Uncontrolled code changes | `checker = { enabled = true }` in lazy.lua |
+| rplugin | Remote plugin host, rarely needed | Remove from `disabled_plugins` |
 
 ## Commit Guidelines
 
