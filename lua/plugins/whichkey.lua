@@ -34,7 +34,7 @@ return {
         { "<leader>g", group = "Git", icon = "󰊢" },
         { "<leader>l", group = "LSP", icon = "󰒋" },
         { "<leader>L", group = "Language", icon = "󰗊" },
-        { "<leader>m", group = "Marks", icon = "󰃀" },
+        { "<leader>m", group = "Bookmarks", icon = "󰃀" },
         { "<leader>M", group = "Minimap", icon = "󰍍" },
         { "<leader>n", group = "Notify", icon = "󰂞" },
         { "<leader>p", group = "Python", icon = "󰌠" },

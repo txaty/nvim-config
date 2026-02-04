@@ -186,12 +186,14 @@ Tools (LSP, Formatters, Linters, DAP) are managed by Mason.
     *   Find files: `<leader>rf` (Telescope)
     *   Live grep: `<leader>rg` (Telescope)
     *   System info: `<leader>rs`, Shell: `<leader>rS`
-*   **Rust Operations** (uses `<leader>R*` prefix - capital R to avoid conflict with Remote):
-    *   Run: `<leader>Rr`, Run release: `<leader>RR`
-    *   Test: `<leader>Rt`, Test release: `<leader>RT`
-    *   Check: `<leader>Rc`, Build: `<leader>Rb`
-    *   Lint (clippy): `<leader>Rl`, Toggle inlay hints: `<leader>Rd`
+*   **Rust Operations** (uses `<leader>R*` prefix - capital R to avoid conflict with Remote, powered by rustaceanvim `:RustLsp` commands):
+    *   Runnables picker: `<leader>Rr`, Rerun last: `<leader>RR`
+    *   Testables picker: `<leader>Rt`, Rerun last test: `<leader>RT`
+    *   Open Cargo.toml: `<leader>Rc`, Parent module: `<leader>Rp`
     *   Expand macro: `<leader>Ra`, Explain error: `<leader>Rx`
+    *   Debuggables picker: `<leader>RD`, Debug target: `<leader>Rd`
+    *   Hover actions: `<leader>RH`, Join lines: `<leader>Rj`
+    *   Structural search/replace: `<leader>Rs`
 *   **Crates Management** (uses `<leader>C*` prefix, in Cargo.toml):
     *   Show versions: `<leader>Cv`, Show features: `<leader>Cf`
     *   Show dependencies: `<leader>Cd`

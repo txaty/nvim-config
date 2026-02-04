@@ -57,7 +57,7 @@
 - Language toggle: `:LangPanel`, `:LangToggle <lang>`, `<leader>Lp` (panel), `<leader>Ls` (status).
 - UI toggles: `<leader>u*` prefix (`<leader>uw` wrap, `<leader>us` spell, `<leader>un` numbers, `<leader>ur` relative, `<leader>uc` conceal, `<leader>ug` git status).
 - Cleanup: `:CleanupNvim` (manual trigger with verbose output, auto-runs on startup throttled to once per 24 hours).
-- Rust operations: `<leader>R*` prefix (e.g., `<leader>Rr` run, `<leader>Rc` check, `<leader>Rt` test).
+- Rust operations: `<leader>R*` prefix (e.g., `<leader>Rr` runnables, `<leader>Rt` testables, `<leader>Rc` open Cargo.toml). Uses rustaceanvim `:RustLsp` commands.
 - Crates (Cargo.toml): `<leader>C*` prefix (e.g., `<leader>Cu` upgrade, `<leader>Cv` versions).
 
 ## Coding Style & Naming Conventions

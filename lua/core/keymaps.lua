@@ -42,7 +42,8 @@ end, { desc = "UI: Toggle nvim-tree git status" })
 map("n", ";", ":", { desc = "Command mode" })
 map("i", "jk", "<Esc>", { desc = "Exit insert mode" })
 map("n", "<C-a>", "gg<S-v>G", { desc = "Select entire buffer" })
-map("n", "<C-m>", "<C-i>", { desc = "Forward in jumplist" })
+-- Note: <C-m> is equivalent to <CR> in terminals, avoid remapping it
+-- Use <C-o>/<C-i> directly for jumplist navigation
 map("n", "<leader>sc", "<cmd>nohlsearch<cr>", { desc = "Search: clear highlights" })
 map("n", "<leader>fs", "<cmd>w<cr>", { desc = "Files: save" })
 map("n", "<leader>qq", "<cmd>q<cr>", { desc = "Quit window" })
