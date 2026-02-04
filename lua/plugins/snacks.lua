@@ -45,12 +45,9 @@ return {
       gitbrowse = { enabled = true },
 
       -- REPLACEMENTS (with performance tuning)
-      notifier = {
-        enabled = true,
-        timeout = 3000,
-        style = "compact",
-        top_down = false, -- Match previous nvim-notify setting
-      },
+      -- notifier disabled: noice.nvim handles notifications more comprehensively
+      -- Avoids potential double-processing of messages
+      notifier = { enabled = false },
       indent = {
         enabled = true,
         animate = { enabled = false }, -- Disable animations for performance

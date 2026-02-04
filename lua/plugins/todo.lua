@@ -1,7 +1,9 @@
 return {
   {
     "folke/todo-comments.nvim",
-    event = { "BufReadPost", "BufNewFile" },
+    -- Defer to VeryLazy: signs appear after first paint but saves ~1.3ms at buffer open
+    -- TODO highlights are not urgent during initial buffer render
+    event = "VeryLazy",
     dependencies = { "nvim-lua/plenary.nvim" },
     opts = {
       signs = true,

@@ -6,7 +6,8 @@ return {
     event = { "BufReadPost", "BufNewFile" },
     dependencies = {
       "nvim-treesitter/nvim-treesitter-textobjects",
-      "nvim-treesitter/nvim-treesitter-context",
+      -- treesitter-context removed from dependencies: loads independently on VeryLazy
+      -- This defers ~0.3ms from BufReadPost to after first paint
     },
     opts = {
       highlight = { enable = true },
@@ -97,7 +98,9 @@ return {
   -- Sticky context header (shows function/class scope at top)
   {
     "nvim-treesitter/nvim-treesitter-context",
-    event = { "BufReadPost", "BufNewFile" },
+    -- VeryLazy: context header appears after first paint, not blocking initial render
+    -- Still available for all editing; keys also trigger loading
+    event = "VeryLazy",
     opts = {
       enable = true,
       max_lines = 3,
