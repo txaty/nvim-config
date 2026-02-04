@@ -56,6 +56,37 @@ map("n", "<leader>qQ", "<cmd>qa!<cr>", { desc = "Quit all" })
 -- <C-n> is defined in lua/plugins/ui.lua for lazy-loading
 map("n", "<leader>fe", "<cmd>NvimTreeToggle<cr>", { desc = "Files: toggle explorer" })
 
+-- Copy file path to clipboard
+map("n", "<leader>fy", function()
+  local path = vim.fn.expand "%:p"
+  if path ~= "" then
+    vim.fn.setreg("+", path)
+    vim.notify("Copied: " .. path, vim.log.levels.INFO)
+  else
+    vim.notify("No file in current buffer", vim.log.levels.WARN)
+  end
+end, { desc = "Files: yank absolute path" })
+
+map("n", "<leader>fY", function()
+  local path = vim.fn.expand "%:."
+  if path ~= "" then
+    vim.fn.setreg("+", path)
+    vim.notify("Copied: " .. path, vim.log.levels.INFO)
+  else
+    vim.notify("No file in current buffer", vim.log.levels.WARN)
+  end
+end, { desc = "Files: yank relative path" })
+
+map("n", "<leader>fN", function()
+  local name = vim.fn.expand "%:t"
+  if name ~= "" then
+    vim.fn.setreg("+", name)
+    vim.notify("Copied: " .. name, vim.log.levels.INFO)
+  else
+    vim.notify("No file in current buffer", vim.log.levels.WARN)
+  end
+end, { desc = "Files: yank filename" })
+
 -- Window Split
 map("n", "<leader>ws", "<cmd>split<cr>", { desc = "Window: horizontal split" })
 map("n", "<leader>wv", "<cmd>vsplit<cr>", { desc = "Window: vertical split" })
