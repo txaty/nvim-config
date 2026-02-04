@@ -67,11 +67,28 @@
 | Keybinding | Description |
 |---|---|
 | `<leader>ff` | Find files |
-| `<leader>fg` | Live grep / search text |
+| `<leader>fg` | Live grep (with current filters if set) |
+| `<leader>fG` | Live grep with filter prompts (include → exclude → search) |
+| `<leader>fT` | Live grep by file type (select from preset list) |
 | `<leader>fb` | Find buffers |
 | `<leader>fr` | Recent files / oldfiles |
 | `<leader>fh` | Help tags |
 | `<leader>ft` | Find todos |
+
+### Live Grep Filter Controls (Inside Picker)
+| Keybinding | Description |
+|---|---|
+| `<C-f>` | Set include pattern (glob prompt) |
+| `<C-e>` | Set exclude pattern (glob prompt) |
+| `<C-t>` | Select file type from presets |
+| `<C-r>` | Reset all filters |
+
+**Filter Examples:**
+- Include: `*.lua`, `src/**/*.ts`, `*.{js,jsx}`
+- Exclude: `node_modules`, `*.test.js`, `dist/**`
+- Types: py, js, ts, rust, go, lua, cpp, md, json, yaml, html, css
+
+**Note:** Filters persist during session. The picker title shows active filters (e.g., "Live Grep [+*.lua -node_modules]"). Use `<C-r>` to reset.
 
 ### File Explorer
 | Keybinding | Description |
