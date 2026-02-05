@@ -8,6 +8,8 @@ local config = {
   swap_max_age_days = 1,
   luac_max_age_days = 30,
   lsp_log_max_age_days = 7,
+  undo_max_age_days = 30,
+  session_max_age_days = 90,
   throttle_hours = 24,
 }
 
@@ -195,6 +197,72 @@ function M.clean_luac_cache()
   return cleaned
 end
 
+-- Clean undo files older than 30 days
+function M.clean_undo()
+  local undo_dir = state_path .. "/undo"
+  if vim.fn.isdirectory(undo_dir) ~= 1 then
+    return 0
+  end
+
+  local undo_files = list_files(undo_dir, nil)
+  local cleaned = 0
+
+  for _, undo_file in ipairs(undo_files) do
+    if is_older_than_days(undo_file, config.undo_max_age_days) then
+      local ok = safe_delete(undo_file, undo_dir)
+      if ok then
+        cleaned = cleaned + 1
+      end
+    end
+  end
+  return cleaned
+end
+
+-- Clean session files older than 90 days
+function M.clean_sessions()
+  local sessions_dir = state_path .. "/sessions"
+  if vim.fn.isdirectory(sessions_dir) ~= 1 then
+    return 0
+  end
+
+  local session_files = list_files(sessions_dir, "%.vim$")
+  local cleaned = 0
+
+  for _, session_file in ipairs(session_files) do
+    if is_older_than_days(session_file, config.session_max_age_days) then
+      local ok = safe_delete(session_file, sessions_dir)
+      if ok then
+        cleaned = cleaned + 1
+      end
+    end
+  end
+  return cleaned
+end
+
+-- Clean orphaned directories (NvChad remnants, tmp dirs)
+function M.clean_orphaned_dirs()
+  local orphans = {
+    data_path .. "/base46",
+    data_path .. "/nvnotify",
+    data_path .. "/nvnotify1",
+    data_path .. "/tree-sitter-html-tmp",
+    data_path .. "/tree-sitter-solidity-tmp",
+    data_path .. "/tree-sitter-terraform-tmp",
+    data_path .. "/tree-sitter-tsx-tmp",
+  }
+  local cleaned = 0
+
+  for _, dir in ipairs(orphans) do
+    if vim.fn.isdirectory(dir) == 1 then
+      local ok = pcall(vim.fn.delete, dir, "rf")
+      if ok then
+        cleaned = cleaned + 1
+      end
+    end
+  end
+  return cleaned
+end
+
 -- Clean LSP server logs
 function M.clean_lsp_logs()
   local mason_packages = data_path .. "/mason/packages"
@@ -274,9 +342,19 @@ function M.clean_all(verbose)
     views = M.clean_views(),
     luac = M.clean_luac_cache(),
     lsp_logs = M.clean_lsp_logs(),
+    undo = M.clean_undo(),
+    sessions = M.clean_sessions(),
+    orphaned_dirs = M.clean_orphaned_dirs(),
   }
 
-  local total = results.logs + results.swap + results.views + results.luac + results.lsp_logs
+  local total = results.logs
+    + results.swap
+    + results.views
+    + results.luac
+    + results.lsp_logs
+    + results.undo
+    + results.sessions
+    + results.orphaned_dirs
 
   if verbose then
     local msg = string.format(
@@ -286,12 +364,18 @@ function M.clean_all(verbose)
         .. "  - View files: %d\n"
         .. "  - Luac cache: %d\n"
         .. "  - LSP logs: %d\n"
-        .. "  - Total: %d files removed",
+        .. "  - Undo files: %d\n"
+        .. "  - Session files: %d\n"
+        .. "  - Orphaned dirs: %d\n"
+        .. "  - Total: %d items removed",
       results.logs,
       results.swap,
       results.views,
       results.luac,
       results.lsp_logs,
+      results.undo,
+      results.sessions,
+      results.orphaned_dirs,
       total
     )
     vim.notify(msg, vim.log.levels.INFO)

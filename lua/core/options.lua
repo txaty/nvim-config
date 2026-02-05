@@ -54,6 +54,9 @@ opt.termguicolors = true
 opt.timeoutlen = 400
 opt.undofile = true
 
+-- Shada limits: 100 file marks, 50 lines/register, skip >10KB items
+opt.shada = "'100,<50,s10,h"
+
 -- interval for writing swap file to disk, also used by gitsigns
 opt.updatetime = 250
 

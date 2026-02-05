@@ -274,6 +274,11 @@ Runs on startup (throttled to once per 24 hours) to minimize disk footprint:
 - View files (missing source)
 - Luac cache (>30 days)
 - LSP logs (>7 days)
+- Undo files (>30 days)
+- Session files (>90 days)
+- Orphaned directories (NvChad remnants, tmp dirs - one-time)
+
+Shada size is also capped via `opt.shada = "'100,<50,s10,h"` (100 file marks, 50 lines/register, skip >10KB items).
 
 Manual trigger: `:CleanupNvim`. Opt-out: `vim.g.disable_auto_cleanup = true`
 
