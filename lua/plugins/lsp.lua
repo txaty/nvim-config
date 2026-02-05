@@ -101,14 +101,15 @@ return {
       -- Setup mason-lspconfig
       -- This will automatically enable installed servers
       mason_lspconfig.setup {
-        ensure_installed = { "lua_ls", "bashls" },
+        ensure_installed = { "lua_ls", "bashls", "marksman" },
         handlers = {
-          -- Default handler: auto-enable all servers EXCEPT rust_analyzer
-          -- rust_analyzer is managed exclusively by rustaceanvim to avoid
-          -- double-initialization conflicts
+          -- Default handler: auto-enable all servers EXCEPT skipped ones
           function(server_name)
-            if server_name == "rust_analyzer" then
-              return -- Skip: rustaceanvim handles this server
+            -- rust_analyzer is managed exclusively by rustaceanvim to avoid conflicts
+            -- ltex is skipped because grammar checking in markdown is noisy/unhelpful
+            local skip = { rust_analyzer = true, ltex = true }
+            if skip[server_name] then
+              return
             end
             vim.lsp.enable(server_name)
           end,
