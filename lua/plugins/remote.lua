@@ -87,6 +87,10 @@ return {
       end, { desc = "Remote: live grep" })
 
       -- Auto-attach LSP when opening remote files
+      -- NOTE: LspStart uses servers pre-configured by lsp.lua with capabilities
+      -- from core/lsp_capabilities.lua. This ensures remote buffers get the same
+      -- completion enhancements as local buffers. The generic LspStart command
+      -- will pick up the correct server config based on filetype.
       vim.api.nvim_create_autocmd("BufReadPost", {
         group = vim.api.nvim_create_augroup("DistantLspAttach", { clear = true }),
         pattern = "distant://*",

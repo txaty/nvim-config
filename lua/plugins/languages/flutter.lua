@@ -52,14 +52,8 @@ return {
         },
         lsp = {
           -- on_attach handled by LspAttach autocmd
-          capabilities = (function()
-            local caps = vim.lsp.protocol.make_client_capabilities()
-            local ok, blink = pcall(require, "blink.cmp")
-            if ok then
-              caps = blink.get_lsp_capabilities(caps)
-            end
-            return caps
-          end)(),
+          -- Use shared capabilities module (single source of truth)
+          capabilities = require("core.lsp_capabilities").get(),
           settings = {
             showTodos = true,
             completeFunctionCalls = true,
