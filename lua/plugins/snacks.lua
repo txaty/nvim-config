@@ -257,14 +257,29 @@ return {
       },
       toggle = { enabled = true },
 
+      -- Startup & performance features
+      quickfile = { enabled = true }, -- Instant file display before plugins load
+      bigfile = {
+        enabled = true,
+        size = 1.5 * 1024 * 1024, -- 1.5MB - auto-disable LSP/Treesitter for large files
+      },
+      scope = { enabled = true }, -- Scope-aware navigation and text objects
+
+      -- Development tools
+      profiler = { enabled = true }, -- Lua profiler for debugging performance
+      scratch = { enabled = true }, -- Quick scratch buffers for code experiments
+
+      -- Adaptive image rendering (only in Kitty terminal)
+      image = {
+        enabled = vim.env.KITTY_WINDOW_ID ~= nil,
+      },
+
       -- KEEP DISABLED (using other plugins)
       explorer = { enabled = false }, -- Keep nvim-tree
       terminal = { enabled = false }, -- Keep toggleterm
       lazygit = { enabled = false }, -- Keep lazygit.nvim
       input = { enabled = false }, -- Keep dressing.nvim
       statuscolumn = { enabled = false },
-      quickfile = { enabled = false },
-      bigfile = { enabled = false },
     },
     keys = {
       -- Snacks Picker (replaces Telescope)
@@ -407,6 +422,47 @@ return {
         mode = { "n", "t" },
       },
       -- Notifications handled by noice.nvim (<leader>nh, <leader>nd)
+
+      -- Scope navigation
+      {
+        "]i",
+        function()
+          Snacks.scope.jump { bottom = true }
+        end,
+        desc = "Next scope",
+      },
+      {
+        "[i",
+        function()
+          Snacks.scope.jump { bottom = false }
+        end,
+        desc = "Prev scope",
+      },
+
+      -- Profiler
+      {
+        "<leader>up",
+        function()
+          Snacks.profiler.toggle()
+        end,
+        desc = "UI: Toggle profiler",
+      },
+
+      -- Scratch buffers
+      {
+        "<leader>.",
+        function()
+          Snacks.scratch()
+        end,
+        desc = "Scratch buffer",
+      },
+      {
+        "<leader>fS",
+        function()
+          Snacks.scratch.select()
+        end,
+        desc = "Select scratch buffer",
+      },
     },
     init = function()
       -- Global kill switch for all snacks animations if issues arise
