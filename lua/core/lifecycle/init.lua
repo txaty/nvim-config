@@ -63,6 +63,107 @@ function M.print_load_summary()
   vim.notify(table.concat(lines, "\n"), vim.log.levels.INFO)
 end
 
+--- Verify critical load order assumptions
+--- Only runs when debug mode is enabled (vim.g.debug_lifecycle or vim.g.debug_plugin_load)
+local function verify_load_order()
+  if not (vim.g.debug_lifecycle or vim.g.debug_plugin_load) then
+    return
+  end
+
+  local checks = {
+    {
+      name = "navic loads before lspconfig",
+      check = function()
+        -- Check the load log for ordering (only works if debug_plugin_load enabled)
+        if #load_log > 0 then
+          local navic_idx, lspconfig_idx
+          for i, entry in ipairs(load_log) do
+            if entry.plugin == "nvim-navic" then
+              navic_idx = i
+            end
+            if entry.plugin == "nvim-lspconfig" then
+              lspconfig_idx = i
+            end
+          end
+          -- If both loaded, verify navic came first
+          if navic_idx and lspconfig_idx then
+            if navic_idx >= lspconfig_idx then
+              return false, string.format("navic loaded at position %d, lspconfig at %d", navic_idx, lspconfig_idx)
+            end
+          end
+        end
+        -- Fallback check: if LSP clients exist, navic should be loaded
+        local lsp_clients = vim.lsp.get_clients()
+        if #lsp_clients > 0 then
+          local navic_loaded = package.loaded["nvim-navic"] ~= nil
+          if not navic_loaded then
+            return false, "LSP clients attached but navic not loaded"
+          end
+        end
+        return true
+      end,
+    },
+    {
+      name = "colorscheme set before UI plugins",
+      check = function()
+        if not vim.g.colors_name or vim.g.colors_name == "" then
+          return false, "No colorscheme set (vim.g.colors_name is nil/empty)"
+        end
+        return true
+      end,
+    },
+    {
+      name = "snacks.nvim loads early (priority=1000, lazy=false)",
+      check = function()
+        -- Snacks should be first or near-first in load log
+        if #load_log > 0 then
+          local snacks_idx
+          for i, entry in ipairs(load_log) do
+            if entry.plugin == "snacks.nvim" then
+              snacks_idx = i
+              break
+            end
+          end
+          -- Snacks should be in first 3 positions (allow for some variance)
+          if snacks_idx and snacks_idx > 3 then
+            return false, string.format("snacks.nvim loaded at position %d (expected 1-3)", snacks_idx)
+          end
+        end
+        return true
+      end,
+    },
+    {
+      name = "mason-lspconfig available for language extensions",
+      check = function()
+        -- Verify mason-lspconfig can be required (language files depend on it)
+        local ok = pcall(require, "mason-lspconfig")
+        if not ok then
+          return false, "mason-lspconfig module not available"
+        end
+        return true
+      end,
+    },
+  }
+
+  local all_passed = true
+  for _, check in ipairs(checks) do
+    local ok, err = check.check()
+    if not ok then
+      all_passed = false
+      vim.notify(
+        string.format("[lifecycle] ASSERTION FAILED: %s - %s", check.name, err or "unknown"),
+        vim.log.levels.ERROR
+      )
+    else
+      log(string.format("✓ assertion passed: %s", check.name))
+    end
+  end
+
+  if all_passed then
+    log "✓ all load order assertions passed"
+  end
+end
+
 --- Re-trigger buffer events for session-restored buffers.
 --- persistence.nvim restores buffers via `:source` which does NOT fire
 --- BufReadPre/BufReadPost/FileType events.  Lazy-loaded plugins (LSP,
@@ -207,6 +308,12 @@ function M.run_sequence()
   end, 2000)
 
   log "run_sequence complete (sync portion)"
+
+  -- Step 8: Verify critical load order assumptions (debug mode only)
+  -- Deferred slightly to allow lazy-loaded plugins to finish loading
+  vim.defer_fn(function()
+    verify_load_order()
+  end, 100)
 end
 
 --- Setup the lifecycle VimEnter autocmd

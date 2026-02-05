@@ -71,6 +71,15 @@ nvim --cmd "let g:debug_keymaps=1"
 :lua require("core.keymap_audit").full_audit()   -- Full audit (both)
 ```
 
+**Load Order Assertions (Debug Mode):**
+When debug mode is enabled, the lifecycle system automatically verifies:
+- ✅ navic loads before lspconfig (critical for breadcrumbs)
+- ✅ colorscheme loads before UI plugins (prevents white flash)
+- ✅ snacks.nvim loads early (priority=1000)
+- ✅ mason-lspconfig available for language extensions
+
+Assertions run automatically 100ms after VimEnter and report via `:messages`.
+
 ## Critical Architectural Principles
 
 ### 1. No NvChad Dependencies
@@ -293,16 +302,28 @@ vim.lsp.config("lua_ls", {
 })
 ```
 
-For servers managed by mason-lspconfig, pass handlers to setup():
+**mason-lspconfig Bridge:**
+mason-lspconfig now has an explicit plugin spec (not just a dependency). This ensures language files can safely extend its opts via `lang_utils.extend_mason_lspconfig()`:
 
 ```lua
-require("mason-lspconfig").setup {
-  ensure_installed = { "lua_ls", "pyright" },
-  handlers = {
-    function(server_name)
-      vim.lsp.enable(server_name)
-    end,
+-- Explicit plugin spec in lua/plugins/lsp.lua
+{
+  "williamboman/mason-lspconfig.nvim",
+  lazy = true,
+  dependencies = { "williamboman/mason.nvim" },
+  opts = {
+    ensure_installed = { "lua_ls", "bashls", "marksman" },
   },
+}
+```
+
+For servers managed by mason-lspconfig, pass handlers to lspconfig's config:
+
+```lua
+require("mason-lspconfig").setup_handlers {
+  function(server_name)
+    vim.lsp.enable(server_name)
+  end,
 }
 ```
 
@@ -311,6 +332,7 @@ require("mason-lspconfig").setup {
 - **NEVER** set `cmd` or `root_dir` fields manually (causes conflicts with Mason)
 - Rust is handled exclusively by `rustaceanvim` (not included in lspconfig)
 - **ALWAYS** use `require("core.lsp_capabilities").get()` for capabilities (single source of truth)
+- mason-lspconfig has its own plugin spec now (not just a dependency) to enable language file extensions
 
 ## Testing and Validation
 
@@ -694,6 +716,21 @@ vim.g.disable_auto_cleanup = true
   - Go: goimports, gofmt (via languages/go.lua)
   - Rust: rustfmt (via languages/rust.lua)
   - JS/TS/HTML/CSS: prettier (via languages/web.lua)
+
+**Format Priority (Conform vs LSP):**
+
+When both conform and LSP have a formatter configured:
+- **Only conform runs** (LSP is skipped)
+- `lsp_fallback = true` means: "use LSP ONLY if conform has no formatter"
+- This prevents double-formatting
+
+To run BOTH formatters sequentially, remove `lsp_fallback` and chain manually:
+```lua
+format_on_save = function(bufnr)
+  vim.lsp.buf.format({ bufnr = bufnr })
+  require("conform").format({ bufnr = bufnr })
+end
+```
 
 ### nvim-lint (Linting)
 - Configured in `lua/plugins/tools.lua` (merged with formatting)

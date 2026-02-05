@@ -38,6 +38,19 @@ return {
     end,
   },
 
+  -- Mason-LSPconfig bridge (explicit plugin spec for language file extensions)
+  -- Language files use lang_utils.extend_mason_lspconfig() to add servers.
+  -- This spec ensures mason-lspconfig has a configuration point that language
+  -- files can merge into via opts functions.
+  {
+    "williamboman/mason-lspconfig.nvim",
+    lazy = true, -- Loaded as dependency of lspconfig
+    dependencies = { "williamboman/mason.nvim" },
+    opts = {
+      ensure_installed = { "lua_ls", "bashls", "marksman" },
+    },
+  },
+
   {
     "neovim/nvim-lspconfig",
     event = { "BufReadPre", "BufNewFile" },
@@ -46,13 +59,23 @@ return {
       "williamboman/mason-lspconfig.nvim",
       { "folke/lazydev.nvim", ft = "lua", opts = {} },
       { "saghen/blink.cmp", optional = true },
-      -- navic must load BEFORE lspconfig so its LspAttach handler is registered
-      -- before any LSP clients attach (required for breadcrumb support on first buffer)
+      -- CRITICAL ORDERING: navic must load BEFORE lspconfig attaches LSP clients.
+      --
+      -- Reason: navic.opts.lsp.auto_attach registers an LspAttach autocmd during
+      -- navic's setup(). This handler must be registered BEFORE lspconfig attaches
+      -- any clients, otherwise the first buffer will miss breadcrumb attachment.
+      --
+      -- Mechanism: By declaring navic as a dependency of lspconfig, lazy.nvim
+      -- guarantees that navic's config function runs before lspconfig's config.
+      -- Both plugins load on the same event (BufReadPre), so dependency order
+      -- is the only way to ensure correctness.
+      --
+      -- Verification: Run `nvim --cmd "let g:debug_plugin_load=1" file.lua` and
+      -- check `:LoadOrder` — nvim-navic must appear before nvim-lspconfig.
       { "SmiteshP/nvim-navic", optional = true },
     },
     opts = {},
     config = function(_, opts)
-      local mason_lspconfig = require "mason-lspconfig"
       local capabilities = require("core.lsp_capabilities").get()
 
       local map = vim.keymap.set
@@ -115,22 +138,21 @@ return {
         end,
       })
 
-      -- Setup mason-lspconfig
-      -- This will automatically enable installed servers
-      mason_lspconfig.setup {
-        ensure_installed = { "lua_ls", "bashls", "marksman" },
-        handlers = {
-          -- Default handler: auto-enable all servers EXCEPT skipped ones
-          function(server_name)
-            -- rust_analyzer is managed exclusively by rustaceanvim to avoid conflicts
-            -- ltex is skipped because grammar checking in markdown is noisy/unhelpful
-            local skip = { rust_analyzer = true, ltex = true }
-            if skip[server_name] then
-              return
-            end
-            vim.lsp.enable(server_name)
-          end,
-        },
+      -- Setup mason-lspconfig handlers
+      -- mason-lspconfig itself is configured via its own plugin spec above.
+      -- Here we just register handlers to auto-enable installed servers.
+      local mason_lspconfig = require "mason-lspconfig"
+      mason_lspconfig.setup_handlers {
+        -- Default handler: auto-enable all servers EXCEPT skipped ones
+        function(server_name)
+          -- rust_analyzer is managed exclusively by rustaceanvim to avoid conflicts
+          -- ltex is skipped because grammar checking in markdown is noisy/unhelpful
+          local skip = { rust_analyzer = true, ltex = true }
+          if skip[server_name] then
+            return
+          end
+          vim.lsp.enable(server_name)
+        end,
       }
 
       -- Configure servers using new vim.lsp.config API (Neovim 0.11+)
