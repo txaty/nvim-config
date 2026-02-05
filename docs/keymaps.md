@@ -40,7 +40,8 @@
 | Keybinding | Description |
 |---|---|
 | `jk` (insert) | Exit insert mode |
-| `<C-a>` | Select entire buffer |
+| `<C-a>` | Smart increment (works on numbers, dates, booleans, semver) |
+| `<C-x>` | Smart decrement (works on numbers, dates, booleans, semver) |
 | `<C-s>` | Save file |
 | `<C-c>` | Copy entire file to clipboard |
 | `;` | Enter command mode (alternative to `:`) |
@@ -186,7 +187,7 @@
 ### LSP Operations
 | Keybinding | Description |
 |---|---|
-| `<leader>lr` | Rename symbol |
+| `<leader>lr` | Incremental rename (live preview as you type) |
 | `<leader>la` | Code action |
 | `<leader>lf` | Format document (via conform) |
 | `<leader>lF` | Format injected languages |
@@ -534,6 +535,23 @@
 
 ---
 
+## Search Navigation
+
+### Search Result Visualization (nvim-hlslens)
+| Keybinding | Description |
+|---|---|
+| `n` | Next search result (shows "N/M" match count) |
+| `N` | Previous search result (shows "N/M" match count) |
+| `*` | Search word under cursor forward |
+| `#` | Search word under cursor backward |
+
+**Features:**
+- Shows current match position (e.g., "3/12" for 3rd of 12 matches)
+- Highlights the nearest match distinctly
+- Lens clears when cursor moves away from matches
+
+---
+
 ## Navigation & Motion
 
 ### Flash (Super-Speed Navigation)
@@ -662,6 +680,41 @@
 | `<C-e>` | Abort completion |
 | `<C-b>` | Scroll documentation up |
 | `<C-f>` | Scroll documentation down |
+
+---
+
+## Editing Enhancements
+
+### Smart Increment/Decrement (dial.nvim)
+| Keybinding | Description |
+|---|---|
+| `<C-a>` | Increment value at cursor |
+| `<C-x>` | Decrement value at cursor |
+| `g<C-a>` | Increment sequentially (in visual block) |
+| `g<C-x>` | Decrement sequentially (in visual block) |
+
+**Supported value types:**
+- Numbers (decimal and hex)
+- Dates (`2024-01-15`, `2024/01/15`)
+- Booleans (`true`/`false`, `True`/`False`)
+- Semver (`1.2.3`)
+- Keywords (`yes`/`no`, `on`/`off`)
+- Operators (`&&`/`||`)
+
+### Yank Ring (yanky.nvim)
+| Keybinding | Description |
+|---|---|
+| `p` | Put after cursor (from yank ring) |
+| `P` | Put before cursor (from yank ring) |
+| `<C-p>` | Cycle to previous yank (after paste) |
+| `<C-n>` | Cycle to next yank (after paste) |
+
+**How to use:**
+1. Yank multiple pieces of text throughout your session
+2. Press `p` to paste the most recent yank
+3. Press `<C-p>` to replace with the previous yank from history
+4. Press `<C-n>` to go forward in yank history
+5. Yank ring holds up to 50 entries
 
 ---
 

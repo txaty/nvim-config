@@ -1,4 +1,23 @@
 return {
+  -- Incremental LSP rename: see changes live as you type
+  {
+    "smjonas/inc-rename.nvim",
+    cmd = "IncRename",
+    keys = {
+      {
+        "<leader>lr",
+        function()
+          return ":IncRename " .. vim.fn.expand "<cword>"
+        end,
+        expr = true,
+        desc = "LSP: Incremental Rename",
+      },
+    },
+    opts = {
+      input_buffer_type = "dressing",
+    },
+  },
+
   {
     "williamboman/mason.nvim",
     cmd = "Mason",
@@ -75,7 +94,11 @@ return {
             print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
           end, { buffer = ev.buf, desc = "LSP: List workspace folders" })
           map("n", "<leader>D", vim.lsp.buf.type_definition, { buffer = ev.buf, desc = "LSP: Type definition" })
-          map("n", "<leader>lr", vim.lsp.buf.rename, { buffer = ev.buf, desc = "LSP: Rename symbol" })
+          -- Note: <leader>lr is mapped to inc-rename.nvim at the top-level (keys table)
+          -- This provides a fallback if inc-rename is not loaded
+          if not pcall(require, "inc_rename") then
+            map("n", "<leader>lr", vim.lsp.buf.rename, { buffer = ev.buf, desc = "LSP: Rename symbol" })
+          end
           map("n", "<leader>la", vim.lsp.buf.code_action, { buffer = ev.buf, desc = "LSP: Code action" })
           map("n", "gr", vim.lsp.buf.references, { buffer = ev.buf, desc = "LSP: Show references" })
           map("n", "<leader>lf", function()

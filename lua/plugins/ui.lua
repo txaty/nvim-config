@@ -365,4 +365,27 @@ return {
 
   -- Word illumination: replaced by snacks.words (lua/plugins/snacks.lua)
   -- Indent guides: replaced by snacks.indent (lua/plugins/snacks.lua)
+
+  -- Search result visualization: shows "N/M" match count and highlights current match
+  {
+    "kevinhwang91/nvim-hlslens",
+    keys = {
+      {
+        "n",
+        [[<Cmd>execute('normal! ' . v:count1 . 'n')<CR><Cmd>lua require('hlslens').start()<CR>]],
+        desc = "Next search result",
+      },
+      {
+        "N",
+        [[<Cmd>execute('normal! ' . v:count1 . 'N')<CR><Cmd>lua require('hlslens').start()<CR>]],
+        desc = "Previous search result",
+      },
+      { "*", [[*<Cmd>lua require('hlslens').start()<CR>]], desc = "Search word forward" },
+      { "#", [[#<Cmd>lua require('hlslens').start()<CR>]], desc = "Search word backward" },
+    },
+    opts = {
+      calm_down = true, -- Clear lens when cursor moves
+      nearest_only = true, -- Only show lens for nearest match
+    },
+  },
 }
