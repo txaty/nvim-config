@@ -151,7 +151,8 @@ conditions where UI operations would access uninitialized buffer state.
 - `lua/plugins/` — Self-contained plugin specifications (all `.lua` files auto-imported)
   - `ui.lua` — nvim-tree, lualine, bufferline, vim-illuminate
   - `whichkey.lua` — Popup showing available keybindings
-  - `telescope.lua` — Fuzzy finder and file navigation
+  - `snacks.lua` — Primary fuzzy finder (picker), dashboard, zen mode, scroll, indents
+  - `telescope.lua` — Fallback fuzzy finder for plugin integrations
   - `git.lua` — Gitsigns for git decorations and hunk operations
   - `lazygit.lua` — Terminal UI for git operations
   - `remote.lua` — Distant.nvim for VS Code-like remote development

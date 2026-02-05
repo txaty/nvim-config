@@ -1,5 +1,110 @@
 -- Snacks.nvim: Unified UI/UX plugin collection from folke
--- Replaces: nvim-notify, indent-blankline, vim-illuminate, zen-mode, twilight
+-- Replaces: nvim-notify, indent-blankline, vim-illuminate, zen-mode, twilight, telescope (picker)
+
+-- Session-persistent grep filters (shared between Snacks picker and Telescope)
+local grep_filters = {
+  include = nil, -- glob pattern: "*.py", "src/**/*.ts"
+  exclude = nil, -- glob pattern: "node_modules", "*.test.js"
+  type = nil, -- ripgrep type: "py", "js", "go", "rust", etc.
+}
+
+-- File type presets for quick selection
+local file_types = {
+  { label = "All files", type = nil },
+  { label = "Python (.py)", type = "py" },
+  { label = "JavaScript (.js)", type = "js" },
+  { label = "TypeScript (.ts)", type = "ts" },
+  { label = "Rust (.rs)", type = "rust" },
+  { label = "Go (.go)", type = "go" },
+  { label = "Lua (.lua)", type = "lua" },
+  { label = "C/C++ (.c/.cpp/.h)", type = "cpp" },
+  { label = "Markdown (.md)", type = "md" },
+  { label = "JSON (.json)", type = "json" },
+  { label = "YAML (.yaml/.yml)", type = "yaml" },
+  { label = "HTML (.html)", type = "html" },
+  { label = "CSS (.css)", type = "css" },
+}
+
+-- Build ripgrep args from filter state
+local function build_snacks_grep_args()
+  local args = { "--hidden" }
+  if grep_filters.include then
+    vim.list_extend(args, { "--glob", grep_filters.include })
+  end
+  if grep_filters.exclude then
+    vim.list_extend(args, { "--glob", "!" .. grep_filters.exclude })
+  end
+  if grep_filters.type then
+    vim.list_extend(args, { "--type", grep_filters.type })
+  end
+  return args
+end
+
+-- Reset all filters
+local function reset_filters()
+  grep_filters.include = nil
+  grep_filters.exclude = nil
+  grep_filters.type = nil
+end
+
+-- Get title showing active filters
+local function get_grep_title()
+  local parts = {}
+  if grep_filters.include then
+    table.insert(parts, "+" .. grep_filters.include)
+  end
+  if grep_filters.exclude then
+    table.insert(parts, "-" .. grep_filters.exclude)
+  end
+  if grep_filters.type then
+    table.insert(parts, "type:" .. grep_filters.type)
+  end
+  if #parts == 0 then
+    return "Grep"
+  end
+  return "Grep [" .. table.concat(parts, " ") .. "]"
+end
+
+-- Launch Snacks grep with current filters
+local function filtered_snacks_grep()
+  Snacks.picker.grep {
+    title = get_grep_title(),
+    args = build_snacks_grep_args(),
+  }
+end
+
+-- Prompt for include/exclude patterns then search
+local function snacks_grep_with_prompts()
+  vim.ui.input({ prompt = "Include (glob, e.g. *.lua, src/**/*): " }, function(inc)
+    grep_filters.include = (inc and inc ~= "") and inc or nil
+    vim.ui.input({ prompt = "Exclude (glob, e.g. node_modules, *.test.js): " }, function(exc)
+      grep_filters.exclude = (exc and exc ~= "") and exc or nil
+      filtered_snacks_grep()
+    end)
+  end)
+end
+
+-- Select file type from presets then search
+local function snacks_grep_by_type()
+  vim.ui.select(file_types, {
+    prompt = "File type:",
+    format_item = function(item)
+      return item.label
+    end,
+  }, function(choice)
+    if choice then
+      grep_filters.type = choice.type
+      filtered_snacks_grep()
+    end
+  end)
+end
+
+-- Grep for word under cursor
+local function snacks_grep_word()
+  Snacks.picker.grep_word {
+    args = build_snacks_grep_args(),
+  }
+end
 
 return {
   {
@@ -13,9 +118,30 @@ return {
         enabled = true,
         preset = {
           keys = {
-            { icon = " ", key = "f", desc = "Find File", action = ":Telescope find_files" },
-            { icon = " ", key = "g", desc = "Find Text", action = ":Telescope live_grep" },
-            { icon = " ", key = "r", desc = "Recent Files", action = ":Telescope oldfiles" },
+            {
+              icon = " ",
+              key = "f",
+              desc = "Find File",
+              action = function()
+                Snacks.picker.files()
+              end,
+            },
+            {
+              icon = " ",
+              key = "g",
+              desc = "Find Text",
+              action = function()
+                Snacks.picker.grep()
+              end,
+            },
+            {
+              icon = " ",
+              key = "r",
+              desc = "Recent Files",
+              action = function()
+                Snacks.picker.recent()
+              end,
+            },
             {
               icon = " ",
               key = "s",
@@ -33,6 +159,47 @@ return {
           { section = "header" },
           { section = "keys", gap = 1, padding = 1 },
           { section = "startup" },
+        },
+      },
+      -- Snacks picker (replaces Telescope for better performance)
+      picker = {
+        enabled = true,
+        layout = {
+          preset = "telescope", -- Familiar Telescope-like layout
+        },
+        sources = {
+          files = { hidden = true, follow = true },
+          grep = { hidden = true },
+        },
+        win = {
+          input = {
+            keys = {
+              ["<C-j>"] = { "list_down", mode = { "i", "n" } },
+              ["<C-k>"] = { "list_up", mode = { "i", "n" } },
+              ["<C-q>"] = { "qflist", mode = { "i", "n" } },
+              ["<Esc>"] = { "close", mode = { "i", "n" } },
+            },
+          },
+        },
+        -- File ignore patterns (consistent with former Telescope config)
+        matcher = {
+          file_ignore_patterns = {
+            "node_modules/",
+            ".git/",
+            "%.lock",
+            "__pycache__/",
+            "%.pyc",
+            ".venv/",
+            "venv/",
+            "dist/",
+            "build/",
+            "target/",
+            "%.min%.js",
+            "%.min%.css",
+            "%.o",
+            "%.a",
+            "%.so",
+          },
         },
       },
       scroll = {
@@ -91,7 +258,6 @@ return {
       toggle = { enabled = true },
 
       -- KEEP DISABLED (using other plugins)
-      picker = { enabled = false }, -- Keep telescope
       explorer = { enabled = false }, -- Keep nvim-tree
       terminal = { enabled = false }, -- Keep toggleterm
       lazygit = { enabled = false }, -- Keep lazygit.nvim
@@ -101,6 +267,95 @@ return {
       bigfile = { enabled = false },
     },
     keys = {
+      -- Snacks Picker (replaces Telescope)
+      {
+        "<leader>ff",
+        function()
+          Snacks.picker.files()
+        end,
+        desc = "Find files",
+      },
+      {
+        "<leader>fg",
+        filtered_snacks_grep,
+        desc = "Live grep",
+      },
+      {
+        "<leader>fG",
+        snacks_grep_with_prompts,
+        desc = "Live grep (with filters)",
+      },
+      {
+        "<leader>fT",
+        snacks_grep_by_type,
+        desc = "Live grep (by type)",
+      },
+      {
+        "<leader>fR",
+        reset_filters,
+        desc = "Reset grep filters",
+      },
+      {
+        "<leader>fb",
+        function()
+          Snacks.picker.buffers()
+        end,
+        desc = "Buffers",
+      },
+      {
+        "<leader>fr",
+        function()
+          Snacks.picker.recent()
+        end,
+        desc = "Recent files",
+      },
+      {
+        "<leader>fh",
+        function()
+          Snacks.picker.help()
+        end,
+        desc = "Help tags",
+      },
+      {
+        "<leader>fw",
+        snacks_grep_word,
+        desc = "Grep word under cursor",
+      },
+      {
+        "<leader>fc",
+        function()
+          Snacks.picker.commands()
+        end,
+        desc = "Commands",
+      },
+      {
+        "<leader>fk",
+        function()
+          Snacks.picker.keymaps()
+        end,
+        desc = "Keymaps",
+      },
+      {
+        "<leader>f/",
+        function()
+          Snacks.picker.lines()
+        end,
+        desc = "Search in buffer",
+      },
+      {
+        "<leader>fs",
+        function()
+          Snacks.picker.lsp_symbols()
+        end,
+        desc = "LSP symbols",
+      },
+      {
+        "<leader>fd",
+        function()
+          Snacks.picker.diagnostics()
+        end,
+        desc = "Diagnostics",
+      },
       -- Dashboard (H = Home)
       {
         "<leader>H",
