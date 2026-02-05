@@ -1,271 +1,132 @@
 # Gemini Context for Neovim Configuration
 
 ## Project Overview
-This repository contains a custom, self-maintained Neovim configuration. It uses `lazy.nvim` for plugin management and `mason.nvim` for managing external editor tooling (LSP servers, DAP servers, linters, and formatters). The configuration is written in Lua and organized around a modular `lua/core/` + `lua/plugins/` architecture.
+Custom, self-maintained Neovim configuration using `lazy.nvim` for plugins and `mason.nvim` for tooling (LSP, DAP, linters, formatters). Written in Lua with modular `lua/core/` + `lua/plugins/` architecture.
 
-**Important**: This config has **completely removed all NvChad files and dependencies**. It is now a fully independent, standalone configuration with no NvChad remnants in the codebase.
+**Important**: Completely removed all NvChad files and dependencies. Fully independent configuration.
 
 ## Key Technologies
-*   **Core**: Neovim (Lua)
-*   **Package Manager**: `lazy.nvim`
-*   **Tool Management**: `mason.nvim`, `mason-lspconfig`, `mason-nvim-dap`
-*   **LSP**: `vim.lsp.config` (new Neovim 0.11+ API, migrated from nvim-lspconfig)
-*   **Formatting**: `conform.nvim` (prettierd, prettier, stylua, black, isort, gofmt, rustfmt, clang-format, latexindent)
-*   **Linting**: `nvim-lint`
-*   **Completion**: `blink.cmp`
-*   **Syntax**: `nvim-treesitter`
-*   **Diagnostics UI**: `trouble.nvim`
-*   **Todo Highlighting**: `todo-comments.nvim`
-*   **Search & Replace**: `grug-far.nvim`
-*   **Git TUI**: `lazygit.nvim`
-*   **AI**: `copilot.lua` + `CopilotChat.nvim`
-*   **UI Polish**: `noice.nvim` + `dressing.nvim`
-*   **Navigation**: `flash.nvim`
-*   **Mobile**: `flutter-tools.nvim`
-*   **Markdown**: `render-markdown.nvim`
-*   **File Explorer**: `nvim-tree.lua`
-*   **Statusline**: `lualine.nvim`
-*   **Bufferline**: `bufferline.nvim`
-*   **Fuzzy Finder**: `telescope.nvim`
-*   **Git**: `gitsigns.nvim`
-*   **Debugging**: `nvim-dap`
-*   **Session**: `persistence.nvim` (auto-save/auto-restore session management)
-*   **Remote Development**: `distant.nvim` (VS Code Remote-like experience)
-*   **Themes**: 50+ themes (25+ dark, 20+ light, 2 custom txaty/txaty-light - ergonomic design)
-*   **Theme Switcher**: Telescope-based picker with persistence and smart dark/light switching
+- **Core**: Neovim (Lua), `lazy.nvim`, `mason.nvim`
+- **LSP**: `vim.lsp.config` (new Neovim 0.11+ API)
+- **Formatting**: `conform.nvim` (stylua, black, isort, goimports, rustfmt, prettier)
+- **Linting**: `nvim-lint`
+- **Completion**: `blink.cmp`
+- **Syntax**: `nvim-treesitter`
+- **Fuzzy Finder**: `snacks.nvim` (primary), `telescope.nvim` (fallback)
+- **Git**: `gitsigns.nvim`, `lazygit.nvim`
+- **AI**: `copilot.lua` + `CopilotChat.nvim`
+- **UI**: `noice.nvim`, `lualine.nvim`, `bufferline.nvim`, `nvim-tree.lua`
+- **Navigation**: `flash.nvim`
+- **Session**: `persistence.nvim`
+- **Remote**: `distant.nvim`
+- **Themes**: 50+ themes (25+ dark, 20+ light, 2 custom txaty)
 
 ## Directory Structure
-*   `init.lua`: The entry point for Neovim. Loads `lua/core/init.lua`.
-*   `lazy-lock.json`: Lockfile for plugin versions.
-*   `.stylua.toml`: Configuration for stylua (Lua formatter - 120 column width, 2-space indent).
-*   `.luacheckrc`: Lua linter configuration (Lua 5.1 std, vim globals).
-*   `lua/core/`: Core Neovim settings and bootstrap
-    *   `init.lua`: Loads all core modules (options, keymaps, autocmds, lazy).
-    *   `options.lua`: Vim options (vim.opt) and sane defaults.
-    *   `keymaps.lua`: General keybindings and navigation shortcuts.
-    *   `autocmds.lua`: Event-driven logic (cursor restoration, view saving); lifecycle and commands handled by submodules.
-    *   `lifecycle/` — Initialization lifecycle modules (VimEnter orchestration):
-        *   `init.lua` — Lifecycle orchestrator (theme, session, UI state, nvim-tree, commands).
-        *   `colorscheme.lua` — Theme restoration (runs first).
-        *   `session.lua` — Session save/restore.
-        *   `nvim_tree.lua` — NvimTree auto-open logic.
-    *   `commands/` — User command definitions:
-        *   `init.lua` — Command registry.
-        *   `ai.lua` — :AIToggle, :AIEnable, :AIDisable, :AIStatus.
-        *   `lang.lua` — :LangPanel, :LangToggle, :LangEnable, :LangDisable, :LangStatus.
-        *   `cleanup.lua` — :CleanupNvim.
-        *   `ui.lua` — :UIStatus.
-    *   `lazy.lua`: Bootstraps lazy.nvim with custom performance settings.
-    *   `theme.lua`: Unified theme registry with 50+ themes and smart switching.
-    *   `theme_txaty.lua`: Custom ergonomic theme with factory pattern (dark/light variants).
-    *   `ai_toggle.lua`: AI features toggle module (enables/disables Copilot).
-    *   `lang_toggle.lua`: Language support toggle module (enables/disables language tooling).
-    *   `lang_utils.lua`: Shared utilities for language support (reduces boilerplate).
-    *   `ui_toggle.lua`: UI/display toggles module (session-persistent state).
-    *   `cleanup.lua`: Automatic cleanup for temporary/cache files (minimizes disk footprint).
-*   `lua/plugins/`: Plugin specifications (using lazy.nvim syntax), organized by domain
-    *   `lsp.lua`: Mason + vim.lsp.config (new Neovim 0.11+ API) with LspAttach autocmd.
-    *   `tools.lua`: conform.nvim (formatting) + nvim-lint (merged file).
-    *   `cmp.lua`: blink.cmp completion configuration.
-    *   `treesitter.lua`: Treesitter setup.
-    *   `ui.lua`: nvim-tree, lualine, bufferline, vim-illuminate.
-    *   `whichkey.lua`: Popup showing available keybindings.
-    *   `telescope.lua`: Fuzzy finder and file navigation.
-    *   `git.lua`: Gitsigns for git decorations and hunk operations.
-    *   `lazygit.lua`: Terminal UI for git operations.
-    *   `remote.lua`: Distant.nvim for VS Code-like remote development.
-    *   `markdown.lua`: Markdown rendering and live preview.
-    *   `colorscheme.lua`: 40+ colorscheme plugin declarations.
-    *   `theme_switcher.lua`: Telescope-based interactive theme picker with smart switching.
-    *   `session.lua`: persistence.nvim with auto-save/auto-restore.
-    *   `bookmark.lua`: bookmarks.nvim with telescope extension.
-    *   `documents.lua`: vimtex (LaTeX) + typst-preview (respects lang toggle).
-    *   `noice.lua`, `flash.lua`, `trouble.lua`, `todo.lua`, `search-replace.lua`: UI/UX plugins.
-    *   `copilot.lua`: GitHub Copilot integration (respects AI toggle).
-    *   `dap.lua`: Debug adapter protocol setup.
-    *   `test.lua`: neotest testing framework (respects lang toggle).
-    *   `minimap.lua`: neominimap.nvim code minimap.
-    *   `languages/`: Language-specific configurations using lang_utils:
-        *   `python.lua`, `go.lua`, `rust.lua`, `flutter.lua`, `web.lua`.
-*   `lua/dap/`: Debug Adapter Protocol configurations (web.lua, cpp.lua, python.lua, flutter.lua, go.lua).
-*   `docs/`: User documentation (keymaps.md reference).
-*   **Note**: `lua/configs/` and other NvChad-related directories have been completely removed. All configuration is inlined into plugin specs.
+- `init.lua` — Entry point, loads `lua/core/init.lua`
+- `lazy-lock.json` — Plugin version lockfile
+- `.stylua.toml` — Lua formatter (120 column, 2-space indent)
+- `.luacheckrc` — Lua linter (Lua 5.1, vim globals)
+- `lua/core/` — Core settings and bootstrap
+  - `init.lua`, `options.lua`, `keymaps.lua`, `autocmds.lua`, `lazy.lua`
+  - `lifecycle/` — VimEnter orchestration (colorscheme, session, nvim_tree)
+  - `commands/` — User commands (ai, lang, cleanup, ui)
+  - `theme.lua`, `theme_txaty.lua` — Theme registry and custom theme
+  - `ai_toggle.lua`, `lang_toggle.lua`, `ui_toggle.lua` — Feature toggles
+  - `lang_utils.lua`, `lsp_capabilities.lua` — Shared utilities
+  - `cleanup.lua` — Automatic cleanup
+- `lua/plugins/` — Self-contained plugin specs
+  - `lsp.lua`, `tools.lua`, `cmp.lua`, `treesitter.lua`
+  - `ui.lua`, `snacks.lua`, `telescope.lua`
+  - `git.lua`, `lazygit.lua`, `remote.lua`
+  - `copilot.lua`, `session.lua`, `dap.lua`, `test.lua`
+  - `languages/` — python.lua, rust.lua, go.lua, web.lua, flutter.lua
+- `lua/dap/` — Language-specific DAP configs
+- `docs/` — User documentation (keymaps.md)
 
-## Building and Running
-Since this is a configuration project, "building" refers to installing dependencies and "running" refers to starting Neovim.
+## Commands
+```bash
+nvim                                              # Start
+nvim --headless "+lua require('lazy').sync()" +qa # Sync plugins
+nvim --headless '+TSUpdateSync' +qa               # Update Treesitter
+nvim --headless '+checkhealth' +qa                # Health check
+stylua lua/                                       # Format Lua
+luacheck lua/                                     # Lint Lua
+```
 
-### Commands
-*   **Start Neovim**: `nvim`
-*   **Sync Plugins**: `nvim --headless "+lua require('lazy').sync()" +qa`
-*   **Update Treesitter Parsers**: `nvim --headless '+TSUpdateSync' +qa`
-*   **Health Check**: `nvim --headless '+checkhealth' +qa`
-*   **Format Lua Config**: `stylua lua/`
-*   **Lint Lua Config**: `luacheck lua/` or `$HOME/.luarocks/bin/luacheck lua/`
+## Key Features & Workflows
 
-### Tool Installation
-Tools (LSP, Formatters, Linters, DAP) are managed by Mason.
-*   **:Mason**: Open the Mason UI to install/update tools.
-*   **:MasonInstallAll**: Install all tools defined in `lua/plugins/lsp.lua`.
+### LSP
+- Uses new `vim.lsp.config()` API (Neovim 0.11+)
+- Key mappings: `gd` (definition), `gr` (references), `K` (hover), `<leader>la` (code action), `<leader>lf` (format)
+- **CRITICAL**: Never set `cmd` or `root_dir` manually. Rust handled by `rustaceanvim`.
 
-## Development Conventions
+### Navigation & UI
+- Flash: `s` (jump), `S` (Treesitter select)
+- Telescope/Snacks: `<leader>ff` (files), `<leader>fg` (grep), `<leader>fb` (buffers)
+- File Explorer: `<C-n>` (nvim-tree)
+- Bufferline: `<Tab>`/`<S-Tab>` (navigate), `<leader>bd` (close)
 
-### Code Style
-*   **Lua**: Indent with 2 spaces. Use `local` variables where possible. Avoid globals.
-*   **Formatting**: Handled by `conform.nvim` (auto-format on save for supported filetypes).
-    *   Lua: `stylua`
-    *   Python: `black`, `isort`
-    *   Web (JS/TS/CSS/HTML): `prettierd` (fallback to `prettier`)
-    *   Go: `goimports`, `gofmt`
-    *   Rust: `rustfmt`
-    *   C/C++: `clang-format`
-    *   TeX: `latexindent`
+### Theme System (`<leader>c*`)
+- `<leader>cc` — Telescope picker
+- `<leader>cd/cl/cp` — Dark/light/txaty
+- `<leader>cn/cN` — Cycle themes
+- 50+ themes, preference saved to `$XDG_DATA_HOME/theme_config.json`
 
-### Key Features & Workflows
-*   **LSP**:
-    *   Servers use new `vim.lsp.config()` API (Neovim 0.11+, migrated from deprecated nvim-lspconfig).
-    *   Configured via mason-lspconfig handlers in `lua/plugins/lsp.lua`.
-    *   Buffer-local keymaps set in LspAttach autocmd.
-    *   Key mappings: `gd` (definition), `gr` (references), `K` (hover), `<leader>la` (code action), `<leader>lr` (rename), `<leader>lf` (format).
-    *   Diagnostic navigation: `[d` (previous), `]d` (next) using `vim.diagnostic.jump()` (replaces deprecated goto_prev/goto_next).
-    *   **CRITICAL**: NEVER set `cmd` or `root_dir` manually (conflicts with Mason). Rust is handled by `rustaceanvim`, not lspconfig.
-*   **Formatting**: `<leader>lf` or auto-format on save (via conform.nvim).
-*   **Diagnostics**: Use `trouble.nvim` (`<leader>xx`) to view and filter project-wide diagnostics.
-*   **Todo Comments**: Use keywords (`TODO`, `FIXME`, `HACK`, `NOTE`) in code. Search with `<leader>ft`.
-*   **Search & Replace**: Use `grug-far` (`<leader>S`) for project-wide find and replace.
-*   **Git**: Use `lazygit` (`<leader>gg`) for staging, committing, amending, rebasing.
-*   **AI**:
-    *   Completion: GitHub Copilot (ghost text). Accept with `<M-l>` (Alt+L).
-    *   Chat: `<leader>aa` to toggle chat. `<leader>aq` (quick question), `<leader>ae` (explain), `<leader>at` (tests), `<leader>af` (fix), `<leader>ar` (review).
-*   **Navigation**:
-    *   Flash: Press `s` to jump anywhere. Press `S` to select Treesitter nodes.
-    *   Telescope: `<leader>ff` (find files), `<leader>fg` (live grep), `<leader>fb` (buffers).
-*   **UI**:
-    *   File Explorer: `<C-n>` to toggle nvim-tree.
-    *   Statusline: lualine (auto theme).
-    *   Bufferline: Navigate buffers with `<Tab>` / `<S-Tab>` or `<leader>bd` to close.
-    *   Noice History: `<leader>nh`. Dismiss Notifications: `<leader>nd`.
-*   **Theme Switching** (uses `<leader>c*` prefix for "color"):
-    *   Choose theme: `<leader>cc` (Telescope picker) or `:ThemeSwitch`
-    *   Quick switch: `<leader>cd` (dark), `<leader>cl` (light), `<leader>cp` (txaty custom)
-    *   Cycle themes: `<leader>cn` (next), `<leader>cN` (previous)
-    *   50+ themes available: 25+ dark, 20+ light, 2 custom (txaty dark, txaty-light)
-    *   Smart switching: `<leader>cd/cl` remembers last-used theme per category
-    *   Preference persisted to `$XDG_DATA_HOME/theme_config.json`
-    *   Note: AI chat uses separate `<leader>a*` prefix to avoid conflicts
-*   **AI Toggle**:
-    *   Toggle: `<leader>ai` or `:AIToggle`
-    *   Explicit control: `:AIEnable`, `:AIDisable`, `:AIStatus`
-    *   State persisted to `$XDG_DATA_HOME/ai_config.json`
-    *   **Requires restart** to apply changes
-*   **Language Support Toggle**:
-    *   Panel: `<leader>Lp` or `:LangPanel` (Telescope-based with e/d keys)
-    *   Status: `<leader>Ls` or `:LangStatus`
-    *   Toggle: `:LangToggle python`, `:LangEnable rust`, `:LangDisable web`
-    *   Supported: python, rust, go, web, flutter, latex, typst
-    *   State persisted to `$XDG_DATA_HOME/language_config.json`
-    *   **Requires restart** to apply changes
-*   **UI/Display Toggles** (uses `<leader>u*` prefix, session-persistent):
-    *   Toggle line wrap: `<leader>uw`
-    *   Toggle spell check: `<leader>us`
-    *   Toggle line numbers: `<leader>un`
-    *   Toggle relative numbers: `<leader>ur`
-    *   Toggle conceal: `<leader>uc`
-    *   Toggle nvim-tree git status: `<leader>ug`
-    *   Check UI status: `:UIStatus`
-*   **Automatic Cleanup**:
-    *   Runs automatically on startup (throttled to once per 24 hours)
-    *   Removes stale temporary and cache files to minimize disk footprint
-    *   Targets: log files (>7 days), swap files (orphaned >1 day), view files (missing source), luac cache (>30 days), LSP logs (>7 days)
-    *   Manual trigger: `:CleanupNvim` (verbose output)
-    *   Opt-out: set `vim.g.disable_auto_cleanup = true`
-    *   Timestamp stored in `~/.local/state/nvim/cleanup_last_run`
-*   **Remote Development** (uses `<leader>r*` prefix):
-    *   Connect: `<leader>rc` (SSH connection)
-    *   Disconnect: `<leader>rd`
-    *   Open remote: `<leader>ro` (file/directory)
-    *   Find files: `<leader>rf` (Telescope)
-    *   Live grep: `<leader>rg` (Telescope)
-    *   System info: `<leader>rs`, Shell: `<leader>rS`
-*   **Rust Operations** (uses `<leader>R*` prefix - capital R to avoid conflict with Remote, powered by rustaceanvim `:RustLsp` commands):
-    *   Runnables picker: `<leader>Rr`, Rerun last: `<leader>RR`
-    *   Testables picker: `<leader>Rt`, Rerun last test: `<leader>RT`
-    *   Open Cargo.toml: `<leader>Rc`, Parent module: `<leader>Rp`
-    *   Expand macro: `<leader>Ra`, Explain error: `<leader>Rx`
-    *   Debuggables picker: `<leader>RD`, Debug target: `<leader>Rd`
-    *   Hover actions: `<leader>RH`, Join lines: `<leader>Rj`
-    *   Structural search/replace: `<leader>Rs`
-*   **Crates Management** (uses `<leader>C*` prefix, in Cargo.toml):
-    *   Show versions: `<leader>Cv`, Show features: `<leader>Cf`
-    *   Show dependencies: `<leader>Cd`
-    *   Upgrade crate: `<leader>Cu`, Upgrade all: `<leader>CA`
-*   **Session Management**:
-    *   Auto-save: Sessions automatically saved on VimLeavePre
-    *   Auto-restore: Automatically restored when opening Neovim without arguments
-    *   Manual controls: `<leader>qs` (restore/save), `<leader>ql` (restore last), `<leader>qS` (select), `<leader>qd` (don't save)
-    *   Per-directory sessions maintain buffers, windows, tabs, and state
-    *   Session-aware nvim-tree: Won't auto-open if session exists for current directory
-*   **Markdown**: Automatic rendering of headings, tables, and checkboxes (Obsidian-style).
-*   **Flutter**:
-    *   Run: `<leader>FR`
-    *   Hot Reload: `<leader>Fr`
-    *   Hot Restart: `<leader>FR`
-    *   Emulator management and device selection available
-*   **Debugging (DAP)**:
-    *   Managed by `mason-nvim-dap` and configured in `lua/plugins/dap.lua`.
-    *   Language-specific configs in `lua/dap/`.
-    *   Toggle breakpoint: `<leader>db`
-    *   Step over/into/out, continue, REPL available
-*   **Minimap**:
-    *   Toggle: `<leader>MM`
-    *   Powered by neominimap.nvim
-*   **Testing**:
-    *   Run nearest test: `<leader>tn`
-    *   Run file tests: `<leader>tf`
-    *   Run test suite: `<leader>ts`
-    *   View output: `<leader>to`
-    *   Toggle summary: `<leader>tt`
-    *   Powered by neotest with adapters for Python, Go, Rust
+### AI (`<leader>a*`)
+- `<leader>ai` — Toggle AI (requires restart)
+- `<leader>aa` — Toggle chat
+- `<leader>aq/ae/at/af/ar` — Quick question/explain/tests/fix/review
+- Copilot: `<M-l>` (accept)
 
-### Configuration Pattern
-*   **Plugin Specs**: Define plugins in `lua/plugins/*.lua` using lazy.nvim syntax with lazy-loading triggers.
-*   **Inline Configs**: Use the `opts` or `config` fields directly in the plugin spec. Never create separate config directories or files.
-*   **LSP Setup**: All LSP servers use new `vim.lsp.config()` API (Neovim 0.11+). Configured via mason-lspconfig handlers in `lua/plugins/lsp.lua`.
-*   **Keymaps**: General keymaps in `lua/core/keymaps.lua`. Plugin-specific keymaps in the plugin spec or config function. LSP keymaps in LspAttach autocmd.
-*   **Autocmds**: General autocmds in `lua/core/autocmds.lua`. Plugin-specific autocmds in the plugin config.
-*   **Theme System**: Themes managed by `lua/core/theme.lua` with persistence. Custom txaty theme in `lua/core/theme_txaty.lua`. Interactive picker in `lua/plugins/theme_switcher.lua`.
+### Session Management
+- Auto-save on exit, auto-restore when opening without arguments
+- `<leader>qs` (save), `<leader>ql` (load last), `<leader>qS` (select)
 
-### Testing
-*   Verify changes by opening files of relevant types (e.g., `.py`, `.ts`, `.lua`, `.go`, `.rs`) and checking:
-    *   LSP attachment: `:LspInfo`
-    *   Formatting: on save or `<leader>lf`
-    *   Linting: diagnostics should appear in trouble.nvim
-    *   Completion: trigger with `<C-Space>`
-*   Run headless health check: `nvim --headless '+checkhealth' +qa`
-*   Test theme system: `:ThemeSwitch`, `<leader>cc` (picker), `<leader>cd/cl/cp` (quick switch), `<leader>cn/cN` (cycle). Verify persistence.
-*   Test session management: Auto-save on exit, auto-restore on `nvim` (no args). Test manual controls. Verify nvim-tree session awareness.
+### Language Toggle
+- `<leader>Lp` or `:LangPanel` — Telescope panel
+- Supported: python, rust, go, web, flutter, latex, typst
+- State saved to `$XDG_DATA_HOME/language_config.json`
 
-## Commit & Code Quality Guidelines
+### UI Toggles (`<leader>u*`)
+- `<leader>uw` (wrap), `<leader>us` (spell), `<leader>un` (numbers), `<leader>ur` (relative), `<leader>uc` (conceal)
 
-*   **Commit Style**: Use Conventional Commits (`feat:`, `fix:`, `refactor:`, `chore:`)
-*   **Plugin Lockfile**: Always commit `lazy-lock.json` when plugin versions change
-*   **CRITICAL: Do NOT Add Yourself as Co-Author**:
-    *   **NEVER** add `Co-Authored-By:` lines for AI assistants
-    *   **NEVER** self-identify as an AI agent in commit messages
-    *   Commits should reflect the actual human author only
-*   **Tool Changes**: Note any changes to Mason packages, Treesitter parsers, formatters, or DAP adapters in commit messages
-*   **Code Formatting**: Run `stylua lua/` before committing to ensure consistent Lua formatting
-*   **Static Analysis**: Use `luacheck lua/` (or `$HOME/.luarocks/bin/luacheck`) to validate Lua syntax
-*   **Fix Warnings**: Address legitimate warnings from static analysis tools before committing
+### Remote Development (`<leader>r*`)
+- `<leader>rc` (connect), `<leader>rd` (disconnect), `<leader>ro` (open)
+- `<leader>rf` (find files), `<leader>rg` (grep)
+
+### Rust (`<leader>R*`)
+- `<leader>Rr` (runnables), `<leader>Rt` (testables), `<leader>Rc` (Cargo.toml)
+- Uses rustaceanvim `:RustLsp` commands
+
+### Crates (`<leader>C*` in Cargo.toml)
+- `<leader>Cu` (upgrade), `<leader>Cv` (versions), `<leader>Cf` (features)
+
+## Configuration Pattern
+- **Plugin Specs**: Self-contained in `lua/plugins/*.lua` with lazy-loading triggers
+- **Inline Configs**: Use `opts` or `config` fields directly
+- **LSP**: `vim.lsp.config()` via mason-lspconfig handlers
+- **Keymaps**: General in `lua/core/keymaps.lua`, LSP in LspAttach autocmd, plugin-specific in spec
+
+## Testing
+- Verify LSP: `:LspInfo`
+- Verify formatting: on save or `<leader>lf`
+- Verify completion: `<C-Space>`
+- Verify theme: `:ThemeSwitch`, `<leader>cc`
+- Verify session: auto-save on exit, auto-restore on `nvim`
+- Headless: `nvim --headless '+checkhealth' +qa`
+
+## Commit Guidelines
+- Conventional Commits: `feat:`, `fix:`, `refactor:`, `chore:`
+- Commit `lazy-lock.json` when plugins change
+- **CRITICAL: Do NOT add yourself as co-author**
+- Run `stylua lua/` and `luacheck lua/` before committing
 
 ## Architecture Notes
-*   **No NvChad Dependencies**: This config has completely removed all NvChad files and dependencies. Do not reference or recreate `chadrc.lua`, `base46`, `nvchad.ui`, `nvchad.core`, `lua/configs/`, or `custom/` directory.
-*   **Self-Maintained Core**: All core settings (options, keymaps, autocmds) are explicitly defined in `lua/core/`. No external configuration framework dependencies.
-*   **Modular Plugin System**: Each plugin is self-contained with its own configuration, dependencies, and keymaps inlined in `lua/plugins/`. All plugins lazy-load via `event`, `cmd`, `ft`, or `keys` triggers.
-*   **Performance Optimized**: lazy.nvim is configured with custom performance settings in `lua/core/lazy.lua`. Disabled runtime plugins improve startup time.
-*   **Startup Behavior**: `autocmds.lua` includes VimEnter logic to auto-open nvim-tree for directories/empty buffers (session-aware: won't open if session exists).
-*   **Theme System**: Unified registry with 50+ themes (25+ dark, 20+ light, 2 custom txaty/txaty-light). Factory pattern for custom themes. Smart dark/light switching remembers last-used per category. Ergonomic design: low saturation (15-25%), warm neutrals, WCAG 2.1 AA compliant. Preference persisted to `$XDG_DATA_HOME/theme_config.json`.
-*   **Session Management**: Auto-save on VimLeavePre, auto-restore when opening Neovim without arguments. Per-directory sessions maintain buffers, windows, tabs, and state. Integrates with nvim-tree auto-open logic.
-*   **LSP Migration**: Migrated from deprecated `require('lspconfig')` to new `vim.lsp.config()` API (Neovim 0.11+). All servers managed through mason-lspconfig handlers with `vim.lsp.enable()`. Rust handled exclusively by `rustaceanvim`.
-*   **AI Toggle**: Copilot plugins can be disabled entirely (like Zed's "Disable AI"). State persisted to `$XDG_DATA_HOME/ai_config.json`. Requires restart to apply.
-*   **Language Toggle**: Per-language tooling (LSP, formatters, linters, treesitter) can be disabled. State persisted to `$XDG_DATA_HOME/language_config.json`. Requires restart.
-*   **Remote Development**: Distant.nvim integration for VS Code Remote-like experience. SSH-based with compression. Auto-attaches LSP to remote buffers. Connection status shown in lualine.
+- **No NvChad**: Do not reference or recreate NvChad patterns
+- **Self-Maintained**: All core settings in `lua/core/`, no framework dependencies
+- **Modular**: Each plugin self-contained with lazy-loading
+- **Performance**: Custom lazy.nvim settings, disabled runtime plugins
+- **LSP Migration**: `vim.lsp.config()` API (Neovim 0.11+), Rust via `rustaceanvim`
+- **AI Toggle**: Copilot plugins disabled entirely when off, state persisted
+- **Language Toggle**: Per-language tooling disable, state persisted
+- **Session**: Auto-save/restore, integrates with nvim-tree auto-open
