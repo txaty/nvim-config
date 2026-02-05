@@ -12,7 +12,7 @@
 | `<leader>b*` | **Buffers** | `<leader>bd` = delete buffer |
 | `<leader>c*` | **Color/Colorscheme** | `<leader>cc` = choose theme (50+) |
 | `<leader>d*` | **Debug** (DAP) | `<leader>db` = toggle breakpoint |
-| `<leader>f*` | **Files & Finding** | `<leader>ff` = find files |
+| `<leader>f*` | **Files & Finding** | `<leader>ff` = find files, `<leader>fS` = scratch select |
 | `<leader>F*` | **Flutter** (language) | `<leader>FR` = run Flutter app |
 | `<leader>g*` | **Git** | `<leader>gs` = stage hunk |
 | `<leader>l*` | **LSP & Language** | `<leader>lr` = rename symbol |
@@ -29,7 +29,7 @@
 | `<leader>S*` | **Search** | `<leader>sw` = search current word |
 | `<leader>T*` | **Terminal** | `<leader>Tf` = float terminal |
 | `<leader>t*` | **Testing** | `<leader>tn` = run nearest test |
-| `<leader>u*` | **UI/Display** | `<leader>uw` = toggle wrap |
+| `<leader>u*` | **UI/Display** | `<leader>uw` = toggle wrap, `<leader>up` = profiler |
 | `<leader>w*` | **Windows** | `<leader>ws` = horizontal split |
 | `<leader>x*` | **Diagnostics** | `<leader>xx` = toggle diagnostics |
 
@@ -82,6 +82,7 @@
 | `<leader>fs` | LSP symbols |
 | `<leader>fd` | Diagnostics |
 | `<leader>ft` | Find todos |
+| `<leader>fS` | Select scratch buffer |
 
 ### Picker Navigation
 | Keybinding | Description |
@@ -564,6 +565,20 @@
 
 ## Navigation & Motion
 
+### Scope Navigation (Snacks)
+| Keybinding | Description |
+|---|---|
+| `]i` | Jump to next scope boundary |
+| `[i` | Jump to previous scope boundary |
+| `ii` (text object) | Select inner scope (function body, block content) |
+| `ai` (text object) | Select outer scope (function + signature, entire block) |
+
+**How to use:**
+- Press `]i` to jump to the end of the current scope or next scope
+- Press `[i` to jump to the beginning of the current scope or previous scope
+- Use `vii` to select the inner contents of a function/block
+- Use `vai` to select the entire function/block including signature
+
 ### Flash (Super-Speed Navigation)
 | Keybinding | Description |
 |---|---|
@@ -751,8 +766,25 @@
 | `<leader>uc` | Toggle conceal (0/2) | ON (2) |
 | `<leader>ug` | Toggle nvim-tree git status | ON |
 | `<leader>uz` | Toggle zen mode | — |
+| `<leader>ud` | Toggle dim mode | — |
+| `<leader>up` | Toggle profiler overlay | — |
 
 **Prose Override:** Markdown, text, TeX, and Typst files automatically enable word wrap regardless of session state.
+
+---
+
+## Scratch Buffers (`<leader>.`)
+
+| Keybinding | Description |
+|---|---|
+| `<leader>.` | Open new scratch buffer |
+| `<leader>fS` | Select from existing scratch buffers |
+
+**Features:**
+- Auto-save on hide (scratch buffers persist)
+- Organized by directory/branch
+- Lua buffers can execute code (press Enter in Lua scratch)
+- Useful for testing code snippets, taking notes, or temporary work
 
 ---
 
