@@ -64,32 +64,42 @@
 
 ## Files & Finding (`<leader>f*`)
 
-### Telescope Integration
+### Snacks Picker (Primary)
 | Keybinding | Description |
 |---|---|
 | `<leader>ff` | Find files |
 | `<leader>fg` | Live grep (with current filters if set) |
 | `<leader>fG` | Live grep with filter prompts (include → exclude → search) |
 | `<leader>fT` | Live grep by file type (select from preset list) |
+| `<leader>fR` | Reset grep filters |
 | `<leader>fb` | Find buffers |
-| `<leader>fr` | Recent files / oldfiles |
+| `<leader>fr` | Recent files (with frecency scoring) |
 | `<leader>fh` | Help tags |
+| `<leader>fw` | Grep word under cursor |
+| `<leader>fc` | Commands |
+| `<leader>fk` | Keymaps |
+| `<leader>f/` | Search in current buffer |
+| `<leader>fs` | LSP symbols |
+| `<leader>fd` | Diagnostics |
 | `<leader>ft` | Find todos |
 
-### Live Grep Filter Controls (Inside Picker)
+### Picker Navigation
 | Keybinding | Description |
 |---|---|
-| `<C-f>` | Set include pattern (glob prompt) |
-| `<C-e>` | Set exclude pattern (glob prompt) |
-| `<C-t>` | Select file type from presets |
-| `<C-r>` | Reset all filters |
+| `<C-j>` | Move to next item |
+| `<C-k>` | Move to previous item |
+| `<C-q>` | Send to quickfix list |
+| `<Esc>` | Close picker |
 
+### Live Grep Filters
 **Filter Examples:**
 - Include: `*.lua`, `src/**/*.ts`, `*.{js,jsx}`
 - Exclude: `node_modules`, `*.test.js`, `dist/**`
 - Types: py, js, ts, rust, go, lua, cpp, md, json, yaml, html, css
 
-**Note:** Filters persist during session. The picker title shows active filters (e.g., "Live Grep [+*.lua -node_modules]"). Use `<C-r>` to reset.
+**Note:** Filters persist during session. The picker title shows active filters (e.g., "Grep [+*.lua -node_modules]"). Use `<leader>fR` to reset.
+
+**Performance:** Snacks picker uses async matchers with built-in debouncing for better performance in large projects compared to Telescope.
 
 ### File Explorer
 | Keybinding | Description |
