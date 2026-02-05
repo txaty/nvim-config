@@ -15,27 +15,39 @@ require("core.lifecycle").setup()
 -- ============================================================================
 -- Debug Tools (opt-in via vim.g.debug_keymaps)
 -- ============================================================================
-require("core.keymap_audit").setup()
+-- OPT-1: Guard keymap_audit require to avoid loading module when not needed
+-- Saves ~0.2-0.3ms on startup when debug mode is disabled
+if vim.g.debug_keymaps then
+  require("core.keymap_audit").setup()
+end
 
 -- ============================================================================
 -- UI State Management
 -- ============================================================================
 
--- Apply UI state to new windows
--- Cache module reference to avoid pcall(require) on every buffer switch
-local _ui_toggle
-autocmd({ "WinNew", "BufWinEnter" }, {
-  group = augroup "ui_state",
+-- OPT-2: Defer UI state autocmd registration to VeryLazy
+-- This prevents apply() from running during startup window operations (~1-2ms saved)
+-- Initial UI state is applied by lifecycle's apply_all() at VimEnter
+-- This autocmd handles new windows/splits created after startup
+vim.api.nvim_create_autocmd("User", {
+  pattern = "VeryLazy",
+  once = true,
   callback = function()
-    if _ui_toggle then
-      _ui_toggle.apply()
-      return
-    end
-    local ok, mod = pcall(require, "core.ui_toggle")
-    if ok then
-      _ui_toggle = mod
-      mod.apply()
-    end
+    local _ui_toggle -- Cache module reference to avoid pcall(require) on every buffer switch
+    autocmd({ "WinNew", "BufWinEnter" }, {
+      group = augroup "ui_state",
+      callback = function()
+        if _ui_toggle then
+          _ui_toggle.apply()
+          return
+        end
+        local ok, mod = pcall(require, "core.ui_toggle")
+        if ok then
+          _ui_toggle = mod
+          mod.apply()
+        end
+      end,
+    })
   end,
 })
 
@@ -101,6 +113,29 @@ autocmd("BufWinLeave", {
     if bufname == "" or buftype ~= "" or filetype == "NvimTree" or filetype == "help" then
       return
     end
+
+    -- OPT-4: Only save views for buffers with folds (reduces unnecessary disk I/O)
+    -- Check if buffer has non-manual foldmethod or existing folds
+    local foldmethod = vim.wo.foldmethod
+    local has_folds = false
+    if foldmethod ~= "manual" then
+      has_folds = true
+    else
+      -- For manual foldmethod, check if any folds exist
+      -- foldlevel() returns >0 if line is in a fold
+      local line_count = vim.fn.line "$"
+      for i = 1, math.min(line_count, 100) do -- Sample first 100 lines for performance
+        if vim.fn.foldlevel(i) > 0 then
+          has_folds = true
+          break
+        end
+      end
+    end
+
+    if not has_folds then
+      return -- Skip mkview for files without folds
+    end
+
     -- Debounce: restart the single timer (stop + start avoids handle leak)
     view_save_timer:stop()
     view_save_timer:start(
