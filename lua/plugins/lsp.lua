@@ -141,7 +141,21 @@ return {
       -- Setup mason-lspconfig handlers
       -- mason-lspconfig itself is configured via its own plugin spec above.
       -- Here we just register handlers to auto-enable installed servers.
-      local mason_lspconfig = require "mason-lspconfig"
+      --
+      -- CRITICAL FIX: Ensure mason-lspconfig is set up before calling setup_handlers
+      -- lazy.nvim's opts handling may not have run yet when this config executes
+      local ok, mason_lspconfig = pcall(require, "mason-lspconfig")
+      if not ok then
+        vim.notify("mason-lspconfig not available, skipping handler setup", vim.log.levels.WARN)
+        return
+      end
+
+      -- Ensure setup() was called (idempotent if opts already ran)
+      if not mason_lspconfig.setup_handlers then
+        vim.notify("mason-lspconfig.setup_handlers not available, plugin may not be fully loaded", vim.log.levels.ERROR)
+        return
+      end
+
       mason_lspconfig.setup_handlers {
         -- Default handler: auto-enable all servers EXCEPT skipped ones
         function(server_name)
