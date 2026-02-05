@@ -61,6 +61,14 @@ luacheck lua/
 ```bash
 # Start with lifecycle and plugin load logging enabled
 nvim --cmd "let g:debug_lifecycle=1" --cmd "let g:debug_plugin_load=1"
+
+# Start with keymap conflict detection enabled
+nvim --cmd "let g:debug_keymaps=1"
+
+# Manual keymap audit (inside Neovim)
+:lua require("core.keymap_audit").check()        -- Check global keymaps
+:lua require("core.keymap_audit").check_buffer() -- Check buffer-local keymaps
+:lua require("core.keymap_audit").full_audit()   -- Full audit (both)
 ```
 
 ## Critical Architectural Principles
@@ -136,6 +144,7 @@ conditions where UI operations would access uninitialized buffer state.
   - `theme.lua` — Unified theme registry with 50+ themes and smart switching
   - `theme_txaty.lua` — Custom ergonomic theme with factory pattern (dark/light variants)
   - `lang_utils.lua` — Shared utilities for language support (reduces boilerplate)
+  - `lsp_capabilities.lua` — Single source of truth for LSP capabilities (shared by all LSP configs)
   - `ai_toggle.lua` — AI features toggle module (enables/disables Copilot)
   - `lang_toggle.lua` — Language support toggle module (enables/disables language tooling)
   - `cleanup.lua` — Automatic cleanup for temporary/cache files (minimizes disk footprint)
@@ -300,6 +309,7 @@ require("mason-lspconfig").setup {
 - Use `vim.lsp.config()` instead of `require('lspconfig')[server].setup()`
 - **NEVER** set `cmd` or `root_dir` fields manually (causes conflicts with Mason)
 - Rust is handled exclusively by `rustaceanvim` (not included in lspconfig)
+- **ALWAYS** use `require("core.lsp_capabilities").get()` for capabilities (single source of truth)
 
 ## Testing and Validation
 

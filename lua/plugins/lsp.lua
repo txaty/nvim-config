@@ -53,15 +53,9 @@ return {
     opts = {},
     config = function(_, opts)
       local mason_lspconfig = require "mason-lspconfig"
+      local capabilities = require("core.lsp_capabilities").get()
 
       local map = vim.keymap.set
-
-      -- Exporting capabilities for completion
-      local capabilities = vim.lsp.protocol.make_client_capabilities()
-      local blink_ok, blink = pcall(require, "blink.cmp")
-      if blink_ok then
-        capabilities = blink.get_lsp_capabilities(capabilities)
-      end
 
       -- LspAttach Autocmd for Keymaps
       -- Use a unique augroup name to avoid conflicts with other plugins
