@@ -20,6 +20,19 @@ return {
       formatters_by_ft = {
         lua = { "stylua" },
       },
+      -- FORMAT PRIORITY: lsp_fallback means LSP formatting ONLY runs if conform
+      -- has NO formatter configured for the current filetype.
+      --
+      -- Behavior:
+      --   - If conform has a formatter: ONLY conform runs (LSP skipped)
+      --   - If conform has NO formatter: LSP runs (fallback)
+      --
+      -- This prevents double-formatting. If you want BOTH conform AND LSP to run,
+      -- remove lsp_fallback and chain them manually:
+      --   format_on_save = function(bufnr)
+      --     vim.lsp.buf.format({ bufnr = bufnr })
+      --     require("conform").format({ bufnr = bufnr })
+      --   end
       format_on_save = {
         timeout_ms = 500,
         lsp_fallback = true,
