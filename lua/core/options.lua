@@ -15,7 +15,10 @@ g.loaded_netrwPlugin = 1
 -- Security
 --------------------------------------
 opt.modeline = false -- Disable modeline execution (prevents untrusted files from setting options)
+opt.modelines = 0 -- Defense-in-depth: zero modeline scan range even if modeline is re-enabled
 opt.exrc = false -- Disable project-local .nvim.lua / .exrc execution
+opt.secure = true -- Restrict :autocmd, :write, :shell in any sourced file not owned by user
+opt.shell = vim.fn.exepath "zsh" ~= "" and vim.fn.exepath "zsh" or "/bin/sh" -- Pin shell binary
 
 --------------------------------------
 -- Options

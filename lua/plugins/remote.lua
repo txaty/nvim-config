@@ -19,8 +19,8 @@ return {
         function()
           vim.ui.input({ prompt = "Remote connection (e.g., ssh://user@host): " }, function(input)
             if input and input ~= "" then
-              -- Reject input containing vim command separators to prevent injection
-              if input:find "[|\n\r]" then
+              -- Reject shell metacharacters and vim command separators to prevent injection
+              if input:find "[|\n\r;`&$!#]" then
                 vim.notify("Invalid characters in connection string", vim.log.levels.ERROR)
                 return
               end
@@ -47,8 +47,8 @@ return {
         function()
           vim.ui.input({ prompt = "Remote path to open: " }, function(input)
             if input and input ~= "" then
-              -- Reject input containing vim command separators to prevent injection
-              if input:find "[|\n\r]" then
+              -- Reject shell metacharacters and vim command separators to prevent injection
+              if input:find "[|\n\r;`&$!#]" then
                 vim.notify("Invalid characters in path", vim.log.levels.ERROR)
                 return
               end
