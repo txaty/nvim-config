@@ -338,12 +338,28 @@ Manual trigger: `:CleanupNvim`. Opt-out: `vim.g.disable_auto_cleanup = true`
 - **Untrusted**: Files opened in editor, project directories, user input
 - **Semi-trusted**: Mason-installed tools (verified sources)
 
-### Hardening Measures
-- `modeline = false`, `exrc = false` (prevents arbitrary code execution)
+### Hardening Measures (options.lua)
+- `modeline = false`, `modelines = 0` (prevents modeline code execution, zero scan range as defense-in-depth)
+- `exrc = false`, `secure = true` (prevents project-local config; restricts `:autocmd`/`:write`/`:shell` in sourced files)
+- `shell` pinned to explicit binary path (prevents environment-controlled shell substitution)
 - All plugins pinned in `lazy-lock.json`
 - `checker = { enabled = false }` (no auto-updates)
-- netrw disabled (replaced by nvim-tree)
+- netrw, rplugin, spellfile, editorconfig disabled
 - No network requests on startup
+
+### Intentionally Disabled Features (and why)
+| Feature | Setting | Reason |
+|---------|---------|--------|
+| Modelines | `modeline=false, modelines=0` | Untrusted files could set arbitrary vim options |
+| Project-local config | `exrc=false` | `.nvim.lua`/`.exrc` in cloned repos could execute arbitrary code |
+| Secure mode | `secure=true` | Safety net: restricts dangerous commands in sourced files |
+| netrw | `loaded_netrw=1` | Legacy network file browser; replaced by nvim-tree |
+| Remote plugins | `rplugin` disabled | Unused; reduces attack surface |
+| Spell file download | `spellfile` disabled | Prevents automatic network requests |
+| EditorConfig | `editorconfig` disabled | Options set explicitly; prevents project-level overrides |
+| Auto plugin updates | `checker.enabled=false` | Prevents supply-chain compromise via automatic updates |
+
+**To safely re-enable:** Set the option in `lua/core/options.lua` and test with `:checkhealth`. For modeline, consider using a plugin like `vim-securemodelines` that whitelists safe options.
 
 ### Rules for New Code
 1. **Never** concatenate user input into `vim.cmd()` — use structured `{ cmd, args }` form
@@ -351,8 +367,10 @@ Manual trigger: `:CleanupNvim`. Opt-out: `vim.g.disable_auto_cleanup = true`
 3. **Never** use `loadstring()`, `load()`, `dofile()`, `os.execute()`, `io.popen()`
 4. **Always** validate paths before filesystem operations
 5. **Always** store data under `stdpath("data")`, `stdpath("state")`, or `stdpath("cache")`
-6. Keep `modeline` and `exrc` disabled
+6. Keep `modeline`, `exrc` disabled and `secure` enabled
 7. **Never** add plugins without pinning in `lazy-lock.json`
+8. **Always** use `safe_delete()` in cleanup.lua for any file/directory removal
+9. **Always** reject shell metacharacters (`|;\n\r`&$!#`) in user input passed to commands
 
 ### Forbidden Patterns
 ```lua
@@ -360,6 +378,7 @@ vim.cmd("SomeCommand " .. user_input)           -- command injection
 vim.fn.system("cmd '" .. filepath .. "'")       -- shell injection
 loadstring(untrusted_string)()                  -- arbitrary code execution
 os.execute(anything)                            -- arbitrary shell execution
+vim.fn.delete(path, "rf")                       -- use safe_delete() instead
 ```
 
 ### Network Access
@@ -371,6 +390,13 @@ os.execute(anything)                            -- arbitrary shell execution
 | lazy.nvim | User-initiated | Plugin sync (explicit :Lazy sync) |
 
 No plugins make network requests automatically on startup.
+
+### Post-Plugin-Update Audit Steps
+1. Run `git diff lazy-lock.json` — verify only expected plugins changed
+2. Check new plugins for `build` hooks — review what they execute
+3. Run `:Lazy health` — check for errors
+4. Grep for new `os.execute`, `io.popen`, `loadstring` in `~/.local/share/nvim/lazy/`
+5. Run `luacheck lua/` — verify no lint regressions
 
 ## Commit Guidelines
 

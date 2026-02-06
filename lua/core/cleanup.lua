@@ -37,7 +37,10 @@ local function is_older_than_days(path, days)
 end
 
 -- Helper: safe delete with path validation
-local function safe_delete(path, expected_prefix)
+-- @param path string: path to delete
+-- @param expected_prefix string: directory the path must reside under
+-- @param flags? string: optional flags for vim.fn.delete (e.g. "rf" for recursive)
+local function safe_delete(path, expected_prefix, flags)
   -- Resolve symlinks to prevent traversal via symlinked paths
   local real_path = vim.uv.fs_realpath(path)
   local real_prefix = vim.uv.fs_realpath(expected_prefix)
@@ -52,7 +55,11 @@ local function safe_delete(path, expected_prefix)
   end
 
   local ok, err = pcall(function()
-    vim.fn.delete(path)
+    if flags then
+      vim.fn.delete(path, flags)
+    else
+      vim.fn.delete(path)
+    end
   end)
   return ok, err
 end
@@ -254,7 +261,7 @@ function M.clean_orphaned_dirs()
 
   for _, dir in ipairs(orphans) do
     if vim.fn.isdirectory(dir) == 1 then
-      local ok = pcall(vim.fn.delete, dir, "rf")
+      local ok = safe_delete(dir, data_path, "rf")
       if ok then
         cleaned = cleaned + 1
       end
