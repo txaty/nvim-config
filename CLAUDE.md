@@ -318,6 +318,13 @@ Manual trigger: `:CleanupNvim`. Opt-out: `vim.g.disable_auto_cleanup = true`
 
 **Language Toggle:** `:LangPanel` or `<leader>Lp`. Toggle per-language tooling. State saved to `$XDG_DATA_HOME/language_config.json`.
 
+### Symbol Navigation
+- **Snacks picker** (`<leader>fs`) — Fuzzy search LSP symbols, keyboard-first
+- **namu.nvim** (`<leader>ss`) — Floating outline, quick visual context
+- **outline.nvim** (`<leader>lo`) — Persistent sidebar, VSCode-style navigation
+
+Different tools for different workflows — intentionally kept all three.
+
 ## Formatting & Linting
 
 ### Conform.nvim

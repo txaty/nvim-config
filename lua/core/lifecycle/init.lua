@@ -301,7 +301,9 @@ function M.run_sequence()
   -- OPT-3: Check throttle BEFORE loading cleanup module to avoid parsing 340 lines
   -- when cleanup shouldn't run (saves ~1-2ms on 90% of startups)
   vim.defer_fn(function()
-    -- Lightweight throttle check (avoids loading full cleanup module)
+    -- OPT-3: Lightweight throttle check duplicated from cleanup.lua:should_run()
+    -- to avoid loading cleanup module when throttle prevents execution.
+    -- KEEP IN SYNC with cleanup.lua:should_run() logic.
     local function should_run_cleanup()
       if vim.g.disable_auto_cleanup then
         return false

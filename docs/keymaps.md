@@ -25,8 +25,9 @@
 | `<leader>r*` | **Remote Development** | `<leader>rc` = connect to server |
 | `<leader>R*` | **Rust** (language) | `<leader>Rr` = runnables, `<leader>Rt` = testables |
 | `<leader>C*` | **Crates** (Cargo.toml) | `<leader>Cu` = upgrade crate |
-| `<leader>s*` | **Search & Symbols** | `<leader>ss` = jump to symbol, `<leader>S` = search/replace |
-| `<leader>S*` | **Search** | `<leader>sw` = search current word |
+| `<leader>H` | **Dashboard** | Open dashboard (Home) |
+| `<leader>s*` | **Search & Symbols** | `<leader>ss` = jump to symbol |
+| `<leader>S` | **Search & Replace** | Open grug-far (single mapping, not a group) |
 | `<leader>T*` | **Terminal** | `<leader>Tf` = float terminal |
 | `<leader>t*` | **Testing** | `<leader>tn` = run nearest test |
 | `<leader>u*` | **UI/Display** | `<leader>uw` = toggle wrap, `<leader>up` = profiler |

@@ -17,8 +17,8 @@ function M.restore()
   -- Suppress the ColorScheme autocmd from re-saving during restore.
   -- Without this, vim.cmd.colorscheme() fires the autocmd in autocmds.lua
   -- which calls theme.save_theme() — writing the already-saved value back.
-  local prev_previewing = theme._previewing
-  theme._previewing = true
+  local prev_previewing = theme.is_previewing()
+  theme.start_preview()
 
   local saved_theme = theme.load_saved_theme()
   local success = false
@@ -30,7 +30,9 @@ function M.restore()
     pcall(theme.apply, DEFAULT_THEME, { save = false, notify = false })
   end
 
-  theme._previewing = prev_previewing
+  if not prev_previewing then
+    theme.end_preview()
+  end
   return success
 end
 

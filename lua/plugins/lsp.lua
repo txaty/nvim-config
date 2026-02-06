@@ -72,7 +72,7 @@ return {
       --
       -- Verification: Run `nvim --cmd "let g:debug_plugin_load=1" file.lua` and
       -- check `:LoadOrder` — nvim-navic must appear before nvim-lspconfig.
-      { "SmiteshP/nvim-navic", optional = true },
+      { "SmiteshP/nvim-navic" },
     },
     opts = {},
     config = function(_, opts)

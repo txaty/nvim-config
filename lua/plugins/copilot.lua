@@ -79,7 +79,7 @@ return {
     cond = function()
       return require("core.ai_toggle").is_enabled()
     end,
-    branch = "main",
+    branch = "canary",
     dependencies = {
       { "zbirenbaum/copilot.lua" }, -- or github/copilot.vim
       { "nvim-lua/plenary.nvim" }, -- for curl, log wrapper
