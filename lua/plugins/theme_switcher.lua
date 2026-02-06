@@ -1,5 +1,5 @@
 -- Theme switcher with custom floating window picker
--- Insert-mode prompt with virtual cursor, debounced preview, no Telescope dependency.
+-- Insert-mode prompt with virtual cursor, debounced preview, mouse support.
 -- Fixes: highlight leaks, ColorScheme autocmd corruption, no monkey-patching.
 return {
   {
@@ -75,7 +75,14 @@ return {
         vim.bo[buf].buftype = "nofile"
         vim.bo[buf].bufhidden = "wipe"
         vim.bo[buf].swapfile = false
-        vim.api.nvim_buf_set_lines(buf, 0, -1, false, { " > " })
+        vim.api.nvim_buf_set_lines(buf, 0, -1, false, { "" })
+
+        -- Inline virtual text prompt (undeletable by backspace)
+        vim.api.nvim_buf_set_extmark(buf, ns, 0, 0, {
+          virt_text = { { " > ", "Question" } },
+          virt_text_pos = "inline",
+          right_gravity = false,
+        })
 
         -- Create floating window
         local row = math.floor((vim.o.lines - win_height) / 2)
@@ -103,7 +110,7 @@ return {
 
         -- ============================================================
         -- Render: rewrite lines 1+ (separator + entries) + highlights
-        -- Prompt on line 0 is managed by insert mode, never touched.
+        -- Prompt on line 0 is managed by insert mode + extmark.
         -- ============================================================
         local rendering = false
 
@@ -114,96 +121,101 @@ return {
 
           rendering = true
 
-          local filter = FILTERS[st.filter_idx]
-          st.entries = build_entries(filter, st.query)
+          local ok, err = pcall(function()
+            local filter = FILTERS[st.filter_idx]
+            st.entries = build_entries(filter, st.query)
 
-          -- Clamp selection
-          if st.sel > #st.entries then
-            st.sel = math.max(1, #st.entries)
-          end
-          if st.sel < 1 then
-            st.sel = 1
-          end
-
-          -- Scroll to keep selection visible
-          if st.sel > st.scroll + visible_count then
-            st.scroll = st.sel - visible_count
-          end
-          if st.sel <= st.scroll then
-            st.scroll = math.max(0, st.sel - 1)
-          end
-
-          -- Build result lines
-          local sep = " " .. string.rep("\u{2500}", WIN_WIDTH - 2)
-          local lines = { sep }
-
-          local vis_start = st.scroll + 1
-          local vis_end = math.min(st.scroll + visible_count, #st.entries)
-
-          for i = vis_start, vis_end do
-            local name = st.entries[i]
-            local info = theme.registry[name] or {}
-            local variant = info.variant or "custom"
-            local marker = name == original and "*" or " "
-            table.insert(lines, string.format(" %s %-28s %s", marker, name, variant))
-          end
-
-          if #st.entries == 0 then
-            table.insert(lines, "   No matching themes")
-          end
-
-          -- Pad to fill visible area (avoids flicker from changing buffer height)
-          while #lines < visible_count + 1 do
-            table.insert(lines, "")
-          end
-
-          -- Write lines 1+ (leave line 0 = prompt untouched)
-          vim.api.nvim_buf_set_lines(buf, 1, -1, false, lines)
-
-          -- Highlights
-          vim.api.nvim_buf_clear_namespace(buf, ns, 0, -1)
-
-          -- Prompt: highlight " > " prefix
-          vim.api.nvim_buf_add_highlight(buf, ns, "Question", 0, 0, 3)
-
-          -- Separator
-          vim.api.nvim_buf_add_highlight(buf, ns, "FloatBorder", 1, 0, -1)
-
-          -- Entry highlights
-          for i = vis_start, vis_end do
-            local buf_line = i - st.scroll + 1 -- +1 for separator
-            local name = st.entries[i]
-            local info = theme.registry[name] or {}
-
-            -- Virtual cursor (selected row)
-            if i == st.sel then
-              vim.api.nvim_buf_add_highlight(buf, ns, "CursorLine", buf_line, 0, -1)
+            -- Clamp selection
+            if st.sel > #st.entries then
+              st.sel = math.max(1, #st.entries)
+            end
+            if st.sel < 1 then
+              st.sel = 1
             end
 
-            -- Star marker for saved theme
-            if name == original then
-              vim.api.nvim_buf_add_highlight(buf, ns, "String", buf_line, 1, 2)
+            -- Scroll to keep selection visible
+            if st.sel > st.scroll + visible_count then
+              st.scroll = st.sel - visible_count
+            end
+            if st.sel <= st.scroll then
+              st.scroll = math.max(0, st.sel - 1)
             end
 
-            -- Variant label color
-            local variant = info.variant or "custom"
-            local entry_line = lines[i - st.scroll + 1]
-            if entry_line then
-              local vstart, vend = entry_line:find(variant .. "%s*$")
-              if vstart then
-                local hl = variant == "light" and "WarningMsg" or "Comment"
-                vim.api.nvim_buf_add_highlight(buf, ns, hl, buf_line, vstart - 1, vend)
+            -- Build result lines
+            local sep = " " .. string.rep("\u{2500}", WIN_WIDTH - 2)
+            local lines = { sep }
+
+            local vis_start = st.scroll + 1
+            local vis_end = math.min(st.scroll + visible_count, #st.entries)
+
+            for i = vis_start, vis_end do
+              local name = st.entries[i]
+              local info = theme.registry[name] or {}
+              local variant = info.variant or "custom"
+              local marker = name == original and "*" or " "
+              table.insert(lines, string.format(" %s %-28s %s", marker, name, variant))
+            end
+
+            if #st.entries == 0 then
+              table.insert(lines, "   No matching themes")
+            end
+
+            -- Pad to fill visible area (avoids flicker from changing buffer height)
+            while #lines < visible_count + 1 do
+              table.insert(lines, "")
+            end
+
+            -- Write lines 1+ (leave line 0 = prompt untouched)
+            vim.api.nvim_buf_set_lines(buf, 1, -1, false, lines)
+
+            -- Highlights: clear from line 1 onward (preserve prompt extmark on line 0)
+            vim.api.nvim_buf_clear_namespace(buf, ns, 1, -1)
+
+            -- Separator
+            vim.api.nvim_buf_add_highlight(buf, ns, "FloatBorder", 1, 0, -1)
+
+            -- Entry highlights
+            for i = vis_start, vis_end do
+              local buf_line = i - st.scroll + 1 -- +1 for separator
+              local name = st.entries[i]
+              local info = theme.registry[name] or {}
+
+              -- Virtual cursor (selected row)
+              if i == st.sel then
+                vim.api.nvim_buf_add_highlight(buf, ns, "CursorLine", buf_line, 0, -1)
+              end
+
+              -- Star marker for saved theme
+              if name == original then
+                vim.api.nvim_buf_add_highlight(buf, ns, "String", buf_line, 1, 2)
+              end
+
+              -- Variant label color
+              local variant = info.variant or "custom"
+              local entry_line = lines[i - st.scroll + 1]
+              if entry_line then
+                local vstart, vend = entry_line:find(variant .. "%s*$")
+                if vstart then
+                  local hl = variant == "light" and "WarningMsg" or "Comment"
+                  vim.api.nvim_buf_add_highlight(buf, ns, hl, buf_line, vstart - 1, vend)
+                end
               end
             end
-          end
 
-          -- Update window title with current filter
-          pcall(vim.api.nvim_win_set_config, win, {
-            title = " Theme [" .. FILTER_LABELS[filter] .. "] ",
-            title_pos = "center",
-          })
+            -- Update window title with current filter
+            pcall(vim.api.nvim_win_set_config, win, {
+              title = " Theme [" .. FILTER_LABELS[filter] .. "] ",
+              title_pos = "center",
+            })
+          end)
 
           rendering = false
+
+          if not ok then
+            vim.schedule(function()
+              vim.notify("theme_switcher render error: " .. tostring(err), vim.log.levels.WARN)
+            end)
+          end
         end
 
         -- ============================================================
@@ -272,9 +284,11 @@ return {
           close(nil)
         end, kopts)
 
-        -- Confirm selection
+        -- Confirm selection (no-op if entries empty)
         vim.keymap.set({ "i", "n" }, "<CR>", function()
-          close(st.entries[st.sel])
+          if #st.entries > 0 and st.sel >= 1 and st.sel <= #st.entries then
+            close(st.entries[st.sel])
+          end
         end, kopts)
 
         -- Move virtual cursor down
@@ -337,14 +351,108 @@ return {
           if st.closed then
             return
           end
-          vim.api.nvim_buf_set_lines(buf, 0, 1, false, { " > " })
-          pcall(vim.api.nvim_win_set_cursor, win, { 1, 3 })
+          vim.api.nvim_buf_set_lines(buf, 0, 1, false, { "" })
+          pcall(vim.api.nvim_win_set_cursor, win, { 1, 0 })
           st.query = ""
           st.sel = 1
           st.scroll = 0
           render()
           schedule_preview()
         end, kopts)
+
+        -- ============================================================
+        -- Normal-mode destructive key suppression
+        -- ============================================================
+        local nop_keys = { "d", "D", "c", "C", "x", "X", "s", "S", "r", "R", "o", "O", "p", "P", "J", "~", "." }
+        for _, key in ipairs(nop_keys) do
+          vim.keymap.set("n", key, "<Nop>", kopts)
+        end
+
+        -- ============================================================
+        -- Mouse support
+        -- ============================================================
+
+        -- Left click: select entry + preview
+        local function handle_left_click()
+          if st.closed then
+            return
+          end
+          local mouse = vim.fn.getmousepos()
+          if mouse.winid ~= win then
+            close(nil)
+            return
+          end
+          if mouse.line >= 3 then
+            local entry_idx = st.scroll + (mouse.line - 2)
+            if entry_idx >= 1 and entry_idx <= #st.entries then
+              st.sel = entry_idx
+              render()
+              schedule_preview()
+            end
+          end
+          -- Keep cursor on prompt line
+          pcall(vim.api.nvim_win_set_cursor, win, { 1, #st.query })
+        end
+        vim.keymap.set({ "i", "n" }, "<LeftMouse>", handle_left_click, kopts)
+
+        -- Double click: confirm selection
+        vim.keymap.set({ "i", "n" }, "<2-LeftMouse>", function()
+          if st.closed then
+            return
+          end
+          local mouse = vim.fn.getmousepos()
+          if mouse.winid ~= win then
+            close(nil)
+            return
+          end
+          if mouse.line >= 3 then
+            local entry_idx = st.scroll + (mouse.line - 2)
+            if entry_idx >= 1 and entry_idx <= #st.entries then
+              close(st.entries[entry_idx])
+            end
+          end
+        end, kopts)
+
+        -- Scroll wheel: navigate entries
+        vim.keymap.set({ "i", "n" }, "<ScrollWheelDown>", function()
+          if st.closed then
+            return
+          end
+          local mouse = vim.fn.getmousepos()
+          if mouse.winid ~= win then
+            return
+          end
+          st.sel = math.min(#st.entries, st.sel + 3)
+          if st.sel < 1 then
+            st.sel = 1
+          end
+          render()
+          schedule_preview()
+          pcall(vim.api.nvim_win_set_cursor, win, { 1, #st.query })
+        end, kopts)
+
+        vim.keymap.set({ "i", "n" }, "<ScrollWheelUp>", function()
+          if st.closed then
+            return
+          end
+          local mouse = vim.fn.getmousepos()
+          if mouse.winid ~= win then
+            return
+          end
+          st.sel = math.max(1, st.sel - 3)
+          render()
+          schedule_preview()
+          pcall(vim.api.nvim_win_set_cursor, win, { 1, #st.query })
+        end, kopts)
+
+        -- Right click: cancel
+        vim.keymap.set({ "i", "n" }, "<RightMouse>", function()
+          close(nil)
+        end, kopts)
+
+        -- Suppress drag
+        vim.keymap.set({ "i", "n" }, "<LeftDrag>", "<Nop>", kopts)
+        vim.keymap.set({ "i", "n" }, "<LeftRelease>", "<Nop>", kopts)
 
         -- ============================================================
         -- Track query changes from insert-mode typing
@@ -356,9 +464,8 @@ return {
               return
             end
             local line = vim.api.nvim_buf_get_lines(buf, 0, 1, false)[1] or ""
-            local query = line:match "^%s*>%s*(.*)$" or line:gsub("^%s+", "")
-            if query ~= st.query then
-              st.query = query
+            if line ~= st.query then
+              st.query = line
               st.sel = 1
               st.scroll = 0
               render()
@@ -367,17 +474,31 @@ return {
           end,
         })
 
-        -- Keep cursor on prompt line
-        vim.api.nvim_create_autocmd("CursorMoved", {
+        -- Keep cursor on prompt line (insert + normal mode)
+        vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, {
           buffer = buf,
           callback = function()
             if st.closed then
               return
             end
-            local cursor = vim.api.nvim_win_get_cursor(win)
-            if cursor[1] ~= 1 then
-              pcall(vim.api.nvim_win_set_cursor, win, { 1, math.max(3, 3 + #st.query) })
+            local cursor_ok, cursor = pcall(vim.api.nvim_win_get_cursor, win)
+            if not cursor_ok then
+              return
             end
+            if cursor[1] ~= 1 then
+              pcall(vim.api.nvim_win_set_cursor, win, { 1, #st.query })
+            end
+          end,
+        })
+
+        -- Re-render on normal-mode buffer edits (TextChanged fires for normal mode)
+        vim.api.nvim_create_autocmd("TextChanged", {
+          buffer = buf,
+          callback = function()
+            if st.closed or rendering then
+              return
+            end
+            render()
           end,
         })
 
