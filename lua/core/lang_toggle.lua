@@ -4,12 +4,10 @@
 
 local M = {}
 
+local persist = require "core.persist"
+
 -- Path to store language toggle state
 local config_path = vim.fn.stdpath "data" .. "/language_config.json"
-
--- Cache for config (avoids repeated file I/O - called 7x at startup)
--- Loaded once at module init and cached for entire session
-local cached_config = nil
 
 -- Language registry with metadata
 M.languages = {
@@ -22,68 +20,20 @@ M.languages = {
   typst = { name = "Typst", description = "typst-preview.nvim" },
 }
 
--- Load config once at module load (called during lazy.nvim spec evaluation)
--- Optimized using vim.uv for faster I/O
-local function load_config_once()
-  if cached_config ~= nil then
-    return
-  end
-
-  -- Use vim.uv.fs_stat for faster existence check
-  local stat = vim.uv.fs_stat(config_path)
-  if not stat then
-    cached_config = { languages = {} }
-    return
-  end
-
-  -- Read file synchronously using libuv (faster for small files)
-  local fd = vim.uv.fs_open(config_path, "r", 438)
-  if not fd then
-    cached_config = { languages = {} }
-    return
-  end
-
-  local content = vim.uv.fs_read(fd, stat.size, 0)
-  vim.uv.fs_close(fd)
-
-  if not content or content == "" then
-    cached_config = { languages = {} }
-    return
-  end
-
-  local ok, config = pcall(vim.json.decode, content)
-  if not ok or type(config) ~= "table" then
-    cached_config = { languages = {} }
-    return
-  end
-
-  cached_config = config
-end
-
 -- Initialize cache immediately at module load
-load_config_once()
+persist.load_json(config_path, { languages = {} })
 
---- Invalidate the cache (called after state changes)
-local function invalidate_cache()
-  cached_config = nil
-end
-
---- Load config from disk (with caching)
+--- Load language config
 --- @return table<string, boolean>
-local function load_config()
-  if cached_config == nil then
-    load_config_once()
-  end
-  return cached_config.languages or {}
+local function load_languages()
+  local config = persist.load_json(config_path, { languages = {} })
+  return config.languages or {}
 end
 
---- Save config to disk
+--- Save language config
 --- @param languages table<string, boolean>
-local function save_config(languages)
-  local config = { languages = languages }
-  local encoded = vim.json.encode(config)
-  vim.fn.writefile({ encoded }, config_path)
-  invalidate_cache()
+local function save_languages(languages)
+  persist.save_json(config_path, { languages = languages })
 end
 
 --- Check if a language is enabled
@@ -94,9 +44,9 @@ function M.is_enabled(lang)
     return true -- Unknown languages default to enabled
   end
 
-  local config = load_config()
+  local languages = load_languages()
   -- Default to enabled if not explicitly set
-  return config[lang] ~= false
+  return languages[lang] ~= false
 end
 
 --- Toggle a language on/off
@@ -110,9 +60,9 @@ function M.toggle(lang)
   local current = M.is_enabled(lang)
   local new_state = not current
 
-  local config = load_config()
-  config[lang] = new_state
-  save_config(config)
+  local languages = load_languages()
+  languages[lang] = new_state
+  save_languages(languages)
 
   local status = new_state and "enabled" or "disabled"
   local icon = new_state and "+" or "-"
@@ -131,9 +81,9 @@ function M.enable(lang)
     return
   end
 
-  local config = load_config()
-  config[lang] = true
-  save_config(config)
+  local languages = load_languages()
+  languages[lang] = true
+  save_languages(languages)
 
   local name = M.languages[lang].name
   vim.notify(string.format("+ %s support enabled. Restart Neovim to apply changes.", name), vim.log.levels.INFO)
@@ -147,9 +97,9 @@ function M.disable(lang)
     return
   end
 
-  local config = load_config()
-  config[lang] = false
-  save_config(config)
+  local languages = load_languages()
+  languages[lang] = false
+  save_languages(languages)
 
   local name = M.languages[lang].name
   vim.notify(string.format("- %s support disabled. Restart Neovim to apply changes.", name), vim.log.levels.INFO)

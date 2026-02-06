@@ -97,7 +97,7 @@ return {
       },
       select = {
         enabled = true,
-        backend = { "telescope", "builtin" },
+        backend = { "snacks", "telescope", "builtin" },
         builtin = { win_options = { winblend = 0 } },
       },
     },

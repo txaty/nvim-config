@@ -710,46 +710,17 @@ setmetatable(M, {
 })
 
 -- ============================================================================
--- Persistence
+-- Persistence (uses core.persist for unified JSON handling)
 -- ============================================================================
+local persist = require "core.persist"
 local config_path = vim.fn.stdpath "data" .. "/theme_config.json"
 
--- Load persisted theme preference (returns full config table)
 local function load_config()
-  local stat = vim.uv.fs_stat(config_path)
-  if not stat then
-    return {}
-  end
-
-  local fd = vim.uv.fs_open(config_path, "r", 438)
-  if not fd then
-    return {}
-  end
-
-  local content = vim.uv.fs_read(fd, stat.size, 0)
-  vim.uv.fs_close(fd)
-
-  if not content or content == "" then
-    return {}
-  end
-
-  local ok, result = pcall(vim.json.decode, content)
-  if ok and type(result) == "table" then
-    return result
-  end
-
-  vim.notify("Theme config corrupted, using defaults. Delete " .. config_path .. " to reset.", vim.log.levels.WARN)
-  return {}
+  return persist.load_json(config_path, {})
 end
 
--- Save config to file
 local function save_config(config)
-  local json_str = vim.json.encode(config)
-  local fd = vim.uv.fs_open(config_path, "w", 438)
-  if fd then
-    vim.uv.fs_write(fd, json_str, 0)
-    vim.uv.fs_close(fd)
-  end
+  persist.save_json(config_path, config)
 end
 
 -- Load saved theme name (public API for backward compatibility)
@@ -848,6 +819,22 @@ end
 -- When true, the ColorScheme autocmd in autocmds.lua skips auto-saving.
 -- Set by the theme picker during live preview.
 M._previewing = false
+
+--- Start theme preview mode (disables auto-save)
+function M.start_preview()
+  M._previewing = true
+end
+
+--- End theme preview mode (enables auto-save)
+function M.end_preview()
+  M._previewing = false
+end
+
+--- Check if in preview mode
+---@return boolean
+function M.is_previewing()
+  return M._previewing or false
+end
 
 -- ============================================================================
 -- Theme Application (Unified)

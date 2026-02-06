@@ -186,7 +186,7 @@ autocmd("ColorScheme", {
       return
     end
     -- Don't persist during theme picker preview
-    if theme._previewing then
+    if theme.is_previewing() then
       return
     end
     local current = vim.g.colors_name

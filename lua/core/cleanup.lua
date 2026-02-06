@@ -329,6 +329,8 @@ local function save_cleanup_time()
 end
 
 -- Check if cleanup should run (throttled)
+-- Throttle check — lightweight version duplicated in lifecycle/init.lua (OPT-3).
+-- KEEP IN SYNC with lifecycle check if threshold changes.
 function M.should_run()
   -- Check opt-out
   if vim.g.disable_auto_cleanup then

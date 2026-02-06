@@ -3,6 +3,8 @@
 -- Also maintains vim.g.ui_* globals for session compatibility and runtime access
 local M = {}
 
+local persist = require "core.persist"
+
 -- Default states (used when no config file exists)
 local defaults = {
   wrap = false,
@@ -13,48 +15,14 @@ local defaults = {
   tree_git = true, -- Show git status in nvim-tree by default
 }
 
--- JSON config file path and cache
+-- JSON config file path
 local config_path = vim.fn.stdpath "data" .. "/ui_config.json"
-local cached_config = nil
 
 -- Throttle apply() calls to avoid excessive work during rapid window operations
 local last_apply_time = 0
 local APPLY_THROTTLE_MS = 50 -- Minimum ms between apply() calls
 
---- Load config from JSON file (cached for performance)
-local function load_config_once()
-  if cached_config ~= nil then
-    return
-  end
-
-  local stat = vim.uv.fs_stat(config_path)
-  if not stat then
-    cached_config = {} -- Use defaults
-    return
-  end
-
-  local fd = vim.uv.fs_open(config_path, "r", 438)
-  if not fd then
-    cached_config = {}
-    return
-  end
-
-  local content = vim.uv.fs_read(fd, stat.size, 0)
-  vim.uv.fs_close(fd)
-
-  local ok, config = pcall(vim.json.decode, content)
-  cached_config = (ok and type(config) == "table") and config or {}
-end
-
---- Save config to JSON file
----@param config table Config to save
-local function save_config(config)
-  local encoded = vim.json.encode(config)
-  vim.fn.writefile({ encoded }, config_path)
-  cached_config = nil -- Invalidate cache
-end
-
--- Note: load_config_once() is called lazily in init() or on first access
+-- Note: load is called lazily in init() or on first access
 -- This avoids disk I/O at require-time for faster startup
 
 local initialized = false
@@ -68,7 +36,7 @@ function M.init()
   end
   initialized = true
 
-  load_config_once()
+  local cached_config = persist.load_json(config_path, {})
 
   for opt, default in pairs(defaults) do
     local global_key = "ui_" .. opt
@@ -118,9 +86,9 @@ function M.toggle(opt)
   vim.g[global_key] = new_value
 
   -- Persist to JSON
-  load_config_once()
+  local cached_config = persist.load_json(config_path, {})
   cached_config[opt] = new_value
-  save_config(cached_config)
+  persist.save_json(config_path, cached_config)
 
   -- Special handling for tree_git: reload nvim-tree with new config
   if opt == "tree_git" then

@@ -98,7 +98,7 @@ return {
         vim.wo[win].signcolumn = "no"
         vim.wo[win].wrap = false
 
-        theme._previewing = true
+        theme.start_preview()
         active_picker = true
 
         -- ============================================================
@@ -242,7 +242,7 @@ return {
           timer:stop()
           timer:close()
 
-          theme._previewing = false
+          theme.end_preview()
 
           vim.cmd "stopinsert"
           if vim.api.nvim_win_is_valid(win) then
