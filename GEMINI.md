@@ -32,8 +32,12 @@ Custom, self-maintained Neovim configuration using `lazy.nvim` for plugins and `
   - `commands/` — User commands (ai, lang, cleanup, ui)
   - `theme.lua`, `theme_txaty.lua` — Theme registry and custom theme
   - `ai_toggle.lua`, `lang_toggle.lua`, `ui_toggle.lua` — Feature toggles
-  - `lang_utils.lua`, `lsp_capabilities.lua` — Shared utilities
+  - `lang_utils.lua`, `lsp_capabilities.lua`, `persist.lua` — Source-of-truth shared utilities
   - `cleanup.lua` — Automatic cleanup
+- `lua/config/` — Normalized config entry modules (compatibility shims)
+  - `init.lua`, `options.lua`, `keymaps.lua`, `autocmds.lua`
+- `lua/util/` — Shared helper aliases (compatibility shims)
+  - `persist.lua`, `lang_utils.lua`, `lsp_capabilities.lua`
 - `lua/plugins/` — Self-contained plugin specs
   - `lsp.lua`, `tools.lua`, `cmp.lua`, `treesitter.lua`
   - `ui.lua`, `snacks.lua`, `telescope.lua`
@@ -58,16 +62,17 @@ luacheck lua/                                     # Lint Lua
 ### LSP
 - Uses new `vim.lsp.config()` API (Neovim 0.11+)
 - Key mappings: `gd` (definition), `gr` (references), `K` (hover), `<leader>la` (code action), `<leader>lf` (format)
+- Installed servers are enabled from `mason-lspconfig.get_installed_servers()` after all `vim.lsp.config()` calls
 - **CRITICAL**: Never set `cmd` or `root_dir` manually. Rust handled by `rustaceanvim`.
 
 ### Navigation & UI
 - Flash: `s` (jump), `S` (Treesitter select)
-- Telescope/Snacks: `<leader>ff` (files), `<leader>fg` (grep), `<leader>fb` (buffers)
+- Snacks picker: `<leader>ff` (files), `<leader>fg` (grep), `<leader>fb` (buffers)
 - File Explorer: `<C-n>` (nvim-tree)
 - Bufferline: `<Tab>`/`<S-Tab>` (navigate), `<leader>bd` (close)
 
 ### Theme System (`<leader>c*`)
-- `<leader>cc` — Telescope picker
+- `<leader>cc` — Interactive picker
 - `<leader>cd/cl/cp` — Dark/light/txaty
 - `<leader>cn/cN` — Cycle themes
 - 50+ themes, preference saved to `$XDG_DATA_HOME/theme_config.json`
@@ -104,7 +109,7 @@ luacheck lua/                                     # Lint Lua
 ## Configuration Pattern
 - **Plugin Specs**: Self-contained in `lua/plugins/*.lua` with lazy-loading triggers
 - **Inline Configs**: Use `opts` or `config` fields directly
-- **LSP**: `vim.lsp.config()` via mason-lspconfig handlers
+- **LSP**: `vim.lsp.config()` then enable installed servers via `mason-lspconfig.get_installed_servers()`
 - **Keymaps**: General in `lua/core/keymaps.lua`, LSP in LspAttach autocmd, plugin-specific in spec
 
 ## Testing

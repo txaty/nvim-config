@@ -2,16 +2,20 @@
 
 ## Project Structure & Module Organization
 - Root: `init.lua` (entry), `lazy-lock.json` (plugin lockfile), `.stylua.toml` (Lua formatting), `.luacheckrc` (Lua linter)
+- `lua/config/` — Normalized bootstrap entry modules (compatibility shims):
+  - `init.lua`, `options.lua`, `keymaps.lua`, `autocmds.lua`
 - `lua/core/` — Fundamental settings and bootstrap:
-  - `init.lua` — Loads all core modules in sequence
+  - `init.lua` — Loads normalized `config.*` modules, then lazy bootstrap
   - `options.lua`, `keymaps.lua`, `autocmds.lua`, `lazy.lua`
   - `lifecycle/` — VimEnter orchestration (colorscheme, session, nvim_tree)
   - `commands/` — User commands (ai, lang, cleanup, ui)
   - `theme.lua`, `theme_txaty.lua` — Theme registry and custom theme
   - `ai_toggle.lua`, `lang_toggle.lua`, `ui_toggle.lua` — Feature toggles
-  - `lang_utils.lua`, `lsp_capabilities.lua`, `cleanup.lua`
+  - `lang_utils.lua`, `lsp_capabilities.lua`, `persist.lua`, `cleanup.lua` (source-of-truth modules)
+- `lua/util/` — Shared helper aliases (compatibility shims):
+  - `persist.lua`, `lang_utils.lua`, `lsp_capabilities.lua`
 - `lua/plugins/` — Self-contained plugin specs with inlined configs:
-  - `lsp.lua` — Mason + vim.lsp.config (Neovim 0.11+ API) with LspAttach
+  - `lsp.lua` — Mason + vim.lsp.config (Neovim 0.11+ API), enables installed servers via `mason-lspconfig.get_installed_servers()`
   - `tools.lua` — conform.nvim + nvim-lint
   - `cmp.lua`, `treesitter.lua`, `ui.lua`, `snacks.lua`, `telescope.lua`
   - `git.lua`, `lazygit.lua`, `remote.lua`, `copilot.lua`, `session.lua`
@@ -36,6 +40,7 @@ Inside Neovim: `:Mason`, `:LspInfo`, `:ConformInfo`, `:Lazy profile`
 - AI: `:AIToggle`, `<leader>ai` (requires restart)
 - Language: `:LangPanel`, `<leader>Lp` (panel), `<leader>Ls` (status)
 - UI: `<leader>u*` (`uw` wrap, `us` spell, `un` numbers, `ur` relative, `uc` conceal)
+- Keymaps: conflict audit auto-runs on `VeryLazy`; use `:lua require("core.keymap_audit").full_audit()` for manual checks
 - Cleanup: `:CleanupNvim` (manual, auto-runs on startup throttled to 24h)
 - Rust: `<leader>R*` (runnables, testables, Cargo.toml via rustaceanvim)
 - Crates: `<leader>C*` in Cargo.toml (upgrade, versions, features)
