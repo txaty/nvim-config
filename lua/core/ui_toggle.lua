@@ -83,6 +83,12 @@ function M.toggle(opt)
     new_value = not current
   end
 
+  -- Special handling for dim: requires Snacks to be loaded
+  if opt == "dim" then
+    M.set_dim(new_value)
+    return
+  end
+
   -- Update global
   vim.g[global_key] = new_value
 
@@ -90,22 +96,6 @@ function M.toggle(opt)
   local cached_config = persist.load_json(config_path, {})
   cached_config[opt] = new_value
   persist.save_json(config_path, cached_config)
-
-  -- Special handling for dim: requires Snacks to be loaded
-  if opt == "dim" then
-    local snacks_ok, Snacks = pcall(require, "snacks")
-    if not snacks_ok then
-      vim.notify("Snacks.nvim not available", vim.log.levels.WARN)
-      return
-    end
-
-    -- Call Snacks.dim() to toggle the actual dim state
-    Snacks.dim()
-
-    local display = new_value and "on" or "off"
-    vim.notify(string.format("UI: dim = %s", display), vim.log.levels.INFO)
-    return
-  end
 
   -- Special handling for tree_git: reload nvim-tree with new config
   if opt == "tree_git" then
@@ -152,6 +142,49 @@ function M.toggle(opt)
   vim.notify(string.format("UI: %s = %s", opt, display), vim.log.levels.INFO)
 end
 
+--- Set dim state explicitly (idempotent)
+---@param enabled boolean
+---@param opts? table {persist?: boolean, notify?: boolean}
+function M.set_dim(enabled, opts)
+  opts = opts or {}
+  local persist_enabled = opts.persist ~= false
+  local notify_enabled = opts.notify ~= false
+
+  if not initialized then
+    M.init()
+  end
+
+  vim.g.ui_dim = enabled
+
+  if persist_enabled then
+    local cached_config = persist.load_json(config_path, {})
+    cached_config.dim = enabled
+    persist.save_json(config_path, cached_config)
+  end
+
+  local snacks_ok, Snacks = pcall(require, "snacks")
+  if not snacks_ok then
+    if notify_enabled then
+      vim.notify("Snacks.nvim not available", vim.log.levels.WARN)
+    end
+    return
+  end
+
+  local current = Snacks.dim.enabled
+  if current ~= enabled then
+    if enabled then
+      Snacks.dim.enable()
+    else
+      Snacks.dim.disable()
+    end
+  end
+
+  if notify_enabled then
+    local display = enabled and "on" or "off"
+    vim.notify(string.format("UI: dim = %s", display), vim.log.levels.INFO)
+  end
+end
+
 --- Get current state of an option
 --- Auto-initializes on first access if init() hasn't been called yet
 ---@param opt string Option name
@@ -188,23 +221,7 @@ function M.apply_dim()
     M.init()
   end
 
-  local dim_enabled = vim.g.ui_dim
-  if not dim_enabled then
-    return -- Dim disabled, do nothing
-  end
-
-  -- Only apply if Snacks is loaded
-  local snacks_ok, Snacks = pcall(require, "snacks")
-  if not snacks_ok then
-    return
-  end
-
-  -- Snacks.dim() is a toggle, so we need to track if we've already applied
-  -- Use a session-only flag to prevent double-toggling
-  if not vim.g._snacks_dim_applied then
-    Snacks.dim()
-    vim.g._snacks_dim_applied = true
-  end
+  M.set_dim(vim.g.ui_dim, { persist = false, notify = false })
 end
 
 return M
