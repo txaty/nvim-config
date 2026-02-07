@@ -64,7 +64,7 @@ nvim --cmd "let g:debug_keymaps=1"                                       # Keyma
 
 ### 4. Performance Optimizations (2026-02)
 Recent optimizations reduced startup time by 40.6% (42.6ms → 25.3ms):
-- **OPT-1**: Guarded `keymap_audit` require (saves ~0.3ms when debug disabled)
+- **OPT-1**: Keymap audit runs on `VeryLazy` and only notifies on conflicts
 - **OPT-2**: Deferred UI state autocmd to VeryLazy (saves ~1-2ms)
 - **OPT-3**: Conditional cleanup module load with throttle check (saves ~1-2ms on 90% of startups)
 - **OPT-4**: Fold-aware view saving (saves ~1-3ms per buffer switch)
@@ -76,9 +76,9 @@ Re-profile with `:Lazy profile` if startup time exceeds 30ms.
 ### Bootstrap Sequence
 ```
 init.lua → core/init.lua → loads in order:
-  ├─ core/options.lua    (vim.opt settings)
-  ├─ core/keymaps.lua    (general keybindings)
-  ├─ core/autocmds.lua   (event handlers + lifecycle setup)
+  ├─ config/options.lua  (compat shim -> core.options)
+  ├─ config/keymaps.lua  (compat shim -> core.keymaps)
+  ├─ config/autocmds.lua (compat shim -> core.autocmds)
   │   └─ core/lifecycle/init.lua (VimEnter orchestrator)
   └─ core/lazy.lua       (plugin manager bootstrap)
       └─ plugins/*       (lazy-loaded plugin specs)
@@ -104,19 +104,22 @@ VimEnter Lifecycle (deterministic order):
 ```
 
 ### Directory Structure
+- `lua/config/` — Normalized config entry modules (compatibility shims)
+  - `init.lua`, `options.lua`, `keymaps.lua`, `autocmds.lua`
 - `lua/core/` — Fundamental Neovim settings and bootstrap
   - `lifecycle/` — VimEnter orchestration (colorscheme, session, nvim_tree)
   - `commands/` — User commands (ai, lang, cleanup, ui)
   - `theme.lua` — Unified theme registry with 50+ themes
   - `theme_txaty.lua` — Custom ergonomic theme (dark/light variants)
-  - `lang_utils.lua` — Shared utilities for language support
-  - `lsp_capabilities.lua` — Single source of truth for LSP capabilities
+  - `lang_utils.lua`, `lsp_capabilities.lua`, `persist.lua` — Source-of-truth shared helpers
   - `ai_toggle.lua`, `lang_toggle.lua`, `ui_toggle.lua` — Feature toggles
   - `cleanup.lua` — Automatic cleanup for temporary/cache files
+- `lua/util/` — Shared helper aliases (compatibility shims)
+  - `persist.lua`, `lang_utils.lua`, `lsp_capabilities.lua`
 - `lua/plugins/` — Self-contained plugin specs (all `.lua` files auto-imported)
-  - `lsp.lua` — Mason + vim.lsp.config with LspAttach autocmd
+  - `lsp.lua` — Mason + vim.lsp.config with LspAttach autocmd and installed-server enable loop
   - `tools.lua` — conform.nvim (formatting) + nvim-lint
-  - `ui.lua` — nvim-tree, lualine, bufferline, vim-illuminate
+  - `ui.lua` — nvim-tree, lualine, bufferline, hlslens
   - `snacks.lua` — Primary fuzzy finder (picker), dashboard, zen mode
   - `telescope.lua` — Fallback fuzzy finder for plugin integrations
   - `copilot.lua` — GitHub Copilot (respects AI toggle)
@@ -133,7 +136,7 @@ VimEnter Lifecycle (deterministic order):
 
 ### Pattern 1: Language Utilities (Recommended)
 ```lua
-local lang = require "core.lang_utils"
+local lang = require "util.lang_utils"
 return {
   lang.extend_treesitter { "python", "toml" },
   lang.extend_mason { "pyright", "ruff", "black", "isort" },
@@ -190,7 +193,7 @@ vim.lsp.config("lua_ls", {
 - Use `vim.lsp.config()` instead of `require('lspconfig')[server].setup()`
 - **NEVER** set `cmd` or `root_dir` fields manually (causes conflicts with Mason)
 - Rust is handled exclusively by `rustaceanvim` (not included in lspconfig)
-- **ALWAYS** use `require("core.lsp_capabilities").get()` for capabilities
+- **ALWAYS** use `require("util.lsp_capabilities").get()` for capabilities
 
 ## Testing and Validation
 
@@ -251,7 +254,7 @@ See `docs/keymaps.md` for complete reference.
 50+ themes: 25+ dark, 20+ light, 2 custom (txaty ergonomic dark/light).
 
 **Usage:**
-- `<leader>cc` — Choose theme (Telescope picker)
+- `<leader>cc` — Open interactive theme picker
 - `<leader>cd/cl/cp` — Switch to dark/light/txaty theme
 - `<leader>cn/cN` — Cycle themes
 
