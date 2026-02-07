@@ -44,11 +44,11 @@ end, { desc = "UI: Toggle dim" })
 -- User Mappings from mappings.lua
 map("n", ";", ":", { desc = "Command mode" })
 map("i", "jk", "<Esc>", { desc = "Exit insert mode" })
-map("n", "<C-a>", "gg<S-v>G", { desc = "Select entire buffer" })
+map("n", "<leader>ba", "gg<S-v>G", { desc = "Buffer: select entire buffer" })
 -- Note: <C-m> is equivalent to <CR> in terminals, avoid remapping it
 -- Use <C-o>/<C-i> directly for jumplist navigation
 map("n", "<leader>sc", "<cmd>nohlsearch<cr>", { desc = "Search: clear highlights" })
-map("n", "<leader>fs", "<cmd>w<cr>", { desc = "Files: save" })
+map("n", "<leader>fW", "<cmd>w<cr>", { desc = "Files: save" })
 map("n", "<leader>qq", "<cmd>q<cr>", { desc = "Quit window" })
 map("n", "<leader>qQ", "<cmd>qa!<cr>", { desc = "Quit all" })
 

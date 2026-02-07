@@ -13,13 +13,11 @@ end
 require("core.lifecycle").setup()
 
 -- ============================================================================
--- Debug Tools (opt-in via vim.g.debug_keymaps)
+-- Keymap Audit
 -- ============================================================================
--- OPT-1: Guard keymap_audit require to avoid loading module when not needed
--- Saves ~0.2-0.3ms on startup when debug mode is disabled
-if vim.g.debug_keymaps then
-  require("core.keymap_audit").setup()
-end
+-- Runs once on VeryLazy and only notifies when conflicts are found.
+-- Set vim.g.debug_keymaps=1 for additional "no conflicts" info messages.
+require("core.keymap_audit").setup()
 
 -- ============================================================================
 -- UI State Management

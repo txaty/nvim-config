@@ -4,7 +4,7 @@ if not lang_toggle.is_enabled "python" then
   return {}
 end
 
-local lang = require "core.lang_utils"
+local lang = require "util.lang_utils"
 
 return {
   lang.extend_treesitter { "python", "toml" },

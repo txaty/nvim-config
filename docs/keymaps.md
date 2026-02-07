@@ -9,7 +9,7 @@
 | Namespace | Purpose | Example |
 |-----------|---------|---------|
 | `<leader>a*` | **AI & Copilot** | `<leader>ai` = toggle AI, `<leader>aa` = chat |
-| `<leader>b*` | **Buffers** | `<leader>bd` = delete buffer |
+| `<leader>b*` | **Buffers** | `<leader>bd` = delete buffer, `<leader>ba` = select all |
 | `<leader>c*` | **Color/Colorscheme** | `<leader>cc` = choose theme (50+) |
 | `<leader>d*` | **Debug** (DAP) | `<leader>db` = toggle breakpoint |
 | `<leader>f*` | **Files & Finding** | `<leader>ff` = find files, `<leader>fS` = scratch select |
@@ -112,7 +112,7 @@
 ### File Operations
 | Keybinding | Description |
 |---|---|
-| `<leader>fs` | Save file |
+| `<leader>fW` | Save file |
 
 ---
 
@@ -157,6 +157,7 @@
 | `<TAB>` | Next buffer |
 | `<S-TAB>` | Previous buffer |
 | `<leader>bd` | Delete/close buffer |
+| `<leader>ba` | Select entire buffer |
 
 ---
 
@@ -511,7 +512,7 @@
 ### Theme Selection
 | Keybinding | Description |
 |---|---|
-| `<leader>cc` | Choose theme from Telescope picker (all 50+ themes) |
+| `<leader>cc` | Open interactive theme picker (all 50+ themes) |
 | `<leader>cd` | Switch to last-used dark theme (smart) |
 | `<leader>cl` | Switch to last-used light theme (smart) |
 | `<leader>cp` | Switch to custom "txaty" theme |
@@ -750,14 +751,14 @@
 |---|---|
 | `p` | Put after cursor (from yank ring) |
 | `P` | Put before cursor (from yank ring) |
-| `<C-p>` | Cycle to previous yank (after paste) |
-| `<C-n>` | Cycle to next yank (after paste) |
+| `[y` | Cycle to previous yank (after paste) |
+| `]y` | Cycle to next yank (after paste) |
 
 **How to use:**
 1. Yank multiple pieces of text throughout your session
 2. Press `p` to paste the most recent yank
-3. Press `<C-p>` to replace with the previous yank from history
-4. Press `<C-n>` to go forward in yank history
+3. Press `[y` to replace with the previous yank from history
+4. Press `]y` to go forward in yank history
 5. Yank ring holds up to 50 entries
 
 ---
@@ -828,7 +829,7 @@
 | `<leader>F*` | Capital F for Flutter - language-specific like Python, easy distinction from file ops |
 | `<leader>M*` | Capital M for Minimap - less frequent UI feature, prioritizes lowercase `m*` for bookmarks |
 | `<leader>l*` | "L" for LSP - consolidates all language server operations including Mason |
-| `<leader>f*` | "F" for Files - includes Telescope discovery + file explorer |
+| `<leader>f*` | "F" for Files - includes Snacks picker discovery + file explorer |
 | `<leader>g*` | "G" for Git - includes hunk operations + diffview + lazygit |
 | `<leader>m*` | "M" for Markers/Markdown - includes bookmarks and markdown file operations |
 | `<leader>x*` | "X" for eXtensions - diagnostics, trouble, quickfix management |
@@ -851,7 +852,7 @@ The following keymaps have changed to resolve conflicts and improve organization
 | Old Keymap | New Keymap | Reason |
 |---|---|---|
 | `<leader>r*` (Rust) | `<leader>R*` | Moved to capital R to avoid collision with Remote (`<leader>r*`) |
-| `<leader>rn` | `<leader>nr` | Freed for LSP rename |
+| `<leader>nr` | `<leader>ur` | Moved to UI namespace for relative number toggle |
 | `<leader>cm` | `<leader>lm` | Moved to LSP namespace |
 | `<leader>cc/cq/ce/ct/cf/cr` | `<leader>aa/aq/ae/at/af/ar` | Copilot now in AI namespace |
 | `<leader>cF/cq/cr/cR/cd/ce/co/cl` | `<leader>FR/Fq/Fr/Fl/Fd/Fe/Fo/FL` | Flutter now in separate namespace |
