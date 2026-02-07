@@ -182,9 +182,73 @@ return {
       map("n", "<leader>Rj", function()
         vim.cmd.RustLsp "joinLines"
       end, vim.tbl_extend("force", opts, { desc = "Rust: Join lines" }))
-      map("n", "<leader>Rs", function()
+      map("n", "<leader>RS", function()
         vim.cmd.RustLsp "ssr"
       end, vim.tbl_extend("force", opts, { desc = "Rust: Structural search/replace" }))
+
+      -- Symbol Discovery: Filtered pickers for multi-file type exploration
+      -- Uses Snacks LSP symbol picker with kind filtering
+
+      map("n", "<leader>Rs", function()
+        local snacks_ok, Snacks = pcall(require, "snacks")
+        if not snacks_ok then
+          vim.notify("Snacks picker not available", vim.log.levels.WARN)
+          return
+        end
+        Snacks.picker.lsp_symbols {
+          title = "Rust Structs (Workspace)",
+          symbols = { "Struct" }, -- SymbolKind.Struct = 23
+        }
+      end, vim.tbl_extend("force", opts, { desc = "Rust: Find structs" }))
+
+      map("n", "<leader>RI", function()
+        -- Use capital I for traits (rust-analyzer maps traits → Interface kind)
+        local snacks_ok, Snacks = pcall(require, "snacks")
+        if not snacks_ok then
+          vim.notify("Snacks picker not available", vim.log.levels.WARN)
+          return
+        end
+        Snacks.picker.lsp_symbols {
+          title = "Rust Traits (Workspace)",
+          symbols = { "Interface" }, -- SymbolKind.Interface = 11 (rust-analyzer mapping)
+        }
+      end, vim.tbl_extend("force", opts, { desc = "Rust: Find traits" }))
+
+      map("n", "<leader>Re", function()
+        local snacks_ok, Snacks = pcall(require, "snacks")
+        if not snacks_ok then
+          vim.notify("Snacks picker not available", vim.log.levels.WARN)
+          return
+        end
+        Snacks.picker.lsp_symbols {
+          title = "Rust Enums (Workspace)",
+          symbols = { "Enum" }, -- SymbolKind.Enum = 10
+        }
+      end, vim.tbl_extend("force", opts, { desc = "Rust: Find enums" }))
+
+      map("n", "<leader>Ri", function()
+        local snacks_ok, Snacks = pcall(require, "snacks")
+        if not snacks_ok then
+          vim.notify("Snacks picker not available", vim.log.levels.WARN)
+          return
+        end
+        Snacks.picker.lsp_symbols {
+          title = "Rust Implementations (Workspace)",
+          symbols = { "Method", "Function" }, -- SymbolKind values 6 and 12
+        }
+      end, vim.tbl_extend("force", opts, { desc = "Rust: Find implementations" }))
+
+      map("n", "<leader>Rm", function()
+        local snacks_ok, Snacks = pcall(require, "snacks")
+        if not snacks_ok then
+          vim.notify("Snacks picker not available", vim.log.levels.WARN)
+          return
+        end
+        Snacks.picker.lsp_symbols {
+          title = "Rust Modules (Workspace)",
+          symbols = { "Module" }, -- SymbolKind.Module = 2
+        }
+      end, vim.tbl_extend("force", opts, { desc = "Rust: Find modules" }))
     end,
   },
 

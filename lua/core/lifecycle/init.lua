@@ -236,6 +236,10 @@ function M.run_sequence()
   if ok_ui then
     ui_toggle.init()
     log "ui_state init"
+
+    -- Apply dim state after Snacks has loaded (early priority plugin)
+    ui_toggle.apply_dim()
+    log "ui_state apply_dim"
   end
 
   -- Step 4: Buffer events and dependent UI operations

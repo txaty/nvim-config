@@ -250,7 +250,10 @@ return {
       zen = {
         enabled = true,
         toggles = {
-          dim = true, -- Enable dim when entering zen
+          dim = function()
+            -- Check persisted dim preference instead of hardcoded true
+            return require("core.ui_toggle").get "dim"
+          end,
           git_signs = false,
           diagnostics = false,
         },
@@ -396,14 +399,6 @@ return {
           Snacks.zen()
         end,
         desc = "UI: Toggle zen mode",
-      },
-      -- Dim (like twilight)
-      {
-        "<leader>ud",
-        function()
-          Snacks.dim()
-        end,
-        desc = "UI: Toggle dim",
       },
       -- Words navigation (reference jumping)
       {
