@@ -306,21 +306,17 @@
 ### Symbol Discovery (Multi-file)
 | Keybinding | Description |
 |---|---|
-| `<leader>Rs` | Find structs across workspace |
-| `<leader>RI` | Find traits across workspace (capital I) |
-| `<leader>Re` | Find enums across workspace |
-| `<leader>Ri` | Find implementations across workspace |
-| `<leader>Rm` | Find modules across workspace |
+| `<leader>Rw` | Search workspace symbols (live) |
 
 **Recommended Workflow for Exploring Rust Codebases:**
-1. **Module structure first**: `<leader>Rm` - Understand the module hierarchy
-2. **Data structures**: `<leader>Rs` - Find main struct definitions
-3. **Trait contracts**: `<leader>RI` - Discover available traits
-4. **State machines & errors**: `<leader>Re` - Find enum types
+1. **Module structure first**: `<leader>Rw` - Search `mod` to see module hierarchy
+2. **Data structures**: `<leader>Rw` - Search `struct` to find main types
+3. **Trait contracts**: `<leader>Rw` - Search `trait` to discover contracts
+4. **State machines & errors**: `<leader>Rw` - Search `enum` for enum types
 5. **Detailed navigation**: Use `gd`/`gi`/`gr`/`K` on specific symbols
 
 **Combining tools:**
-- `<leader>Rs/RI/Re` - Cross-file type discovery (workspace-wide)
+- `<leader>Rw` - Live search across workspace symbols
 - `<leader>ss` (namu) - Quick outline of current file
 - `<leader>lo` (outline) - Persistent sidebar for long editing sessions
 - `gd`/`gi`/`gr` - Precise navigation when cursor is on a symbol

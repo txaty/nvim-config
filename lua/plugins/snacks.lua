@@ -250,10 +250,7 @@ return {
       zen = {
         enabled = true,
         toggles = {
-          dim = function()
-            -- Check persisted dim preference instead of hardcoded true
-            return require("core.ui_toggle").get "dim"
-          end,
+          dim = false,
           git_signs = false,
           diagnostics = false,
         },
