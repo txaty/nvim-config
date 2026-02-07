@@ -4,7 +4,7 @@ if not lang_toggle.is_enabled "flutter" then
   return {}
 end
 
-local lang = require "core.lang_utils"
+local lang = require "util.lang_utils"
 
 return {
   -- Extend treesitter with Dart parser
@@ -53,7 +53,7 @@ return {
         lsp = {
           -- on_attach handled by LspAttach autocmd
           -- Use shared capabilities module (single source of truth)
-          capabilities = require("core.lsp_capabilities").get(),
+          capabilities = require("util.lsp_capabilities").get(),
           settings = {
             showTodos = true,
             completeFunctionCalls = true,

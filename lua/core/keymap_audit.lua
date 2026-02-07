@@ -1,11 +1,12 @@
 -- Keymap conflict detector
--- Opt-in startup validator gated by vim.g.debug_keymaps
--- Scans nvim_get_keymap() for duplicate lhs per mode and warns
+-- Startup validator for runtime and lazy.nvim key collisions
+-- Scans nvim_get_keymap() and lazy key handlers for duplicate bindings
 --
 -- Usage:
---   nvim --cmd "let g:debug_keymaps=1"  -- Enable on startup
+--   nvim --cmd "let g:debug_keymaps=1"  -- Extra verbose output
 --   :lua require("core.keymap_audit").check()  -- Manual check
 --   :lua require("core.keymap_audit").check_buffer()  -- Check buffer-local
+--   :lua require("core.keymap_audit").check_lazy_keys()  -- Check lazy key specs
 
 local M = {}
 
@@ -49,6 +50,52 @@ function M.check(silent)
     vim.notify(table.concat(lines, "\n"), vim.log.levels.WARN)
   elseif vim.g.debug_keymaps then
     vim.notify("No global keymap conflicts detected", vim.log.levels.INFO)
+  end
+
+  return conflicts
+end
+
+--- Check for duplicate lazy.nvim key handlers (plugin-level collisions)
+--- @param silent boolean? If true, return results instead of notifying
+--- @return table? conflicts List of lazy key conflicts if silent mode
+function M.check_lazy_keys(silent)
+  local conflicts = {}
+
+  local ok, handler = pcall(require, "lazy.core.handler")
+  if not ok or not handler.handlers or not handler.handlers.keys then
+    if silent then
+      return conflicts
+    end
+    return conflicts
+  end
+
+  local active = handler.handlers.keys.active or {}
+  for id, plugins in pairs(active) do
+    if type(plugins) == "table" then
+      local names = vim.tbl_keys(plugins)
+      if #names > 1 then
+        table.sort(names)
+        table.insert(conflicts, {
+          id = id,
+          plugins = names,
+        })
+      end
+    end
+  end
+
+  if silent then
+    return conflicts
+  end
+
+  if #conflicts > 0 then
+    local lines = { "Keymap conflicts detected (lazy keys):" }
+    for _, c in ipairs(conflicts) do
+      table.insert(lines, string.format("  key=%s", c.id))
+      table.insert(lines, string.format("    plugins=%s", table.concat(c.plugins, ", ")))
+    end
+    vim.notify(table.concat(lines, "\n"), vim.log.levels.WARN)
+  elseif vim.g.debug_keymaps then
+    vim.notify("No lazy key conflicts detected", vim.log.levels.INFO)
   end
 
   return conflicts
@@ -99,15 +146,18 @@ function M.check_buffer(bufnr, silent)
   return conflicts
 end
 
---- Full audit: check both global and buffer-local keymaps
---- Called automatically on VeryLazy if vim.g.debug_keymaps is set
+--- Full audit: check global, buffer-local, and lazy.nvim keymaps
+--- Called automatically on VeryLazy
 function M.full_audit()
   local global = M.check(true)
   local buffer = M.check_buffer(nil, true)
+  local lazy = M.check_lazy_keys(true)
 
-  local total = #global + #buffer
+  local total = #global + #buffer + #lazy
   if total == 0 then
-    vim.notify("Keymap audit: No conflicts detected", vim.log.levels.INFO)
+    if vim.g.debug_keymaps then
+      vim.notify("Keymap audit: No conflicts detected", vim.log.levels.INFO)
+    end
     return
   end
 
@@ -129,15 +179,19 @@ function M.full_audit()
     end
   end
 
+  if #lazy > 0 then
+    table.insert(lines, "")
+    table.insert(lines, "Lazy key conflicts:")
+    for _, c in ipairs(lazy) do
+      table.insert(lines, string.format("  key=%s [%s]", c.id, table.concat(c.plugins, ", ")))
+    end
+  end
+
   vim.notify(table.concat(lines, "\n"), vim.log.levels.WARN)
 end
 
---- Setup autocmd to run audit on VeryLazy (if debug mode enabled)
+--- Setup autocmd to run audit on VeryLazy
 function M.setup()
-  if not vim.g.debug_keymaps then
-    return
-  end
-
   vim.api.nvim_create_autocmd("User", {
     pattern = "VeryLazy",
     once = true,

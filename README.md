@@ -9,7 +9,7 @@ A modern, modular Neovim configuration focusing on **productivity, language supp
 - **AI Integration**: Copilot with chat interface and inline suggestions (toggleable)
 - **Testing**: Integrated test runner (neotest) for multiple languages
 - **Debugging**: Debug Adapter Protocol (DAP) support with visual breakpoints
-- **Project Navigation**: Telescope + nvim-tree for fast file discovery
+- **Project Navigation**: Snacks picker + nvim-tree for fast file discovery
 - **Code Quality**: LSP, linting, formatting on save
 - **Git Integration**: Gitsigns hunk operations, diffview, lazygit TUI
 - **Remote Development**: VS Code Remote-like experience with distant.nvim
@@ -65,7 +65,7 @@ After installation, verify everything works:
 
 Common workflows:
 
-- **Find files**: `<leader>ff` (Telescope)
+- **Find files**: `<leader>ff` (Snacks picker)
 - **Search text**: `<leader>fg` (Live grep)
 - **Rename symbol**: `<leader>lr` (LSP rename)
 - **Format code**: `<leader>lf` (auto on save)
@@ -73,7 +73,7 @@ Common workflows:
 - **Run tests**: `<leader>tn` (nearest test)
 - **Debug**: `<leader>db` (toggle breakpoint)
 - **AI Chat**: `<leader>aa` (Copilot)
-- **Switch theme**: `<leader>cc` (Telescope picker)
+- **Switch theme**: `<leader>cc` (interactive picker)
 - **Remote connect**: `<leader>rc` (distant.nvim)
 
 See **[docs/keymaps.md](docs/keymaps.md)** for complete keybinding reference.
@@ -108,12 +108,13 @@ Install Rust via `rustup`, then open `.rs` file.
 
 **Rust keybindings** (use `<leader>R*` prefix):
 ```
-<leader>Rr    # Run project
-<leader>Rc    # Check (cargo check)
-<leader>Rb    # Build
-<leader>Rt    # Run tests
-<leader>Rl    # Lint (clippy)
-<leader>Rd    # Toggle inlay hints
+<leader>Rr    # Runnables
+<leader>RR    # Rerun last runnable
+<leader>Rt    # Testables
+<leader>RT    # Rerun last test
+<leader>RD    # Debuggables
+<leader>Rd    # Debug target
+<leader>Rc    # Open Cargo.toml
 ```
 
 **Crates keybindings** (in Cargo.toml):
@@ -422,7 +423,7 @@ Changes require Neovim restart to take effect. State persisted across sessions.
 
 **Interactive switching (recommended):**
 ```
-<leader>cc    # Open theme picker (Telescope)
+<leader>cc    # Open interactive theme picker
 <leader>cd    # Switch to last-used dark theme
 <leader>cl    # Switch to last-used light theme
 <leader>cp    # Switch to txaty custom theme
@@ -490,6 +491,15 @@ return {
 │   │       ├── lang.lua
 │   │       ├── cleanup.lua
 │   │       └── ui.lua
+│   ├── config/             # Normalized config entry modules (compat shims)
+│   │   ├── init.lua
+│   │   ├── options.lua
+│   │   ├── keymaps.lua
+│   │   └── autocmds.lua
+│   ├── util/               # Shared helper aliases (compat shims)
+│   │   ├── persist.lua
+│   │   ├── lang_utils.lua
+│   │   └── lsp_capabilities.lua
 │   └── plugins/            # Plugin specifications
 │       ├── lsp.lua          # LSP + Mason
 │       ├── colorscheme.lua  # 40+ theme plugins
@@ -547,7 +557,7 @@ nvim --headless '+checkhealth' +qa
 
 ## Performance Tips
 
-1. **Use relative line numbers**: `<leader>nr` for vim motion speed
+1. **Use relative line numbers**: `<leader>ur` for vim motion speed
 2. **Lazy-load plugins**: All plugins load only when needed
 3. **Use Flash navigation**: `s` key is faster than j/k movement
 4. **Incremental search**: `<leader>fg` for live preview

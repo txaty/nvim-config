@@ -48,6 +48,9 @@ return {
     dependencies = { "williamboman/mason.nvim" },
     opts = {
       ensure_installed = { "lua_ls", "bashls", "marksman" },
+      -- Keep server enable timing under our control in lspconfig.config()
+      -- so vim.lsp.config() runs before clients are started.
+      automatic_enable = false,
     },
   },
 
@@ -76,7 +79,7 @@ return {
     },
     opts = {},
     config = function(_, opts)
-      local capabilities = require("core.lsp_capabilities").get()
+      local capabilities = require("util.lsp_capabilities").get()
 
       local map = vim.keymap.set
 
@@ -138,37 +141,6 @@ return {
         end,
       })
 
-      -- Setup mason-lspconfig handlers
-      -- mason-lspconfig itself is configured via its own plugin spec above.
-      -- Here we just register handlers to auto-enable installed servers.
-      --
-      -- CRITICAL FIX: Ensure mason-lspconfig is set up before calling setup_handlers
-      -- lazy.nvim's opts handling may not have run yet when this config executes
-      local ok, mason_lspconfig = pcall(require, "mason-lspconfig")
-      if not ok then
-        vim.notify("mason-lspconfig not available, skipping handler setup", vim.log.levels.WARN)
-        return
-      end
-
-      -- Ensure setup() was called (idempotent if opts already ran)
-      if not mason_lspconfig.setup_handlers then
-        vim.notify("mason-lspconfig.setup_handlers not available, plugin may not be fully loaded", vim.log.levels.ERROR)
-        return
-      end
-
-      mason_lspconfig.setup_handlers {
-        -- Default handler: auto-enable all servers EXCEPT skipped ones
-        function(server_name)
-          -- rust_analyzer is managed exclusively by rustaceanvim to avoid conflicts
-          -- ltex is skipped because grammar checking in markdown is noisy/unhelpful
-          local skip = { rust_analyzer = true, ltex = true }
-          if skip[server_name] then
-            return
-          end
-          vim.lsp.enable(server_name)
-        end,
-      }
-
       -- Configure servers using new vim.lsp.config API (Neovim 0.11+)
       -- This replaces the deprecated require('lspconfig') framework
       vim.lsp.config("lua_ls", {
@@ -188,6 +160,29 @@ return {
             capabilities = capabilities,
           }, server_config)
           vim.lsp.config(server_name, config)
+        end
+      end
+
+      -- Enable installed servers after all vim.lsp.config() calls above.
+      -- mason-lspconfig v2 removed setup_handlers(); get_installed_servers() is
+      -- the stable API to enumerate installed servers.
+      local ok, mason_lspconfig = pcall(require, "mason-lspconfig")
+      if not ok then
+        vim.notify("mason-lspconfig not available, skipping server enable", vim.log.levels.WARN)
+        return
+      end
+
+      if not mason_lspconfig.get_installed_servers then
+        vim.notify("mason-lspconfig.get_installed_servers not available", vim.log.levels.ERROR)
+        return
+      end
+
+      -- rust_analyzer is managed exclusively by rustaceanvim to avoid conflicts
+      -- ltex is skipped because grammar checking in markdown is noisy/unhelpful
+      local skip = { rust_analyzer = true, ltex = true }
+      for _, server_name in ipairs(mason_lspconfig.get_installed_servers()) do
+        if not skip[server_name] then
+          vim.lsp.enable(server_name)
         end
       end
 

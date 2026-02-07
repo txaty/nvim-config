@@ -16,7 +16,7 @@
 -- lazy.nvim calls this again during setup() (idempotent).
 vim.loader.enable()
 
-require "core.options"
-require "core.keymaps"
-require "core.autocmds"
+require "config.options"
+require "config.keymaps"
+require "config.autocmds"
 require "core.lazy"

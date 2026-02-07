@@ -75,14 +75,14 @@ return {
     end,
   },
 
-  -- Yank ring: access previous yanks with <C-p>/<C-n> after paste
+  -- Yank ring: access previous/next yanks with [y / ]y after paste
   {
     "gbprod/yanky.nvim",
     keys = {
       { "p", "<Plug>(YankyPutAfter)", mode = { "n", "x" }, desc = "Put after" },
       { "P", "<Plug>(YankyPutBefore)", mode = { "n", "x" }, desc = "Put before" },
-      { "<C-p>", "<Plug>(YankyPreviousEntry)", desc = "Previous yank" },
-      { "<C-n>", "<Plug>(YankyNextEntry)", desc = "Next yank" },
+      { "[y", "<Plug>(YankyPreviousEntry)", mode = "n", desc = "Previous yank" },
+      { "]y", "<Plug>(YankyNextEntry)", mode = "n", desc = "Next yank" },
     },
     opts = {
       ring = { history_length = 50 },
