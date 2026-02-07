@@ -13,6 +13,7 @@ local defaults = {
   relativenumber = true,
   conceallevel = 2,
   tree_git = true, -- Show git status in nvim-tree by default
+  dim = false, -- Snacks dim mode (session-persistent)
 }
 
 -- JSON config file path
@@ -90,6 +91,22 @@ function M.toggle(opt)
   cached_config[opt] = new_value
   persist.save_json(config_path, cached_config)
 
+  -- Special handling for dim: requires Snacks to be loaded
+  if opt == "dim" then
+    local snacks_ok, Snacks = pcall(require, "snacks")
+    if not snacks_ok then
+      vim.notify("Snacks.nvim not available", vim.log.levels.WARN)
+      return
+    end
+
+    -- Call Snacks.dim() to toggle the actual dim state
+    Snacks.dim()
+
+    local display = new_value and "on" or "off"
+    vim.notify(string.format("UI: dim = %s", display), vim.log.levels.INFO)
+    return
+  end
+
   -- Special handling for tree_git: reload nvim-tree with new config
   if opt == "tree_git" then
     local ok, nvim_tree = pcall(require, "nvim-tree")
@@ -161,6 +178,33 @@ function M.apply_all()
 
   -- Reset throttle after batch apply to allow immediate window-specific applies
   last_apply_time = vim.uv.now()
+end
+
+--- Apply dim state based on persisted preference
+--- Called during lifecycle init after Snacks has loaded
+--- Snacks loads early (priority=1000, lazy=false) so it's available at VimEnter
+function M.apply_dim()
+  if not initialized then
+    M.init()
+  end
+
+  local dim_enabled = vim.g.ui_dim
+  if not dim_enabled then
+    return -- Dim disabled, do nothing
+  end
+
+  -- Only apply if Snacks is loaded
+  local snacks_ok, Snacks = pcall(require, "snacks")
+  if not snacks_ok then
+    return
+  end
+
+  -- Snacks.dim() is a toggle, so we need to track if we've already applied
+  -- Use a session-only flag to prevent double-toggling
+  if not vim.g._snacks_dim_applied then
+    Snacks.dim()
+    vim.g._snacks_dim_applied = true
+  end
 end
 
 return M
