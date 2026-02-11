@@ -1,15 +1,20 @@
 return {
   {
-    -- Virtual plugin for image keymaps
+    -- Virtual plugin for image/PDF keymaps
+    -- Snacks sets filetype to "image" for all image/PDF buffers.
     dir = vim.fn.stdpath "config",
     name = "image-keymaps",
-    ft = { "png", "jpg", "jpeg", "gif", "bmp", "webp", "svg", "ico", "tiff", "tif" },
+    ft = "image",
     init = function()
       vim.api.nvim_create_autocmd("FileType", {
-        pattern = { "png", "jpg", "jpeg", "gif", "bmp", "webp", "svg", "ico", "tiff", "tif" },
+        pattern = "image",
         callback = function(args)
           vim.keymap.set("n", "<leader>io", function()
-            local filepath = vim.fn.expand "%:p"
+            local name = vim.api.nvim_buf_get_name(0)
+            local filepath = vim.split(name, "#page=", { plain = true })[1]
+            if filepath == "" then
+              return
+            end
             local argv
             if vim.fn.has "mac" == 1 then
               argv = { "open", filepath }
@@ -21,7 +26,7 @@ return {
 
             if argv then
               vim.system(argv, { detach = true })
-              vim.notify("Opened " .. vim.fn.expand "%:t" .. " in external viewer", vim.log.levels.INFO)
+              vim.notify("Opened " .. vim.fn.fnamemodify(filepath, ":t") .. " in external viewer", vim.log.levels.INFO)
             else
               vim.notify("Could not determine command to open file", vim.log.levels.ERROR)
             end
