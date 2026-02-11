@@ -270,9 +270,9 @@ return {
       profiler = { enabled = true }, -- Lua profiler for debugging performance
       scratch = { enabled = true }, -- Quick scratch buffers for code experiments
 
-      -- Adaptive image rendering (only in Kitty terminal)
+      -- Adaptive image rendering (Snacks auto-detects Kitty/Ghostty/WezTerm)
       image = {
-        enabled = vim.env.KITTY_WINDOW_ID ~= nil,
+        enabled = true,
       },
 
       -- KEEP DISABLED (using other plugins)
