@@ -1,5 +1,5 @@
 {
-  "ayu": { "branch": "master", "commit": "01faacb4cb76e8cf72ad9858c581d80876260ab3" },
+  "ayu": { "branch": "master", "commit": "e5a9f0fa2918d6b5f57c21b3ac014314ee5e41c8" },
   "bamboo.nvim": { "branch": "master", "commit": "1309bc88bffcf1bedc3e84e7fa9004de93da774a" },
   "blink.cmp": { "branch": "main", "commit": "4b18c32adef2898f95cdef6192cbd5796c1a332d" },
   "bookmarks.nvim": { "branch": "main", "commit": "0540d52ba64d0ec7677ec1ef14b3624c95a2aaba" },

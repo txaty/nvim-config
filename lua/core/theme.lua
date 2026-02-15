@@ -111,9 +111,8 @@ M.registry = {
     variant = "dark",
     description = "Ayu dark - minimalist dark theme",
     plugin_name = "ayu",
-    colorscheme = "ayu",
+    colorscheme = "ayu-dark",
     background = "dark",
-    global = { ayucolor = "dark" },
   },
   ["solarized-osaka"] = {
     variant = "dark",
@@ -467,9 +466,8 @@ M.registry = {
     variant = "light",
     description = "Ayu light - minimalist light theme",
     plugin_name = "ayu",
-    colorscheme = "ayu",
+    colorscheme = "ayu-light",
     background = "light",
-    global = { ayucolor = "light" },
   },
   -- Edge light
   ["edge-light"] = {

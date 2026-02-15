@@ -100,9 +100,12 @@ return {
   },
 
   {
-    "ayu-theme/ayu-vim",
+    "Shatur/neovim-ayu",
     name = "ayu",
     lazy = true,
+    config = function()
+      require("ayu").setup {}
+    end,
   },
 
   -- Solarized Osaka - replaces altercation/vim-colors-solarized (Vimscript)
