@@ -161,6 +161,54 @@ autocmd("BufWinEnter", {
 })
 
 -- ============================================================================
+-- Word Occurrence Highlighting (Fallback for non-LSP buffers)
+-- ============================================================================
+
+-- Snacks.words handles LSP-attached buffers via textDocument/documentHighlight.
+-- This fallback covers plain text, gitcommit, help, and any buffer without an
+-- active LSP client that supports documentHighlight.
+local word_match_id = nil
+
+autocmd("CursorHold", {
+  group = augroup "word_highlight_fallback",
+  callback = function()
+    -- Skip if LSP with documentHighlight is available (Snacks.words handles it)
+    local clients = vim.lsp.get_clients {
+      bufnr = 0,
+      method = "textDocument/documentHighlight",
+    }
+    if #clients > 0 then
+      return
+    end
+    -- Skip special buffers (terminal, quickfix, prompt, etc.)
+    if vim.bo.buftype ~= "" then
+      return
+    end
+    -- Clear previous match
+    if word_match_id then
+      pcall(vim.fn.matchdelete, word_match_id)
+      word_match_id = nil
+    end
+    -- Highlight the word under cursor
+    local word = vim.fn.expand "<cword>"
+    if word ~= "" and word:match "^%w+$" then
+      local pattern = [[\<]] .. word .. [[\>]]
+      word_match_id = vim.fn.matchadd("LspReferenceText", pattern, 10)
+    end
+  end,
+})
+
+autocmd("CursorMoved", {
+  group = augroup "word_highlight_fallback_clear",
+  callback = function()
+    if word_match_id then
+      pcall(vim.fn.matchdelete, word_match_id)
+      word_match_id = nil
+    end
+  end,
+})
+
+-- ============================================================================
 -- Session and Theme Persistence
 -- ============================================================================
 
