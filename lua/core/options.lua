@@ -11,6 +11,14 @@ g.maplocalleader = " "
 g.loaded_netrw = 1
 g.loaded_netrwPlugin = 1
 
+-- Disable unused language providers to suppress "Some Neovim features have
+-- been disabled" startup warning. This config uses no Python/Ruby/Node/Perl
+-- legacy plugins; all tooling is managed by Mason + LSP instead.
+g.loaded_python3_provider = 0
+g.loaded_ruby_provider = 0
+g.loaded_node_provider = 0
+g.loaded_perl_provider = 0
+
 --------------------------------------
 -- Security
 --------------------------------------

@@ -15,8 +15,11 @@ require("core.lifecycle").setup()
 -- ============================================================================
 -- Keymap Audit
 -- ============================================================================
--- Runs once on VeryLazy and only notifies when conflicts are found.
--- Set vim.g.debug_keymaps=1 for additional "no conflicts" info messages.
+-- Runs full_audit() once on every VeryLazy event and only notifies when
+-- conflicts are found (silent on clean configuration). This is always-on as
+-- a safety net; no user-visible cost when the config is conflict-free.
+-- Set vim.g.debug_keymaps=1 for additional verbose output and an extra
+-- early check() call at VimEnter (see lifecycle/init.lua step 5b).
 require("core.keymap_audit").setup()
 
 -- ============================================================================
