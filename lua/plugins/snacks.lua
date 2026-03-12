@@ -273,6 +273,50 @@ return {
       -- Adaptive image rendering (Snacks auto-detects Kitty/Ghostty/WezTerm)
       image = {
         enabled = true,
+        convert = {
+          magick = {
+            -- HiDPI-aware: downscale only above 4K; add memory resource limits to
+            -- prevent OOM when converting large images (imagemagick can use 8-10x file size).
+            default = {
+              "{src}[0]",
+              "-scale",
+              "3840x2160>",
+              "-limit",
+              "memory",
+              "512MiB",
+              "-limit",
+              "map",
+              "1GiB",
+            },
+            pdf = {
+              "-density",
+              192,
+              "{src}[{page}]",
+              "-background",
+              "white",
+              "-alpha",
+              "remove",
+              "-trim",
+              "-limit",
+              "memory",
+              "512MiB",
+              "-limit",
+              "map",
+              "1GiB",
+            },
+            vector = {
+              "-density",
+              192,
+              "{src}[{page}]",
+              "-limit",
+              "memory",
+              "512MiB",
+              "-limit",
+              "map",
+              "1GiB",
+            },
+          },
+        },
       },
 
       -- KEEP DISABLED (using other plugins)
@@ -465,6 +509,14 @@ return {
       vim.api.nvim_create_autocmd("User", {
         pattern = "VeryLazy",
         callback = function()
+          -- Warn once if imagemagick is absent; only PNG files will render without it.
+          if vim.fn.executable "magick" == 0 and vim.fn.executable "convert" == 0 then
+            vim.notify(
+              "snacks.image: imagemagick not found — only PNG files will render inline.",
+              vim.log.levels.WARN
+            )
+          end
+
           -- Override vim.notify with snacks.notifier
           _G.dd = function(...)
             Snacks.debug.inspect(...)
