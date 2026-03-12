@@ -24,18 +24,16 @@ local function log(msg)
 end
 
 --- Setup lazy.nvim plugin load event logging
---- Must be called after lazy.nvim is available but before plugins load
+--- Registers a User:LazyLoad listener. No need to require lazy.nvim first —
+--- the autocmd simply waits for lazy to emit the event, which happens after
+--- core.lazy bootstraps lazy.nvim (the next step in core/init.lua).
 local function setup_plugin_load_logging()
   if not debug_plugin_load then
     return
   end
 
-  local ok, _ = pcall(require, "lazy")
-  if not ok then
-    return
-  end
-
-  -- Hook into lazy.nvim's event system
+  -- Register the listener immediately; lazy.nvim will emit LazyLoad events
+  -- once it starts loading plugins during and after VimEnter.
   vim.api.nvim_create_autocmd("User", {
     pattern = "LazyLoad",
     callback = function(ev)
@@ -276,8 +274,11 @@ function M.run_sequence()
     log "commands registered (deferred)"
   end)
 
-  -- Step 5b: Keymap conflict audit (opt-in via vim.g.debug_keymaps)
-  -- Guard the require to avoid loading the module when audit is disabled
+  -- Step 5b: Keymap conflict audit extra check (opt-in via vim.g.debug_keymaps)
+  -- Note: keymap_audit.setup() in autocmds.lua also registers a VeryLazy autocmd
+  -- that runs full_audit() on every startup and notifies only when conflicts exist.
+  -- This additional check() call runs immediately at VimEnter (before VeryLazy)
+  -- and is gated on debug_keymaps for cases where early detection is needed.
   if vim.g.debug_keymaps then
     require("core.keymap_audit").check()
   end
