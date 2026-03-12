@@ -14,6 +14,7 @@ local defaults = {
   conceallevel = 2,
   tree_git = true, -- Show git status in nvim-tree by default
   dim = false, -- Snacks dim mode (session-persistent)
+  diagnostic_lines = false, -- virtual_lines diagnostics (Zed-style)
 }
 
 -- JSON config file path
@@ -86,6 +87,24 @@ function M.toggle(opt)
   -- Special handling for dim: requires Snacks to be loaded
   if opt == "dim" then
     M.set_dim(new_value)
+    return
+  end
+
+  -- Special handling for diagnostic_lines: swap vim.diagnostic.config modes
+  if opt == "diagnostic_lines" then
+    vim.g[global_key] = new_value
+    local cached_config = persist.load_json(config_path, {})
+    cached_config[opt] = new_value
+    persist.save_json(config_path, cached_config)
+
+    if new_value then
+      vim.diagnostic.config { virtual_text = false, virtual_lines = true }
+    else
+      vim.diagnostic.config { virtual_text = { prefix = "●", spacing = 4 }, virtual_lines = false }
+    end
+
+    local display = new_value and "virtual_lines" or "virtual_text"
+    vim.notify(string.format("UI: diagnostics = %s", display), vim.log.levels.INFO)
     return
   end
 

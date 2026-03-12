@@ -81,6 +81,21 @@ return {
     config = function(_, opts)
       local capabilities = require("util.lsp_capabilities").get()
 
+      -- Diagnostic appearance (Zed-style icons + virtual text)
+      vim.diagnostic.config {
+        virtual_text = { prefix = "●", spacing = 4 },
+        signs = {
+          text = {
+            [vim.diagnostic.severity.ERROR] = " ",
+            [vim.diagnostic.severity.WARN] = " ",
+            [vim.diagnostic.severity.INFO] = " ",
+            [vim.diagnostic.severity.HINT] = "󰌶 ",
+          },
+        },
+        severity_sort = true,
+        float = { border = "rounded" },
+      }
+
       local map = vim.keymap.set
 
       -- LspAttach Autocmd for Keymaps
