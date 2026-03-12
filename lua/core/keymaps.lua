@@ -8,7 +8,7 @@ map("i", "<C-l>", "<Right>", { desc = "Move right" })
 map("i", "<C-j>", "<Down>", { desc = "Move down" })
 map("i", "<C-k>", "<Up>", { desc = "Move up" })
 
-map("n", "<Esc>", "<cmd>noh<CR>", { desc = "General Clear highlights" })
+-- Note: <Esc> → noh is handled in multicursor.lua (falls through when no cursors active)
 map("n", "<C-h>", "<C-w>h", { desc = "Switch Window left" })
 map("n", "<C-l>", "<C-w>l", { desc = "Switch Window right" })
 map("n", "<C-j>", "<C-w>j", { desc = "Switch Window down" })
@@ -40,6 +40,9 @@ end, { desc = "UI: Toggle nvim-tree git status" })
 map("n", "<leader>ud", function()
   require("core.ui_toggle").toggle "dim"
 end, { desc = "UI: Toggle dim" })
+map("n", "<leader>uD", function()
+  require("core.ui_toggle").toggle "diagnostic_lines"
+end, { desc = "UI: Toggle inline diagnostics" })
 
 -- User Mappings from mappings.lua
 map("n", ";", ":", { desc = "Command mode" })

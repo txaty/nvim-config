@@ -10,7 +10,16 @@ function M.register()
     end
 
     local lines = { "UI Toggle Status:" }
-    for _, opt in ipairs { "wrap", "spell", "number", "relativenumber", "conceallevel", "tree_git", "dim" } do
+    for _, opt in ipairs {
+      "wrap",
+      "spell",
+      "number",
+      "relativenumber",
+      "conceallevel",
+      "tree_git",
+      "dim",
+      "diagnostic_lines",
+    } do
       local value = vim.g["ui_" .. opt]
       local display = type(value) == "boolean" and (value and "on" or "off") or tostring(value)
       table.insert(lines, string.format("  %s: %s", opt, display))

@@ -46,6 +46,7 @@ return {
         { "<leader>t", group = "Test", icon = "󰙨" },
         { "<leader>T", group = "Terminal", icon = "" },
         { "<leader>u", group = "UI/Display", icon = "󰙵" },
+        { "<leader>v", group = "Multi-Cursor", icon = "󰇀" },
         { "<leader>w", group = "Windows", icon = "󰖲" },
         { "<leader>x", group = "Diagnostics", icon = "󰒡" },
       }

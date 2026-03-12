@@ -4,11 +4,18 @@ return {
     event = { "BufReadPre", "BufNewFile" },
     opts = {
       signs = {
-        add = { text = "+" },
-        change = { text = "~" },
-        delete = { text = "_" },
-        topdelete = { text = "^" },
-        changedelete = { text = "~" },
+        add = { text = "▎" },
+        change = { text = "▎" },
+        delete = { text = "" },
+        topdelete = { text = "" },
+        changedelete = { text = "▎" },
+      },
+      signs_staged = {
+        add = { text = "▎" },
+        change = { text = "▎" },
+        delete = { text = "" },
+        topdelete = { text = "" },
+        changedelete = { text = "▎" },
       },
       current_line_blame = true,
       current_line_blame_opts = {
@@ -36,7 +43,8 @@ return {
         map("n", "<leader>gS", gs.stage_buffer, "Git: Stage buffer")
         map("n", "<leader>gR", gs.reset_buffer, "Git: Reset buffer")
         map("n", "<leader>gu", gs.undo_stage_hunk, "Git: Undo stage hunk")
-        map("n", "<leader>gp", gs.preview_hunk, "Git: Preview hunk")
+        map("n", "<leader>gp", gs.preview_hunk_inline, "Git: Preview hunk inline")
+        map("n", "<leader>gP", gs.preview_hunk, "Git: Preview hunk (float)")
         map("n", "<leader>gb", function()
           gs.blame_line { full = true }
         end, "Git: Blame line")
@@ -45,6 +53,8 @@ return {
         map("n", "<leader>gD", function()
           gs.diffthis "~"
         end, "Git: Diff against HEAD")
+        map("n", "<leader>gI", gs.toggle_deleted, "Git: Toggle inline deleted")
+        map("n", "<leader>gw", gs.toggle_word_diff, "Git: Toggle word diff")
 
         -- Text object
         map({ "o", "x" }, "ih", ":<C-U>Gitsigns select_hunk<CR>", "Git: Select hunk")
@@ -54,10 +64,23 @@ return {
   {
     "sindrets/diffview.nvim",
     cmd = { "DiffviewOpen", "DiffviewClose", "DiffviewFileHistory" },
+    opts = {
+      enhanced_diff_hl = true,
+      view = {
+        default = { layout = "diff2_horizontal" },
+      },
+      file_panel = {
+        listing_style = "flat",
+        win_config = { position = "left", width = 35 },
+      },
+    },
     keys = {
-      { "<leader>gdo", "<cmd>DiffviewOpen<cr>", desc = "Diffview open" },
-      { "<leader>gdc", "<cmd>DiffviewClose<cr>", desc = "Diffview close" },
-      { "<leader>gdf", "<cmd>DiffviewFileHistory %<cr>", desc = "File history" },
+      { "<leader>gdo", "<cmd>DiffviewOpen<cr>", desc = "Diffview: open" },
+      { "<leader>gdc", "<cmd>DiffviewClose<cr>", desc = "Diffview: close" },
+      { "<leader>gdf", "<cmd>DiffviewFileHistory %<cr>", desc = "Diffview: file history" },
+      { "<leader>gds", "<cmd>DiffviewOpen --staged<cr>", desc = "Diffview: staged changes" },
+      { "<leader>gdh", "<cmd>DiffviewFileHistory<cr>", desc = "Diffview: repo history" },
+      { "<leader>gdb", "<cmd>DiffviewOpen HEAD~1<cr>", desc = "Diffview: compare prev commit" },
     },
   },
 }
