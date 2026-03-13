@@ -66,11 +66,14 @@ return {
     },
     opts = {},
     config = function(_, opts)
-      local capabilities = require("util.lsp_capabilities").get()
+      local capabilities = require("core.lsp_capabilities").get()
 
-      -- Diagnostic appearance (Zed-style icons + virtual text)
-      vim.diagnostic.config {
-        virtual_text = { prefix = "●", spacing = 4 },
+      -- Diagnostic appearance
+      -- Respect persisted diagnostic_lines toggle (set by ui_toggle at VimEnter Step 3,
+      -- before this config() runs at BufReadPre). If the user had virtual_lines enabled,
+      -- restore that mode; otherwise use default virtual_text.
+      local use_virtual_lines = vim.g.ui_diagnostic_lines == true
+      local diag_opts = {
         signs = {
           text = {
             [vim.diagnostic.severity.ERROR] = " ",
@@ -82,6 +85,13 @@ return {
         severity_sort = true,
         float = { border = "rounded" },
       }
+      if use_virtual_lines then
+        diag_opts.virtual_text = false
+        diag_opts.virtual_lines = true
+      else
+        diag_opts.virtual_text = { prefix = "●", spacing = 4 }
+      end
+      vim.diagnostic.config(diag_opts)
 
       local map = vim.keymap.set
 

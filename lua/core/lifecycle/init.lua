@@ -69,30 +69,13 @@ local function verify_load_order()
   end
 
   local checks = {
-    {
-      name = "dropbar loads before lspconfig",
-      check = function()
-        -- Check the load log for ordering (only works if debug_plugin_load enabled)
-        if #load_log > 0 then
-          local dropbar_idx, lspconfig_idx
-          for i, entry in ipairs(load_log) do
-            if entry.plugin == "dropbar.nvim" then
-              dropbar_idx = i
-            end
-            if entry.plugin == "nvim-lspconfig" then
-              lspconfig_idx = i
-            end
-          end
-          -- If both loaded, verify dropbar came first
-          if dropbar_idx and lspconfig_idx then
-            if dropbar_idx >= lspconfig_idx then
-              return false, string.format("dropbar loaded at position %d, lspconfig at %d", dropbar_idx, lspconfig_idx)
-            end
-          end
-        end
-        return true
-      end,
-    },
+    -- NOTE: dropbar vs lspconfig ordering is intentionally NOT checked here.
+    -- Both load on BufReadPre; dropbar hooks into LSP via its own LspAttach autocmd
+    -- (registered when dropbar loads) and does not need to precede lspconfig.
+    -- LSP servers attach asynchronously after lspconfig.setup(), so dropbar always
+    -- has its handler registered before any server attaches, regardless of which
+    -- plugin's config() ran first.  The navic-era requirement (navic.attach called
+    -- inside lspconfig's LspAttach) no longer applies.
     {
       name = "colorscheme set before UI plugins",
       check = function()
@@ -216,23 +199,26 @@ function M.run_sequence()
   require("core.lifecycle.colorscheme").restore()
   log "colorscheme restored"
 
-  -- Step 2: Session (may change buffers/windows)
-  local session_restored = require("core.lifecycle.session").restore()
-  log("session restore: " .. tostring(session_restored))
-
-  -- Step 3: UI state initialization (sets vim.g globals only, no window ops)
-  -- Call core.ui_toggle directly (no wrapper indirection)
+  -- Step 2: UI state initialization (sets vim.g globals BEFORE session/plugins)
+  -- Must run before session restore so that plugins loading on BufReadPre
+  -- (e.g., lsp.lua reading vim.g.ui_diagnostic_lines) see correct state.
   local ok_ui, ui_toggle = pcall(require, "core.ui_toggle")
   if ok_ui then
     ui_toggle.init()
     log "ui_state init"
+  end
 
-    -- Apply dim state after Snacks has loaded (early priority plugin)
+  -- Step 3: Session (may change buffers/windows)
+  local session_restored = require("core.lifecycle.session").restore()
+  log("session restore: " .. tostring(session_restored))
+
+  -- Step 4: Apply dim state after Snacks has loaded (early priority plugin)
+  if ok_ui then
     ui_toggle.apply_dim()
     log "ui_state apply_dim"
   end
 
-  -- Step 4: Buffer events and dependent UI operations
+  -- Step 5: Buffer events and dependent UI operations
   -- IMPORTANT: retrigger_buffer_events() is async. UI operations that depend on
   -- fully initialized buffers (ui_toggle.apply_all, nvim_tree.auto_open) must
   -- wait until buffer events settle to avoid race conditions.
@@ -257,7 +243,7 @@ function M.run_sequence()
     log "nvim_tree auto_open (no session)"
   end
 
-  -- Step 5: Commands (deferred — rarely needed in first ms after VimEnter)
+  -- Step 6: Commands (deferred — rarely needed in first ms after VimEnter)
   vim.schedule(function()
     local ok_cmd, commands = pcall(require, "core.commands")
     if ok_cmd and commands.register_all then
@@ -266,8 +252,8 @@ function M.run_sequence()
     log "commands registered (deferred)"
   end)
 
-  -- Step 5b: Keymap conflict audit extra check (opt-in via vim.g.debug_keymaps)
-  -- Note: keymap_audit.setup() in autocmds.lua also registers a VeryLazy autocmd
+  -- Step 6b: Keymap conflict audit extra check (opt-in via vim.g.debug_keymaps)
+  -- Note: keymap_audit.setup() in core/init.lua registers a VeryLazy autocmd
   -- that runs full_audit() on every startup and notifies only when conflicts exist.
   -- This additional check() call runs immediately at VimEnter (before VeryLazy)
   -- and is gated on debug_keymaps for cases where early detection is needed.
@@ -275,7 +261,7 @@ function M.run_sequence()
     require("core.keymap_audit").check()
   end
 
-  -- Step 6: Focus reconciliation after all UI plugins load
+  -- Step 7: Focus reconciliation after all UI plugins load
   -- Bufferline highlights the active tab by comparing nvim_get_current_buf()
   -- against its tab list. If the cursor lands on a stale NvimTree buffer that
   -- gets deleted, the current buffer becomes unlisted and no tab matches.
@@ -294,45 +280,25 @@ function M.run_sequence()
     })
   end
 
-  -- Step 7: Cleanup (throttled, background - low priority)
-  -- OPT-3: Check throttle BEFORE loading cleanup module to avoid parsing 340 lines
-  -- when cleanup shouldn't run (saves ~1-2ms on 90% of startups)
+  -- Step 8: Cleanup (throttled, background - low priority)
+  -- Deferred 2s to avoid blocking startup. The cleanup module's own should_run()
+  -- handles throttle checking — no duplication needed since the 2s defer already
+  -- ensures this doesn't affect startup time.
   vim.defer_fn(function()
-    -- OPT-3: Lightweight throttle check duplicated from cleanup.lua:should_run()
-    -- to avoid loading cleanup module when throttle prevents execution.
-    -- KEEP IN SYNC with cleanup.lua:should_run() logic.
-    local function should_run_cleanup()
-      if vim.g.disable_auto_cleanup then
-        return false
-      end
-      local timestamp_file = vim.fn.stdpath "state" .. "/cleanup_last_run"
-      if vim.fn.filereadable(timestamp_file) ~= 1 then
-        return true -- Never run, so run now
-      end
-      local content = vim.fn.readfile(timestamp_file)
-      if #content == 0 then
-        return true
-      end
-      local last_run = tonumber(content[1]) or 0
-      local now = os.time()
-      local hours_since = (now - last_run) / (60 * 60)
-      return hours_since >= 24 -- Default throttle: 24 hours
-    end
-
-    if should_run_cleanup() then
-      local cleanup_ok, cleanup = pcall(require, "core.cleanup")
-      if cleanup_ok then
+    local cleanup_ok, cleanup = pcall(require, "core.cleanup")
+    if cleanup_ok then
+      if cleanup.should_run() then
         pcall(cleanup.auto_cleanup)
+        log "cleanup (deferred, executed)"
+      else
+        log "cleanup (deferred, skipped due to throttle)"
       end
-      log "cleanup (deferred, executed)"
-    else
-      log "cleanup (deferred, skipped due to throttle)"
     end
   end, 2000)
 
   log "run_sequence complete (sync portion)"
 
-  -- Step 8: Verify critical load order assumptions (debug mode only)
+  -- Step 9: Verify critical load order assumptions (debug mode only)
   -- Deferred slightly to allow lazy-loaded plugins to finish loading
   vim.defer_fn(function()
     verify_load_order()
