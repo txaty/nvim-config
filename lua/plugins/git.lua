@@ -1,7 +1,7 @@
 return {
   {
     "lewis6991/gitsigns.nvim",
-    event = { "BufReadPre", "BufNewFile" },
+    event = { "BufReadPost", "BufNewFile" },
     opts = {
       signs = {
         add = { text = "▎" },
@@ -17,7 +17,8 @@ return {
         topdelete = { text = "" },
         changedelete = { text = "▎" },
       },
-      current_line_blame = true,
+      -- Keep blame available on demand; disable background blame updates by default.
+      current_line_blame = false,
       current_line_blame_opts = {
         delay = 300,
       },
@@ -88,7 +89,7 @@ return {
   {
     "akinsho/git-conflict.nvim",
     version = "*",
-    event = "BufReadPre",
+    event = "BufReadPost",
     opts = {
       default_mappings = true, -- co (ours), ct (theirs), cb (both), c0 (none), ]x/[x (navigate)
       disable_diagnostics = true,

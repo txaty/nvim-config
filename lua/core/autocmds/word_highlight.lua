@@ -12,18 +12,46 @@ local M = {}
 function M.setup()
   -- Track match IDs per window to avoid cross-window leaks
   local win_match_ids = {}
+  local doc_highlight_supported = {}
+
+  local function has_document_highlight(bufnr)
+    if doc_highlight_supported[bufnr] ~= nil then
+      return doc_highlight_supported[bufnr]
+    end
+
+    local supported = #vim.lsp.get_clients {
+      bufnr = bufnr,
+      method = "textDocument/documentHighlight",
+    } > 0
+    doc_highlight_supported[bufnr] = supported
+    return supported
+  end
+
+  autocmd("LspAttach", {
+    group = augroup "word_highlight_fallback_lsp_attach",
+    callback = function(ev)
+      local client = vim.lsp.get_client_by_id(ev.data and ev.data.client_id or -1)
+      if client and client:supports_method "textDocument/documentHighlight" then
+        doc_highlight_supported[ev.buf] = true
+      end
+    end,
+  })
+
+  autocmd("LspDetach", {
+    group = augroup "word_highlight_fallback_lsp_detach",
+    callback = function(ev)
+      doc_highlight_supported[ev.buf] = nil
+    end,
+  })
 
   autocmd("CursorHold", {
     group = augroup "word_highlight_fallback",
     callback = function()
+      local bufnr = vim.api.nvim_get_current_buf()
       local win = vim.api.nvim_get_current_win()
 
       -- Skip if LSP with documentHighlight is available (Snacks.words handles it)
-      local clients = vim.lsp.get_clients {
-        bufnr = 0,
-        method = "textDocument/documentHighlight",
-      }
-      if #clients > 0 then
+      if has_document_highlight(bufnr) then
         return
       end
       -- Skip special buffers (terminal, quickfix, prompt, etc.)
@@ -63,6 +91,13 @@ function M.setup()
       if closed_win then
         win_match_ids[closed_win] = nil
       end
+    end,
+  })
+
+  autocmd("BufDelete", {
+    group = augroup "word_highlight_fallback_buf_cleanup",
+    callback = function(ev)
+      doc_highlight_supported[ev.buf] = nil
     end,
   })
 end

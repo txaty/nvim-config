@@ -62,11 +62,21 @@ function M.apply(win)
   last_apply_time = now
 
   win = win or 0
-  vim.wo[win].wrap = vim.g.ui_wrap
-  vim.wo[win].spell = vim.g.ui_spell
-  vim.wo[win].number = vim.g.ui_number
-  vim.wo[win].relativenumber = vim.g.ui_relativenumber
-  vim.wo[win].conceallevel = vim.g.ui_conceallevel
+  if vim.wo[win].wrap ~= vim.g.ui_wrap then
+    vim.wo[win].wrap = vim.g.ui_wrap
+  end
+  if vim.wo[win].spell ~= vim.g.ui_spell then
+    vim.wo[win].spell = vim.g.ui_spell
+  end
+  if vim.wo[win].number ~= vim.g.ui_number then
+    vim.wo[win].number = vim.g.ui_number
+  end
+  if vim.wo[win].relativenumber ~= vim.g.ui_relativenumber then
+    vim.wo[win].relativenumber = vim.g.ui_relativenumber
+  end
+  if vim.wo[win].conceallevel ~= vim.g.ui_conceallevel then
+    vim.wo[win].conceallevel = vim.g.ui_conceallevel
+  end
 end
 
 --- Toggle a UI option
