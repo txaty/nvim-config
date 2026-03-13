@@ -2,18 +2,14 @@
 
 ## Project Structure & Module Organization
 - Root: `init.lua` (entry), `lazy-lock.json` (plugin lockfile), `.stylua.toml` (Lua formatting), `.luacheckrc` (Lua linter)
-- `lua/config/` — Normalized bootstrap entry modules (compatibility shims):
-  - `init.lua`, `options.lua`, `keymaps.lua`, `autocmds.lua`
 - `lua/core/` — Fundamental settings and bootstrap:
-  - `init.lua` — Loads normalized `config.*` modules, then lazy bootstrap
+  - `init.lua` — Loads core modules, then lazy bootstrap
   - `options.lua`, `keymaps.lua`, `autocmds.lua`, `lazy.lua`
   - `lifecycle/` — VimEnter orchestration (colorscheme, session, nvim_tree)
   - `commands/` — User commands (ai, lang, cleanup, ui)
   - `theme.lua`, `theme_txaty.lua` — Theme registry and custom theme
   - `ai_toggle.lua`, `lang_toggle.lua`, `ui_toggle.lua` — Feature toggles
   - `lang_utils.lua`, `lsp_capabilities.lua`, `persist.lua`, `cleanup.lua` (source-of-truth modules)
-- `lua/util/` — Shared helper aliases (compatibility shims):
-  - `persist.lua`, `lang_utils.lua`, `lsp_capabilities.lua`
 - `lua/plugins/` — Self-contained plugin specs with inlined configs:
   - `lsp.lua` — Mason + vim.lsp.config (Neovim 0.11+ API), enables installed servers via `mason-lspconfig.get_installed_servers()`
   - `tools.lua` — conform.nvim + nvim-lint
@@ -41,7 +37,7 @@ Inside Neovim: `:Mason`, `:LspInfo`, `:ConformInfo`, `:Lazy profile`
 - Language: `:LangPanel`, `<leader>Lp` (panel), `<leader>Ls` (status)
 - UI: `<leader>u*` (`uw` wrap, `us` spell, `un` numbers, `ur` relative, `uc` conceal)
 - Keymaps: conflict audit auto-runs on `VeryLazy`; use `:lua require("core.keymap_audit").full_audit()` for manual checks
-- Cleanup: `:CleanupNvim` (manual, auto-runs on startup throttled to 24h)
+- Cleanup: `:CleanupNvim` (manual; startup cleanup only runs when `vim.g.enable_auto_cleanup = true`)
 - Rust: `<leader>R*` (runnables, testables, Cargo.toml via rustaceanvim)
 - Crates: `<leader>C*` in Cargo.toml (upgrade, versions, features)
 
@@ -56,7 +52,7 @@ Inside Neovim: `:Mason`, `:LspInfo`, `:ConformInfo`, `:Lazy profile`
 - Headless: Run health, sync, Treesitter commands
 - DAP: Verify via `:Mason`, test breakpoints (`<leader>db`)
 - Theme: Test `:ThemeSwitch`, `<leader>cc`, verify persistence
-- Session: Test auto-save on exit, auto-restore on `nvim` (no args)
+- Session: Test restore/save behavior only after enabling `vim.g.enable_session_persistence = true`
 - UI Toggles: Test `<leader>u*`, verify persistence via `:UIStatus`
 - Minimap: `<leader>MM` toggle
 
@@ -73,7 +69,7 @@ Inside Neovim: `:Mason`, `:LspInfo`, `:ConformInfo`, `:Lazy profile`
 - Python: Use venv-selector (`<leader>pv`) over global python3_host_prog
 - LSP: `vim.lsp.config()` API (Neovim 0.11+). **Never** set `cmd` or `root_dir` (conflicts with Mason). Rust via `rustaceanvim`.
 - Theme: Preference in `$XDG_DATA_HOME/theme_config.json`
-- Session: Files in `~/.local/state/nvim/sessions/`. Auto-restore only without arguments.
+- Session: Files in `~/.local/state/nvim/sessions/`. Auto-restore/save require `vim.g.enable_session_persistence = true`.
 
 ## Architecture Notes
 - **No NvChad**: Completely removed. Do not reference or recreate NvChad patterns.
@@ -82,7 +78,7 @@ Inside Neovim: `:Mason`, `:LspInfo`, `:ConformInfo`, `:Lazy profile`
 - **Performance**: lazy.nvim with custom settings, disabled runtime plugins, sub-30ms startup
 - **Startup**: `lifecycle/init.lua` handles VimEnter (theme → session → UI state → nvim-tree → commands)
 - **Theme System**: 50+ themes (25+ dark, 20+ light, 2 custom txaty). Factory pattern for custom theme.
-- **Session**: Auto-save on VimLeavePre, auto-restore when opening without arguments
+- **Session**: Restore/save logic exists, but persistence remains opt-in via `vim.g.enable_session_persistence = true`
 - **LSP Migration**: `vim.lsp.config()` API, Rust via `rustaceanvim`
 - **AI Toggle**: Copilot disabled entirely when off, state persisted
 - **Language Toggle**: Per-language tooling disable, state persisted

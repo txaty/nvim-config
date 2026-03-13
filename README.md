@@ -10,10 +10,10 @@ A modern, modular Neovim configuration focusing on **productivity, language supp
 - **Testing**: Integrated test runner (neotest) for multiple languages
 - **Debugging**: Debug Adapter Protocol (DAP) support with visual breakpoints
 - **Project Navigation**: Snacks picker + nvim-tree for fast file discovery
-- **Code Quality**: LSP, linting, formatting on save
+- **Code Quality**: LSP, linting, and formatting with explicit opt-in automation
 - **Git Integration**: Gitsigns hunk operations, diffview, lazygit TUI
 - **Remote Development**: VS Code Remote-like experience with distant.nvim
-- **Session Management**: Auto-save and restore sessions
+- **Session Management**: Session restore and opt-in persistence
 - **50+ Themes**: Dark, light, and custom ergonomic themes with smart switching
 - **Modular Language Toggle**: Enable/disable language tooling per-language
 
@@ -74,8 +74,9 @@ git clone --filter=blob:none https://github.com/folke/lazy.nvim.git \
 nvim
 # :Lazy sync
 
-# Install language servers and tools
-:Mason
+# Install language servers and tools explicitly
+# :MasonInstallAll
+# :Mason
 ```
 
 ### First Run Checklist
@@ -87,7 +88,8 @@ After installation, verify everything works:
 :checkhealth           # Run comprehensive health check
 :LspInfo               # Verify LSP servers are available
 :ConformInfo           # Check formatter configuration
-:Mason                 # Install required tools
+:MasonInstallAll       # Install the curated tool set explicitly
+:Mason                 # Inspect/install individual tools
 :TSUpdate              # Install/update treesitter parsers explicitly
 ```
 
@@ -102,7 +104,7 @@ Common workflows:
 - **Find files**: `<leader>ff` (Snacks picker)
 - **Search text**: `<leader>fg` (Live grep)
 - **Rename symbol**: `<leader>lr` (LSP rename)
-- **Format code**: `<leader>lf` (auto on save)
+- **Format code**: `<leader>lf` (manual format)
 - **Git stage**: `<leader>gs` (stage hunk)
 - **Run tests**: `<leader>tn` (nearest test)
 - **Debug**: `<leader>db` (toggle breakpoint)
@@ -123,22 +125,22 @@ python -m venv .venv
 # 2. Inside Neovim, select virtualenv
 <leader>pv
 
-# 3. Open Python file - LSP auto-attaches
+# 3. Enable automatic LSP startup in trusted environments or use :LspStart
 ```
 
-**Installed tools:** `pyright`, `black`, `isort`, `ruff`
+**Recommended tools:** `pyright`, `black`, `isort`, `ruff`
 
 #### Go
 
-Open any `.go` file - LSP auto-attaches with `gopls`.
+Open any `.go` file, then use `:LspStart` or set `vim.g.enable_lsp_automatic_start = true`.
 
-**Installed tools:** `gopls`, `goimports`, `delve` (debugger)
+**Recommended tools:** `gopls`, `goimports`, `delve` (debugger)
 
 #### Rust
 
 Install Rust via `rustup`, then open `.rs` file.
 
-**Installed tools:** `rust-analyzer`, `rustfmt`, `codelldb` (debugger)
+**Recommended tools:** `rust-analyzer`, `rustfmt`, `codelldb` (debugger)
 
 **Rust keybindings** (use `<leader>R*` prefix):
 ```
@@ -160,9 +162,9 @@ Install Rust via `rustup`, then open `.rs` file.
 
 #### TypeScript/JavaScript
 
-Open `.ts`, `.tsx`, `.js`, `.jsx` files - LSP auto-attaches.
+Open `.ts`, `.tsx`, `.js`, `.jsx` files, then use `:LspStart` or enable automatic LSP startup.
 
-**Installed tools:** `typescript-language-server`, `prettier`, `eslint`
+**Recommended tools:** `typescript-language-server`, `prettier`, `eslint`
 
 #### Flutter
 
@@ -179,7 +181,7 @@ flutter --version
 
 #### Lua
 
-Write Lua - `lua_ls` auto-attaches. Formatting via `stylua`.
+Write Lua, then use `:LspStart` or enable automatic LSP startup. Formatting uses `stylua`.
 
 ### Testing
 
@@ -271,7 +273,8 @@ Connect to remote servers (VS Code Remote-like experience):
 <leader>rd    # Disconnect
 ```
 
-LSP, formatting, and all features work transparently on remote files.
+Remote open/connect/shell mappings validate input and ask for confirmation before launching privileged actions.
+Remote LSP still follows the same secure default: use `:LspStart` or opt into automatic startup.
 
 ### File Navigation
 
@@ -318,8 +321,8 @@ These are intentionally off unless you opt in.
 
 **Install missing tools:**
 ```
-:Mason            # Open tool manager
-# Search for and install language server (e.g., "pyright")
+:MasonInstallAll  # Install the curated tool set explicitly
+:Mason            # Inspect/install individual tools
 ```
 
 **Common issue:** Python virtualenv not selected
@@ -460,7 +463,9 @@ After changing plugin specs or updating plugins, re-check these areas:
 Edit `lua/core/keymaps.lua`:
 
 ```lua
-map("n", "<leader>ff", "<cmd>Telescope find_files<cr>", { desc = "Find files" })
+map("n", "<leader>ff", function()
+  Snacks.picker.files()
+end, { desc = "Find files" })
 ```
 
 ### Enable/Disable Plugins
@@ -568,15 +573,6 @@ return {
 │   │       ├── lang.lua
 │   │       ├── cleanup.lua
 │   │       └── ui.lua
-│   ├── config/             # Normalized config entry modules (compat shims)
-│   │   ├── init.lua
-│   │   ├── options.lua
-│   │   ├── keymaps.lua
-│   │   └── autocmds.lua
-│   ├── util/               # Shared helper aliases (compat shims)
-│   │   ├── persist.lua
-│   │   ├── lang_utils.lua
-│   │   └── lsp_capabilities.lua
 │   └── plugins/            # Plugin specifications
 │       ├── lsp.lua          # LSP + Mason
 │       ├── colorscheme.lua  # 40+ theme plugins
@@ -638,7 +634,7 @@ nvim --headless '+checkhealth' +qa
 2. **Lazy-load plugins**: All plugins load only when needed
 3. **Use Flash navigation**: `s` key is faster than j/k movement
 4. **Incremental search**: `<leader>fg` for live preview
-5. **Session management**: `<leader>qs` to save state
+5. **Session management**: `<leader>qs` to restore the current directory session
 
 ---
 

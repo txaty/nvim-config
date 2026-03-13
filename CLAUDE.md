@@ -82,7 +82,7 @@ init.lua → core/init.lua → loads in order:
   │   ├─ filetype.lua     (prose/python settings)
   │   ├─ cursor.lua       (cursor restore, view save/load)
   │   ├─ word_highlight.lua (fallback word highlighting)
-  │   ├─ persistence.lua  (session/theme auto-save)
+  │   ├─ persistence.lua  (session/theme persistence hooks)
   │   └─ ui_state.lua     (deferred UI state for new windows)
   ├─ core/lifecycle.setup() (registers VimEnter autocmd)
   ├─ core/keymap_audit.setup() (registers VeryLazy autocmd)
@@ -132,7 +132,7 @@ VimEnter Lifecycle (deterministic order):
   - `snacks.lua` — Primary fuzzy finder (picker), dashboard, zen mode
   - `telescope.lua` — Fallback fuzzy finder for plugin integrations
   - `copilot.lua` — GitHub Copilot (respects AI toggle)
-  - `session.lua` — persistence.nvim with auto-save/restore
+  - `session.lua` — persistence.nvim with opt-in save/restore
   - `remote.lua` — Distant.nvim for remote development
   - `languages/` — Language-specific configs (python, rust, go, web, flutter)
 - `lua/dap/` — Language-specific debug adapter configurations
@@ -217,7 +217,7 @@ nvim --headless "+lua print(require('lazy').stats().count)" +qa
 2. Verify LSP attaches (`:LspInfo`)
 3. Test formatting (`<leader>lf` or on save)
 4. Test DAP breakpoints (`<leader>db`)
-5. Test session save/restore (`<leader>qs` / `<leader>ql`)
+5. Test session restore/last-session restore (`<leader>qs` / `<leader>ql`) after enabling persistence
 6. Verify nvim-tree auto-opens on empty buffers
 
 ### Load Order Verification
@@ -271,10 +271,10 @@ See `docs/keymaps.md` for complete reference.
 
 ## Session Management
 
-- **Auto-save**: Sessions saved on VimLeavePre
-- **Auto-restore**: Restored when opening Neovim without arguments
+- **Auto-save**: Sessions save on VimLeavePre only when `vim.g.enable_session_persistence = true`
+- **Auto-restore**: Sessions restore on startup only when persistence is enabled
 - **Per-directory**: Each workspace maintains its own session state
-- **Manual**: `<leader>qs` (save), `<leader>ql` (load last), `<leader>qS` (select)
+- **Manual**: `<leader>qs` (restore current-dir session), `<leader>ql` (load last), `<leader>qS` (select)
 
 **Note:** Global variables (vim.g.*) are NOT in sessions. UI state persisted separately via JSON config files to maintain single source of truth.
 
@@ -320,7 +320,7 @@ Manual trigger: `:CleanupNvim`. Opt-out: `vim.g.disable_auto_cleanup = true`
 ### Remote Development
 - **distant.nvim** — VS Code Remote-like experience (`<leader>r*`)
   - SSH-based with compression (zstd)
-  - Auto LSP attachment for remote buffers
+  - Auto LSP attachment for remote buffers only when `vim.g.enable_lsp_automatic_start = true`
 
 ### AI Assistance
 - **copilot.lua** — Ghost text completion (`<M-l>` to accept)

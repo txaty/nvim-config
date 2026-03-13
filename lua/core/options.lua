@@ -41,8 +41,32 @@ local state_dirs = {
   state_path .. "/view",
 }
 
+local state_dir_warnings = {}
+
+local function ensure_private_dir(dir)
+  if vim.fn.isdirectory(dir) == 1 then
+    return true
+  end
+
+  local ok, err = pcall(vim.fn.mkdir, dir, "p", "0700")
+  if ok or vim.fn.isdirectory(dir) == 1 then
+    return true
+  end
+
+  if state_dir_warnings[dir] then
+    return false
+  end
+
+  state_dir_warnings[dir] = true
+  vim.schedule(function()
+    vim.notify(string.format("Failed to create state directory %s: %s", dir, tostring(err)), vim.log.levels.WARN)
+  end)
+
+  return false
+end
+
 for _, dir in ipairs(state_dirs) do
-  vim.fn.mkdir(dir, "p", "0700")
+  ensure_private_dir(dir)
 end
 
 opt.backup = false

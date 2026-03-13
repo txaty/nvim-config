@@ -34,10 +34,6 @@ Custom, self-maintained Neovim configuration using `lazy.nvim` for plugins and `
   - `ai_toggle.lua`, `lang_toggle.lua`, `ui_toggle.lua` — Feature toggles
   - `lang_utils.lua`, `lsp_capabilities.lua`, `persist.lua` — Source-of-truth shared utilities
   - `cleanup.lua` — Automatic cleanup
-- `lua/config/` — Normalized config entry modules (compatibility shims)
-  - `init.lua`, `options.lua`, `keymaps.lua`, `autocmds.lua`
-- `lua/util/` — Shared helper aliases (compatibility shims)
-  - `persist.lua`, `lang_utils.lua`, `lsp_capabilities.lua`
 - `lua/plugins/` — Self-contained plugin specs
   - `lsp.lua`, `tools.lua`, `cmp.lua`, `treesitter.lua`
   - `ui.lua`, `snacks.lua`, `telescope.lua`
@@ -84,8 +80,8 @@ luacheck lua/                                     # Lint Lua
 - Copilot: `<M-l>` (accept)
 
 ### Session Management
-- Auto-save on exit, auto-restore when opening without arguments
-- `<leader>qs` (save), `<leader>ql` (load last), `<leader>qS` (select)
+- Session persistence is opt-in via `vim.g.enable_session_persistence = true`
+- `<leader>qs` (restore current-dir session), `<leader>ql` (load last), `<leader>qS` (select)
 
 ### Language Toggle
 - `<leader>Lp` or `:LangPanel` — Telescope panel
@@ -93,10 +89,10 @@ luacheck lua/                                     # Lint Lua
 - State saved to `$XDG_DATA_HOME/language_config.json`
 
 ### UI Toggles (`<leader>u*`)
-- `<leader>uw` (wrap), `<leader>us` (spell), `<leader>un` (numbers), `<leader>ur` (relative), `<leader>uc` (conceal)
+- `<leader>uw` (wrap), `<leader>us` (spell), `<leader>un` (numbers), `<leader>ur` (relative), `<leader>uc` (conceal), `<leader>uD` (inline diagnostics)
 
 ### Remote Development (`<leader>r*`)
-- `<leader>rc` (connect), `<leader>rd` (disconnect), `<leader>ro` (open)
+- `<leader>rc` (connect, validated + confirmed), `<leader>rd` (disconnect), `<leader>ro` (open, validated + confirmed)
 - `<leader>rf` (find files), `<leader>rg` (grep)
 
 ### Rust (`<leader>R*`)
@@ -117,7 +113,7 @@ luacheck lua/                                     # Lint Lua
 - Verify formatting: on save or `<leader>lf`
 - Verify completion: `<C-Space>`
 - Verify theme: `:ThemeSwitch`, `<leader>cc`
-- Verify session: auto-save on exit, auto-restore on `nvim`
+- Verify session restore only after enabling persistence
 - Headless: `nvim --headless '+checkhealth' +qa`
 
 ## Commit Guidelines
@@ -134,4 +130,4 @@ luacheck lua/                                     # Lint Lua
 - **LSP Migration**: `vim.lsp.config()` API (Neovim 0.11+), Rust via `rustaceanvim`
 - **AI Toggle**: Copilot plugins disabled entirely when off, state persisted
 - **Language Toggle**: Per-language tooling disable, state persisted
-- **Session**: Auto-save/restore, integrates with nvim-tree auto-open
+- **Session**: Restore/save logic exists, but persistence is opt-in

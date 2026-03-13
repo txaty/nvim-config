@@ -1,3 +1,37 @@
+local security = require "core.security"
+
+local function invalid_remote_input(input)
+  return input:find "[|\n\r;`&$!#]"
+end
+
+local function prompt_remote_input(prompt, error_message, title, command)
+  return function()
+    vim.ui.input({ prompt = prompt }, function(input)
+      if not input or input == "" then
+        return
+      end
+      if invalid_remote_input(input) then
+        vim.notify(error_message, vim.log.levels.ERROR)
+        return
+      end
+      if security.confirm_external(title, input) then
+        vim.cmd { cmd = command, args = { input } }
+      end
+    end)
+  end
+end
+
+local function with_remote_connection(callback)
+  return function()
+    local ok = pcall(require, "distant")
+    if not ok then
+      vim.notify("Not connected to a remote server. Use <leader>rc to connect.", vim.log.levels.WARN)
+      return
+    end
+    callback()
+  end
+end
+
 return {
   -- Distant.nvim - Remote development like VS Code Remote
   {
@@ -13,58 +47,15 @@ return {
       "DistantSystemInfo",
       "DistantClientVersion",
     },
-    init = function()
-      local security = require "core.security"
-
-      vim.keymap.set("n", "<leader>rc", function()
-        vim.ui.input({ prompt = "Remote connection (e.g., ssh://user@host): " }, function(input)
-          if input and input ~= "" then
-            if input:find "[|\n\r;`&$!#]" then
-              vim.notify("Invalid characters in connection string", vim.log.levels.ERROR)
-              return
-            end
-            if security.confirm_external("Connect to remote host?", input) then
-              vim.cmd { cmd = "DistantLaunch", args = { input } }
-            end
-          end
-        end)
-      end, { desc = "Remote: connect to server" })
-
-      vim.keymap.set("n", "<leader>ro", function()
-        vim.ui.input({ prompt = "Remote path to open: " }, function(input)
-          if input and input ~= "" then
-            if input:find "[|\n\r;`&$!#]" then
-              vim.notify("Invalid characters in path", vim.log.levels.ERROR)
-              return
-            end
-            if security.confirm_external("Open remote path?", input) then
-              vim.cmd { cmd = "DistantOpen", args = { input } }
-            end
-          end
-        end)
-      end, { desc = "Remote: open directory/file" })
-
-      vim.keymap.set("n", "<leader>rS", function()
-        if security.confirm_external "Open interactive remote shell?" then
-          vim.cmd "DistantShell"
-        end
-      end, { desc = "Remote: open shell" })
-    end,
     keys = {
       {
         "<leader>rc",
-        function()
-          vim.ui.input({ prompt = "Remote connection (e.g., ssh://user@host): " }, function(input)
-            if input and input ~= "" then
-              -- Reject shell metacharacters and vim command separators to prevent injection
-              if input:find "[|\n\r;`&$!#]" then
-                vim.notify("Invalid characters in connection string", vim.log.levels.ERROR)
-                return
-              end
-              vim.cmd { cmd = "DistantLaunch", args = { input } }
-            end
-          end)
-        end,
+        prompt_remote_input(
+          "Remote connection (e.g., ssh://user@host): ",
+          "Invalid characters in connection string",
+          "Connect to remote host?",
+          "DistantLaunch"
+        ),
         desc = "Remote: connect to server",
       },
       {
@@ -81,47 +72,37 @@ return {
       },
       {
         "<leader>ro",
-        function()
-          vim.ui.input({ prompt = "Remote path to open: " }, function(input)
-            if input and input ~= "" then
-              -- Reject shell metacharacters and vim command separators to prevent injection
-              if input:find "[|\n\r;`&$!#]" then
-                vim.notify("Invalid characters in path", vim.log.levels.ERROR)
-                return
-              end
-              vim.cmd { cmd = "DistantOpen", args = { input } }
-            end
-          end)
-        end,
+        prompt_remote_input("Remote path to open: ", "Invalid characters in path", "Open remote path?", "DistantOpen"),
         desc = "Remote: open directory/file",
       },
       { "<leader>rs", "<cmd>DistantSystemInfo<cr>", desc = "Remote: system info" },
-      { "<leader>rS", "<cmd>DistantShell<cr>", desc = "Remote: open shell" },
+      {
+        "<leader>rS",
+        function()
+          if security.confirm_external "Open interactive remote shell?" then
+            vim.cmd "DistantShell"
+          end
+        end,
+        desc = "Remote: open shell",
+      },
+      {
+        "<leader>rf",
+        with_remote_connection(function()
+          require("telescope.builtin").find_files()
+        end),
+        desc = "Remote: find files",
+      },
+      {
+        "<leader>rg",
+        with_remote_connection(function()
+          require("telescope.builtin").live_grep()
+        end),
+        desc = "Remote: live grep",
+      },
     },
     config = function()
       -- Basic setup for distant.nvim v0.3
       require("distant"):setup()
-
-      -- Setup keymaps for file navigation (using standard Telescope after opening remote)
-      vim.keymap.set("n", "<leader>rf", function()
-        local ok, _ = pcall(require, "distant")
-        if not ok then
-          vim.notify("Not connected to a remote server. Use <leader>rc to connect.", vim.log.levels.WARN)
-          return
-        end
-        -- Use standard telescope find_files when in a remote buffer
-        require("telescope.builtin").find_files()
-      end, { desc = "Remote: find files" })
-
-      vim.keymap.set("n", "<leader>rg", function()
-        local ok, _ = pcall(require, "distant")
-        if not ok then
-          vim.notify("Not connected to a remote server. Use <leader>rc to connect.", vim.log.levels.WARN)
-          return
-        end
-        -- Use standard telescope live_grep when in a remote buffer
-        require("telescope.builtin").live_grep()
-      end, { desc = "Remote: live grep" })
 
       -- Auto-attach LSP when opening remote files
       -- NOTE: LspStart uses servers pre-configured by lsp.lua with capabilities

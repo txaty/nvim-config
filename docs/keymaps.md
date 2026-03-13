@@ -30,7 +30,7 @@
 | `<leader>S` | **Search & Replace** | Open grug-far (single mapping, not a group) |
 | `<leader>T*` | **Terminal** | `<leader>Tf` = float terminal |
 | `<leader>t*` | **Testing** | `<leader>tn` = run nearest test |
-| `<leader>u*` | **UI/Display** | `<leader>uw` = toggle wrap, `<leader>up` = profiler |
+| `<leader>u*` | **UI/Display** | `<leader>uw` = toggle wrap, `<leader>uD` = diagnostics, `<leader>up` = profiler |
 | `<leader>w*` | **Windows** | `<leader>ws` = horizontal split |
 | `<leader>x*` | **Diagnostics** | `<leader>xx` = toggle diagnostics |
 
@@ -123,11 +123,11 @@
 ### Connection Management
 | Keybinding | Description |
 |---|---|
-| `<leader>rc` | Connect to remote server via SSH |
+| `<leader>rc` | Connect to remote server via SSH (validated + confirmed) |
 | `<leader>rd` | Disconnect from remote server |
-| `<leader>ro` | Open remote directory/file |
+| `<leader>ro` | Open remote directory/file (validated + confirmed) |
 | `<leader>rs` | Show remote system info |
-| `<leader>rS` | Open shell on remote server |
+| `<leader>rS` | Open shell on remote server (confirmed) |
 
 ### Remote File Operations
 | Keybinding | Description |
@@ -138,7 +138,7 @@
 **How it works:**
 - Neovim runs locally, but files, LSP, and formatters execute on the remote server
 - Supports SSH connections with compression for better performance
-- Automatic LSP attachment when opening remote files
+- Automatic LSP attachment only when `vim.g.enable_lsp_automatic_start = true`
 - Remote connection status shown in lualine statusline (󰢹 indicator)
 - All file operations work transparently with remote paths
 
@@ -498,7 +498,7 @@
 |---|---|
 | `<leader>qq` | Quit current window |
 | `<leader>qQ` | Quit all windows (force) |
-| `<leader>qs` | Restore/save session |
+| `<leader>qs` | Restore session for current directory |
 | `<leader>qS` | Select session to load |
 | `<leader>ql` | Restore last session |
 | `<leader>qd` | Don't save current session |
@@ -785,6 +785,8 @@
 | `<leader>ur` | Toggle relative numbers | ON |
 | `<leader>uc` | Toggle conceal (0/2) | ON (2) |
 | `<leader>ug` | Toggle nvim-tree git status | ON |
+| `<leader>uD` | Toggle inline diagnostics mode | OFF |
+| `<leader>ut` | Toggle Treesitter context header | ON |
 | `<leader>uz` | Toggle zen mode | — |
 | `<leader>ud` | Toggle dim mode | — |
 | `<leader>up` | Toggle profiler overlay | — |

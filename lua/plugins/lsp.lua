@@ -194,7 +194,10 @@ return {
       if vim.g.enable_lsp_automatic_start ~= true then
         vim.schedule(function()
           vim.notify(
-            "Automatic LSP start is disabled by security defaults. Use :LspStart or set vim.g.enable_lsp_automatic_start = true.",
+            table.concat({
+              "Automatic LSP start is disabled by security defaults.",
+              "Use :LspStart or set vim.g.enable_lsp_automatic_start = true.",
+            }, " "),
             vim.log.levels.INFO
           )
         end)
