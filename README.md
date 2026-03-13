@@ -17,6 +17,12 @@ A modern, modular Neovim configuration focusing on **productivity, language supp
 - **50+ Themes**: Dark, light, and custom ergonomic themes with smart switching
 - **Modular Language Toggle**: Enable/disable language tooling per-language
 
+## Performance Notes
+
+- Some UI-only plugins load on `BufReadPost` instead of `BufReadPre` so file contents render before decorative integrations attach.
+- Inline git blame is off by default to avoid steady cursor-hold git work. Toggle it when needed with `<leader>gB`.
+- Fallback word-highlighting caches LSP `documentHighlight` support per buffer to avoid repeated client scans on every `CursorHold`.
+
 ## Security Model
 
 This configuration is hardened to prefer explicit trust over convenience.
@@ -210,6 +216,7 @@ Supported: Python, Go, Rust
 <leader>gs    # Stage hunk (or visual selection)
 <leader>gS    # Stage entire buffer
 <leader>gp    # Preview changes
+<leader>gB    # Toggle inline git blame
 ```
 
 **View history:**
