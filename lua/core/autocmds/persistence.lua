@@ -11,6 +11,9 @@ function M.setup()
   autocmd("VimLeavePre", {
     group = augroup "SessionAutoSave",
     callback = function()
+      if vim.g.enable_session_persistence ~= true then
+        return
+      end
       local ok, session = pcall(require, "core.lifecycle.session")
       if ok then
         session.save()

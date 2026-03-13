@@ -1,6 +1,7 @@
 -- Automatic cleanup for temporary and cache files
 -- Minimizes disk footprint without removing any plugins
 local M = {}
+local persist = require "core.persist"
 
 -- Configuration
 local config = {
@@ -325,7 +326,7 @@ end
 -- Save cleanup timestamp
 local function save_cleanup_time()
   local timestamp_file = state_path .. "/cleanup_last_run"
-  vim.fn.writefile({ tostring(os.time()) }, timestamp_file)
+  persist.save_lines(timestamp_file, { tostring(os.time()) })
 end
 
 -- Check if cleanup should run (throttled)
@@ -393,6 +394,9 @@ end
 
 -- Auto cleanup (called on startup, throttled)
 function M.auto_cleanup()
+  if vim.g.enable_auto_cleanup ~= true then
+    return
+  end
   if not M.should_run() then
     return
   end
