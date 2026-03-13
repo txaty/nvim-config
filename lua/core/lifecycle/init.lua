@@ -70,32 +70,24 @@ local function verify_load_order()
 
   local checks = {
     {
-      name = "navic loads before lspconfig",
+      name = "dropbar loads before lspconfig",
       check = function()
         -- Check the load log for ordering (only works if debug_plugin_load enabled)
         if #load_log > 0 then
-          local navic_idx, lspconfig_idx
+          local dropbar_idx, lspconfig_idx
           for i, entry in ipairs(load_log) do
-            if entry.plugin == "nvim-navic" then
-              navic_idx = i
+            if entry.plugin == "dropbar.nvim" then
+              dropbar_idx = i
             end
             if entry.plugin == "nvim-lspconfig" then
               lspconfig_idx = i
             end
           end
-          -- If both loaded, verify navic came first
-          if navic_idx and lspconfig_idx then
-            if navic_idx >= lspconfig_idx then
-              return false, string.format("navic loaded at position %d, lspconfig at %d", navic_idx, lspconfig_idx)
+          -- If both loaded, verify dropbar came first
+          if dropbar_idx and lspconfig_idx then
+            if dropbar_idx >= lspconfig_idx then
+              return false, string.format("dropbar loaded at position %d, lspconfig at %d", dropbar_idx, lspconfig_idx)
             end
-          end
-        end
-        -- Fallback check: if LSP clients exist, navic should be loaded
-        local lsp_clients = vim.lsp.get_clients()
-        if #lsp_clients > 0 then
-          local navic_loaded = package.loaded["nvim-navic"] ~= nil
-          if not navic_loaded then
-            return false, "LSP clients attached but navic not loaded"
           end
         end
         return true

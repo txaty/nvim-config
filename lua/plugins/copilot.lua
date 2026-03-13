@@ -125,4 +125,36 @@ return {
       },
     },
   },
+
+  -- Avante: Agentic AI editing (Cursor/Zed-style inline multi-file AI)
+  {
+    "yetone/avante.nvim",
+    cond = function()
+      return require("core.ai_toggle").is_enabled()
+    end,
+    build = "make",
+    cmd = { "AvanteAsk", "AvanteChat", "AvanteToggle" },
+    keys = {
+      { "<leader>av", "<cmd>AvanteToggle<cr>", desc = "AI: Toggle Avante sidebar" },
+      { "<leader>ac", "<cmd>AvanteChat<cr>", desc = "AI: Avante chat" },
+      { "<leader>aA", "<cmd>AvanteAsk<cr>", mode = { "n", "v" }, desc = "AI: Ask Avante (selection)" },
+      { "<leader>aR", "<cmd>AvanteRefresh<cr>", desc = "AI: Refresh Avante" },
+    },
+    dependencies = {
+      "nvim-treesitter/nvim-treesitter",
+      "stevearc/dressing.nvim",
+      "nvim-lua/plenary.nvim",
+      "MunifTanjim/nui.nvim",
+      "nvim-tree/nvim-web-devicons",
+      "zbirenbaum/copilot.lua",
+    },
+    opts = {
+      provider = "copilot",
+      auto_suggestions_provider = "copilot",
+      behaviour = {
+        auto_suggestions = false,
+        auto_set_keymaps = true,
+      },
+    },
+  },
 }
