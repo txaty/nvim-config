@@ -66,7 +66,7 @@ nvim --cmd "let g:debug_keymaps=1"                                       # Keyma
 Recent optimizations reduced startup time by 40.6% (42.6ms → 25.3ms):
 - **OPT-1**: Keymap audit runs on `VeryLazy` and only notifies on conflicts
 - **OPT-2**: Deferred UI state autocmd to VeryLazy (saves ~1-2ms)
-- **OPT-3**: Conditional cleanup module load with throttle check (saves ~1-2ms on 90% of startups)
+- **OPT-3**: Cleanup deferred 2s with throttle check (saves ~1-2ms on 90% of startups)
 - **OPT-4**: Fold-aware view saving (saves ~1-3ms per buffer switch)
 
 Re-profile with `:Lazy profile` if startup time exceeds 30ms.
@@ -76,46 +76,55 @@ Re-profile with `:Lazy profile` if startup time exceeds 30ms.
 ### Bootstrap Sequence
 ```
 init.lua → core/init.lua → loads in order:
-  ├─ config/options.lua  (compat shim -> core.options)
-  ├─ config/keymaps.lua  (compat shim -> core.keymaps)
-  ├─ config/autocmds.lua (compat shim -> core.autocmds)
-  │   └─ core/lifecycle/init.lua (VimEnter orchestrator)
-  └─ core/lazy.lua       (plugin manager bootstrap)
-      └─ plugins/*       (lazy-loaded plugin specs)
+  ├─ core/options.lua     (vim.opt/vim.g settings)
+  ├─ core/keymaps.lua     (general keybindings)
+  ├─ core/autocmds/       (explicit setup() calls, no require-time side effects)
+  │   ├─ filetype.lua     (prose/python settings)
+  │   ├─ cursor.lua       (cursor restore, view save/load)
+  │   ├─ word_highlight.lua (fallback word highlighting)
+  │   ├─ persistence.lua  (session/theme auto-save)
+  │   └─ ui_state.lua     (deferred UI state for new windows)
+  ├─ core/lifecycle.setup() (registers VimEnter autocmd)
+  ├─ core/keymap_audit.setup() (registers VeryLazy autocmd)
+  └─ core/lazy.lua        (plugin manager bootstrap)
+      └─ plugins/*        (lazy-loaded plugin specs)
 
 Plugin Load Layers (deterministic):
-  A. require-time:  options, keymaps, autocmds, lazy bootstrap
+  A. require-time:  options, keymaps, autocmds.setup(), lifecycle.setup(),
+                    keymap_audit.setup(), lazy bootstrap
   B. lazy setup:    snacks.nvim (priority=1000, lazy=false)
-  C. VimEnter:      colorscheme → session → ui_toggle → nvim_tree → commands
-  D. BufReadPre:    navic, lspconfig, gitsigns (LSP foundation)
-  E. BufReadPost:   treesitter, treesitter-context
-  F. VeryLazy:      lualine, bufferline, noice, which-key
+  C. VimEnter:      colorscheme → ui_toggle.init() → session → nvim_tree → commands
+  D. BufReadPre:    dropbar, lspconfig, gitsigns (LSP foundation)
+             NOTE: dropbar and lspconfig both load on BufReadPre; ordering between them
+                   is non-critical. dropbar registers its own LspAttach handler; LSP
+                   servers attach asynchronously, so dropbar is always ready in time.
+  E. BufReadPost:   treesitter
+  F. VeryLazy:      lualine, bufferline, noice, which-key, treesitter-context
   G. InsertEnter:   blink.cmp, copilot, mini.pairs
 
 VimEnter Lifecycle (deterministic order):
   1. colorscheme.lua  (theme restore FIRST)
-  2. session.lua      (session restore)
-  3. ui_toggle.init() (initialize globals only)
-  4. retrigger_buffer_events() (ASYNC - triggers BufReadPre/Post/FileType)
+  2. ui_toggle.init() (initialize vim.g.ui_* BEFORE session/plugins read them)
+  3. session.lua      (session restore, scope.nvim loads as dependency)
+  4. ui_toggle.apply_dim() (Snacks dim state)
+  5. retrigger_buffer_events() (ASYNC - triggers BufReadPre/Post/FileType)
      └─ on_complete: ui_toggle.apply_all() + nvim_tree.lua
-  5. commands/init.lua (register user commands)
-  6. reconcile.lua    (focus fix, waits for VeryLazy)
-  7. cleanup.lua      (deferred 2s, low priority)
+  6. commands/init.lua (register user commands)
+  7. reconcile.lua    (focus fix, waits for VeryLazy)
+  8. cleanup.lua      (deferred 2s, low priority)
 ```
 
 ### Directory Structure
-- `lua/config/` — Normalized config entry modules (compatibility shims)
-  - `init.lua`, `options.lua`, `keymaps.lua`, `autocmds.lua`
-- `lua/core/` — Fundamental Neovim settings and bootstrap
-  - `lifecycle/` — VimEnter orchestration (colorscheme, session, nvim_tree)
+- `lua/core/` — Fundamental Neovim settings, bootstrap, and orchestration
+  - `autocmds/` — Core autocmds split by concern (filetype, cursor, word_highlight, persistence, ui_state)
+  - `lifecycle/` — VimEnter orchestration (colorscheme, session, nvim_tree, reconcile)
   - `commands/` — User commands (ai, lang, cleanup, ui)
   - `theme.lua` — Unified theme registry with 50+ themes
   - `theme_txaty.lua` — Custom ergonomic theme (dark/light variants)
-  - `lang_utils.lua`, `lsp_capabilities.lua`, `persist.lua` — Source-of-truth shared helpers
+  - `lang_utils.lua`, `lsp_capabilities.lua`, `persist.lua` — Shared helpers
   - `ai_toggle.lua`, `lang_toggle.lua`, `ui_toggle.lua` — Feature toggles
   - `cleanup.lua` — Automatic cleanup for temporary/cache files
-- `lua/util/` — Shared helper aliases (compatibility shims)
-  - `persist.lua`, `lang_utils.lua`, `lsp_capabilities.lua`
+  - `keymap_audit.lua` — Keymap conflict detection (VeryLazy)
 - `lua/plugins/` — Self-contained plugin specs (all `.lua` files auto-imported)
   - `lsp.lua` — Mason + vim.lsp.config with LspAttach autocmd and installed-server enable loop
   - `tools.lua` — conform.nvim (formatting) + nvim-lint
@@ -136,7 +145,7 @@ VimEnter Lifecycle (deterministic order):
 
 ### Pattern 1: Language Utilities (Recommended)
 ```lua
-local lang = require "util.lang_utils"
+local lang = require "core.lang_utils"
 return {
   lang.extend_treesitter { "python", "toml" },
   lang.extend_mason { "pyright", "ruff", "black", "isort" },
@@ -193,7 +202,7 @@ vim.lsp.config("lua_ls", {
 - Use `vim.lsp.config()` instead of `require('lspconfig')[server].setup()`
 - **NEVER** set `cmd` or `root_dir` fields manually (causes conflicts with Mason)
 - Rust is handled exclusively by `rustaceanvim` (not included in lspconfig)
-- **ALWAYS** use `require("util.lsp_capabilities").get()` for capabilities
+- **ALWAYS** use `require("core.lsp_capabilities").get()` for capabilities
 
 ## Testing and Validation
 
@@ -218,8 +227,8 @@ nvim --cmd "let g:debug_lifecycle=1" --cmd "let g:debug_plugin_load=1" test.lua
 ```
 
 **Load Order Assertions (Debug Mode):**
-- navic loads before lspconfig (critical for breadcrumbs)
 - colorscheme loads before UI plugins (prevents white flash)
+- ui_toggle.init() runs before session restore (ensures vim.g.ui_* set for plugins)
 - snacks.nvim loads early (priority=1000)
 - mason-lspconfig available for language extensions
 
@@ -441,9 +450,13 @@ nvim --cmd "let g:debug_lifecycle=1" --cmd "let g:debug_plugin_load=1"
 ```
 
 **Known Constraints:**
-- navic must load before LSP attaches
+- scope.nvim must load before persistence.nvim restores the session (enforced via dependency)
 - mason must load before mason-lspconfig and lspconfig
 - colorscheme restores at VimEnter before UI plugins
+- dropbar and lspconfig both load on BufReadPre; relative ordering is non-critical
 
 ### Known Limitation - blink.cmp Capabilities
-blink.cmp loads on `InsertEnter` while LSP starts on `BufReadPre`. LSP capabilities aren't enhanced until first InsertEnter. This rarely matters in practice.
+blink.cmp is listed as an `optional` dependency of nvim-lspconfig. Lazy.nvim loads optional
+dependencies that are in spec before the parent, so blink is typically loaded before
+lspconfig's config() runs. If capabilities are missing in practice, change blink's event
+from `InsertEnter` to `{ "BufReadPre", "BufNewFile" }` as the definitive fix.

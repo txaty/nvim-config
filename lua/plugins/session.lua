@@ -1,7 +1,12 @@
 return {
   {
     "folke/persistence.nvim",
-    lazy = true, -- Loaded on demand by autocmds
+    lazy = true, -- Loaded on demand by lifecycle (session.restore() at VimEnter)
+    -- scope.nvim must be loaded BEFORE persistence.load() fires PersistenceLoadPost,
+    -- otherwise scope's handler (ScopeLoadState) is never registered at session restore.
+    -- Declaring it as a dependency guarantees scope loads first regardless of its own
+    -- VeryLazy trigger in ui.lua.
+    dependencies = { "tiagovla/scope.nvim" },
     opts = {
       -- Session options: UI state is persisted via ui_config.json (source of truth)
       -- Theme persistence is handled separately by theme.lua
