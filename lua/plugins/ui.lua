@@ -282,12 +282,11 @@ return {
         show_close_icon = true,
         max_name_length = 20,
         truncate_names = true,
-        -- Use centralized buffer closing to avoid re-entrancy issues
         close_command = function(bufnr)
-          require("core.buffers").close(bufnr, { force = true })
+          Snacks.bufdelete { buf = bufnr }
         end,
         right_mouse_command = function(bufnr)
-          require("core.buffers").close(bufnr, { force = true })
+          Snacks.bufdelete { buf = bufnr }
         end,
         offsets = {
           {
@@ -309,22 +308,47 @@ return {
           local icon = level:match "error" and " " or " "
           return icon .. count
         end,
+        custom_areas = {
+          right = function()
+            -- Use native tabline click syntax: %@func@text%X
+            _G.___bufferline_close_all = function()
+              Snacks.bufdelete.all()
+            end
+            return {
+              { text = "%@v:lua.___bufferline_close_all@ 󰅖 %X", link = "BufferLineTab" },
+            }
+          end,
+        },
       },
     },
     keys = {
       {
         "<leader>bd",
         function()
-          require("core.buffers").close(0, { force = true })
+          Snacks.bufdelete()
         end,
         desc = "Delete buffer",
       },
       {
         "<leader>bD",
         function()
-          require("core.buffers").close(0, { force = true, wipe = true })
+          Snacks.bufdelete { wipe = true }
         end,
         desc = "Wipeout buffer",
+      },
+      {
+        "<leader>bo",
+        function()
+          Snacks.bufdelete.other()
+        end,
+        desc = "Close other buffers",
+      },
+      {
+        "<leader>bx",
+        function()
+          Snacks.bufdelete.all()
+        end,
+        desc = "Close all buffers",
       },
     },
   },
@@ -335,6 +359,31 @@ return {
 
   -- Word illumination: replaced by snacks.words (lua/plugins/snacks.lua)
   -- Indent guides: replaced by snacks.indent (lua/plugins/snacks.lua)
+
+  -- Tab-scoped buffers: each tab only shows its own buffers in bufferline
+  {
+    "tiagovla/scope.nvim",
+    event = "VeryLazy",
+    config = function()
+      require("scope").setup()
+      -- Hook into persistence.nvim for session save/restore
+      local group = vim.api.nvim_create_augroup("ScopeSession", { clear = true })
+      vim.api.nvim_create_autocmd("User", {
+        pattern = "PersistenceSavePre",
+        group = group,
+        callback = function()
+          pcall(vim.cmd, "ScopeSaveState")
+        end,
+      })
+      vim.api.nvim_create_autocmd("User", {
+        pattern = "PersistenceLoadPost",
+        group = group,
+        callback = function()
+          pcall(vim.cmd, "ScopeLoadState")
+        end,
+      })
+    end,
+  },
 
   -- Search result visualization: shows "N/M" match count and highlights current match
   {

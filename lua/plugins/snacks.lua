@@ -259,6 +259,7 @@ return {
       toggle = { enabled = true },
 
       -- Startup & performance features
+      bufdelete = { enabled = true }, -- Buffer deletion with layout preservation
       quickfile = { enabled = true }, -- Instant file display before plugins load
       bigfile = {
         enabled = true,
