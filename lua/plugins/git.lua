@@ -83,4 +83,15 @@ return {
       { "<leader>gdb", "<cmd>DiffviewOpen HEAD~1<cr>", desc = "Diffview: compare prev commit" },
     },
   },
+
+  -- Inline merge conflict resolution: ours/theirs/both chooser
+  {
+    "akinsho/git-conflict.nvim",
+    version = "*",
+    event = "BufReadPre",
+    opts = {
+      default_mappings = true, -- co (ours), ct (theirs), cb (both), c0 (none), ]x/[x (navigate)
+      disable_diagnostics = true,
+    },
+  },
 }

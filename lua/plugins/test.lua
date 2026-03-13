@@ -86,4 +86,19 @@ return {
       }
     end,
   },
+
+  -- Test coverage gutters
+  {
+    "andythigpen/nvim-coverage",
+    cmd = { "Coverage", "CoverageToggle", "CoverageSummary", "CoverageLoad" },
+    keys = {
+      { "<leader>tc", "<cmd>CoverageToggle<cr>", desc = "Test: Toggle coverage" },
+      { "<leader>tC", "<cmd>CoverageSummary<cr>", desc = "Test: Coverage summary" },
+      { "<leader>tL", "<cmd>CoverageLoad<cr>", desc = "Test: Load coverage" },
+    },
+    dependencies = { "nvim-lua/plenary.nvim" },
+    opts = {
+      auto_reload = true,
+    },
+  },
 }

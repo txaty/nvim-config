@@ -62,20 +62,7 @@ return {
       "williamboman/mason-lspconfig.nvim",
       { "folke/lazydev.nvim", ft = "lua", opts = {} },
       { "saghen/blink.cmp", optional = true },
-      -- CRITICAL ORDERING: navic must load BEFORE lspconfig attaches LSP clients.
-      --
-      -- Reason: navic.opts.lsp.auto_attach registers an LspAttach autocmd during
-      -- navic's setup(). This handler must be registered BEFORE lspconfig attaches
-      -- any clients, otherwise the first buffer will miss breadcrumb attachment.
-      --
-      -- Mechanism: By declaring navic as a dependency of lspconfig, lazy.nvim
-      -- guarantees that navic's config function runs before lspconfig's config.
-      -- Both plugins load on the same event (BufReadPre), so dependency order
-      -- is the only way to ensure correctness.
-      --
-      -- Verification: Run `nvim --cmd "let g:debug_plugin_load=1" file.lua` and
-      -- check `:LoadOrder` — nvim-navic must appear before nvim-lspconfig.
-      { "SmiteshP/nvim-navic" },
+      -- dropbar.nvim handles breadcrumbs independently via treesitter + LSP
     },
     opts = {},
     config = function(_, opts)
@@ -204,5 +191,39 @@ return {
       -- IMPORTANT: rust-analyzer is handled exclusively by rustaceanvim
       -- (in lua/plugins/rust.lua). We skip it here to avoid conflicts.
     end,
+  },
+
+  -- Glance: Peek definition/references in floating window (VS Code-style)
+  {
+    "DNLHC/glance.nvim",
+    cmd = "Glance",
+    keys = {
+      { "gp", "<cmd>Glance definitions<cr>", desc = "LSP: Peek definition" },
+      { "gP", "<cmd>Glance references<cr>", desc = "LSP: Peek references" },
+      { "gI", "<cmd>Glance implementations<cr>", desc = "LSP: Peek implementations" },
+      { "gY", "<cmd>Glance type_definitions<cr>", desc = "LSP: Peek type definitions" },
+    },
+    opts = {
+      border = { enable = true },
+      height = 20,
+    },
+  },
+
+  -- Code Lens: Show reference/implementation counts above functions
+  {
+    "VidocqH/lsp-lens.nvim",
+    event = "LspAttach",
+    keys = {
+      { "<leader>lL", "<cmd>LspLensToggle<cr>", desc = "LSP: Toggle code lens" },
+    },
+    opts = {
+      enable = true,
+      include_declaration = false,
+      sections = {
+        definition = false,
+        references = true,
+        implements = true,
+      },
+    },
   },
 }

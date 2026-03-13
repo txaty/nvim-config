@@ -98,9 +98,22 @@ function M.toggle(opt)
     persist.save_json(config_path, cached_config)
 
     if new_value then
+      -- Disable tiny-inline-diagnostic when switching to virtual_lines
+      local tid_ok, tid = pcall(require, "tiny-inline-diagnostic")
+      if tid_ok and tid.disable then
+        tid.disable()
+      end
       vim.diagnostic.config { virtual_text = false, virtual_lines = true }
     else
-      vim.diagnostic.config { virtual_text = { prefix = "●", spacing = 4 }, virtual_lines = false }
+      vim.diagnostic.config { virtual_lines = false }
+      -- Re-enable tiny-inline-diagnostic if available, otherwise fall back to default virtual_text
+      local tid_ok, tid = pcall(require, "tiny-inline-diagnostic")
+      if tid_ok and tid.enable then
+        vim.diagnostic.config { virtual_text = false }
+        tid.enable()
+      else
+        vim.diagnostic.config { virtual_text = { prefix = "●", spacing = 4 } }
+      end
     end
 
     local display = new_value and "virtual_lines" or "virtual_text"

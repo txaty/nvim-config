@@ -37,6 +37,7 @@ return {
         { "<leader>m", group = "Bookmarks", icon = "󰃀" },
         { "<leader>M", group = "Minimap", icon = "󰍍" },
         { "<leader>n", group = "Notify", icon = "󰂞" },
+        { "<leader>o", group = "Tasks", icon = "󰑮" },
         { "<leader>p", group = "Python", icon = "󰌠" },
         { "<leader>q", group = "Session", icon = "󰁯" },
         { "<leader>r", group = "Remote", icon = "󰢹" },
