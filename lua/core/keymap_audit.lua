@@ -12,29 +12,59 @@ local M = {}
 
 local modes = { "n", "i", "v", "x", "s", "o", "t", "c" }
 
---- Check for duplicate keymap bindings across all modes (global)
---- @param silent boolean? If true, return results instead of notifying
---- @return table? conflicts List of conflicts if silent mode
-function M.check(silent)
+local function describe_source(map)
+  local source = map.desc or map.rhs or map.callback or "?"
+  if type(source) == "function" then
+    return "<lua callback>"
+  end
+  return tostring(source)
+end
+
+local function push_conflict(conflicts, scope, mode, lhs, first, second)
+  conflicts[#conflicts + 1] = {
+    scope = scope,
+    mode = mode,
+    lhs = lhs,
+    sources = { first, second },
+  }
+end
+
+local function collect_runtime_conflicts(scope, get_maps)
   local conflicts = {}
 
   for _, mode in ipairs(modes) do
-    local maps = vim.api.nvim_get_keymap(mode)
+    local maps = get_maps(mode)
     local seen = {}
 
     for _, map in ipairs(maps) do
       local lhs = map.lhs
       if seen[lhs] then
-        table.insert(conflicts, {
-          mode = mode,
-          lhs = lhs,
-          sources = { seen[lhs], map.desc or map.rhs or "?" },
-        })
+        push_conflict(conflicts, scope, mode, lhs, seen[lhs], describe_source(map))
       else
-        seen[lhs] = map.desc or map.rhs or "?"
+        seen[lhs] = describe_source(map)
       end
     end
   end
+
+  return conflicts
+end
+
+local function format_runtime_conflict(conflict)
+  return string.format(
+    "  [%s] mode=%s lhs=%s [%s] vs [%s]",
+    conflict.scope,
+    conflict.mode,
+    conflict.lhs,
+    conflict.sources[1],
+    conflict.sources[2]
+  )
+end
+
+--- Check for duplicate keymap bindings across all modes (global)
+--- @param silent boolean? If true, return results instead of notifying
+--- @return table? conflicts List of conflicts if silent mode
+function M.check(silent)
+  local conflicts = collect_runtime_conflicts("runtime-global", vim.api.nvim_get_keymap)
 
   if silent then
     return conflicts
@@ -43,9 +73,7 @@ function M.check(silent)
   if #conflicts > 0 then
     local lines = { "Keymap conflicts detected (global):" }
     for _, c in ipairs(conflicts) do
-      table.insert(lines, string.format("  mode=%s lhs=%s", c.mode, c.lhs))
-      table.insert(lines, string.format("    [1] %s", c.sources[1]))
-      table.insert(lines, string.format("    [2] %s", c.sources[2]))
+      table.insert(lines, format_runtime_conflict(c))
     end
     vim.notify(table.concat(lines, "\n"), vim.log.levels.WARN)
   elseif vim.g.debug_keymaps then
@@ -75,10 +103,14 @@ function M.check_lazy_keys(silent)
       local names = vim.tbl_keys(plugins)
       if #names > 1 then
         table.sort(names)
-        table.insert(conflicts, {
+        local mode, lhs = id:match "^([^|]+)|(.+)$"
+        conflicts[#conflicts + 1] = {
+          scope = "lazy-spec",
           id = id,
+          mode = mode,
+          lhs = lhs,
           plugins = names,
-        })
+        }
       end
     end
   end
@@ -90,8 +122,14 @@ function M.check_lazy_keys(silent)
   if #conflicts > 0 then
     local lines = { "Keymap conflicts detected (lazy keys):" }
     for _, c in ipairs(conflicts) do
-      table.insert(lines, string.format("  key=%s", c.id))
-      table.insert(lines, string.format("    plugins=%s", table.concat(c.plugins, ", ")))
+      if c.mode and c.lhs then
+        table.insert(
+          lines,
+          string.format("  [%s] mode=%s lhs=%s plugins=%s", c.scope, c.mode, c.lhs, table.concat(c.plugins, ", "))
+        )
+      else
+        table.insert(lines, string.format("  [%s] key=%s plugins=%s", c.scope, c.id, table.concat(c.plugins, ", ")))
+      end
     end
     vim.notify(table.concat(lines, "\n"), vim.log.levels.WARN)
   elseif vim.g.debug_keymaps then
@@ -107,25 +145,9 @@ end
 --- @return table? conflicts List of conflicts if silent mode
 function M.check_buffer(bufnr, silent)
   bufnr = bufnr or 0
-  local conflicts = {}
-
-  for _, mode in ipairs(modes) do
-    local maps = vim.api.nvim_buf_get_keymap(bufnr, mode)
-    local seen = {}
-
-    for _, map in ipairs(maps) do
-      local lhs = map.lhs
-      if seen[lhs] then
-        table.insert(conflicts, {
-          mode = mode,
-          lhs = lhs,
-          sources = { seen[lhs], map.desc or map.rhs or "?" },
-        })
-      else
-        seen[lhs] = map.desc or map.rhs or "?"
-      end
-    end
-  end
+  local conflicts = collect_runtime_conflicts("runtime-buffer", function(mode)
+    return vim.api.nvim_buf_get_keymap(bufnr, mode)
+  end)
 
   if silent then
     return conflicts
@@ -134,9 +156,7 @@ function M.check_buffer(bufnr, silent)
   if #conflicts > 0 then
     local lines = { string.format("Buffer-local keymap conflicts (buf=%d):", bufnr) }
     for _, c in ipairs(conflicts) do
-      table.insert(lines, string.format("  mode=%s lhs=%s", c.mode, c.lhs))
-      table.insert(lines, string.format("    [1] %s", c.sources[1]))
-      table.insert(lines, string.format("    [2] %s", c.sources[2]))
+      table.insert(lines, format_runtime_conflict(c))
     end
     vim.notify(table.concat(lines, "\n"), vim.log.levels.WARN)
   elseif vim.g.debug_keymaps then
@@ -167,7 +187,7 @@ function M.full_audit()
     table.insert(lines, "")
     table.insert(lines, "Global conflicts:")
     for _, c in ipairs(global) do
-      table.insert(lines, string.format("  mode=%s lhs=%s [%s] vs [%s]", c.mode, c.lhs, c.sources[1], c.sources[2]))
+      table.insert(lines, format_runtime_conflict(c))
     end
   end
 
@@ -175,7 +195,7 @@ function M.full_audit()
     table.insert(lines, "")
     table.insert(lines, "Buffer-local conflicts:")
     for _, c in ipairs(buffer) do
-      table.insert(lines, string.format("  mode=%s lhs=%s [%s] vs [%s]", c.mode, c.lhs, c.sources[1], c.sources[2]))
+      table.insert(lines, format_runtime_conflict(c))
     end
   end
 
@@ -183,7 +203,14 @@ function M.full_audit()
     table.insert(lines, "")
     table.insert(lines, "Lazy key conflicts:")
     for _, c in ipairs(lazy) do
-      table.insert(lines, string.format("  key=%s [%s]", c.id, table.concat(c.plugins, ", ")))
+      if c.mode and c.lhs then
+        table.insert(
+          lines,
+          string.format("  [%s] mode=%s lhs=%s [%s]", c.scope, c.mode, c.lhs, table.concat(c.plugins, ", "))
+        )
+      else
+        table.insert(lines, string.format("  [%s] key=%s [%s]", c.scope, c.id, table.concat(c.plugins, ", ")))
+      end
     end
   end
 
