@@ -60,8 +60,5 @@ return {
     end,
     ft = "typst",
     version = "1.*",
-    build = function()
-      require("typst-preview").update()
-    end,
   },
 }

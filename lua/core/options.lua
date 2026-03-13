@@ -26,7 +26,31 @@ opt.modeline = false -- Disable modeline execution (prevents untrusted files fro
 opt.modelines = 0 -- Defense-in-depth: zero modeline scan range even if modeline is re-enabled
 opt.exrc = false -- Disable project-local .nvim.lua / .exrc execution
 opt.secure = true -- Restrict :autocmd, :write, :shell in any sourced file not owned by user
-opt.shell = vim.env.SHELL or "/bin/sh" -- Use system default shell
+if vim.fn.has "win32" == 1 then
+  opt.shell = "cmd.exe"
+else
+  opt.shell = "/bin/sh"
+end
+
+local state_path = vim.fn.stdpath "state"
+local state_dirs = {
+  state_path .. "/backup",
+  state_path .. "/shada",
+  state_path .. "/swap",
+  state_path .. "/undo",
+  state_path .. "/view",
+}
+
+for _, dir in ipairs(state_dirs) do
+  vim.fn.mkdir(dir, "p", "0700")
+end
+
+opt.backup = false
+opt.writebackup = false
+opt.directory = state_path .. "/swap//"
+opt.undodir = state_path .. "/undo//"
+opt.viewdir = state_path .. "/view//"
+opt.shadafile = state_path .. "/shada/main.shada"
 
 --------------------------------------
 -- Options

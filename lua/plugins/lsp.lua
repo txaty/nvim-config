@@ -191,6 +191,16 @@ return {
 
       -- rust_analyzer is managed exclusively by rustaceanvim to avoid conflicts
       -- ltex is skipped because grammar checking in markdown is noisy/unhelpful
+      if vim.g.enable_lsp_automatic_start ~= true then
+        vim.schedule(function()
+          vim.notify(
+            "Automatic LSP start is disabled by security defaults. Use :LspStart or set vim.g.enable_lsp_automatic_start = true.",
+            vim.log.levels.INFO
+          )
+        end)
+        return
+      end
+
       local skip = { rust_analyzer = true, ltex = true }
       for _, server_name in ipairs(mason_lspconfig.get_installed_servers()) do
         if not skip[server_name] then

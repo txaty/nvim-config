@@ -178,7 +178,7 @@ return {
     },
     opts = {
       ensure_installed = { "codelldb", "python", "js-debug-adapter", "delve" },
-      automatic_installation = true,
+      automatic_installation = false,
     },
   },
 }

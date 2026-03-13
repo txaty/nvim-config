@@ -1,8 +1,9 @@
 -- UI Components: File Explorer, Statusline, Bufferline, and visual enhancements
+local persist = require "core.persist"
 
 -- Shared utility for nvim-tree width persistence (with in-memory caching)
 local nvim_tree_width = {
-  path = vim.fn.stdpath "data" .. "/nvim_tree_width.json",
+  path = vim.fn.stdpath "state" .. "/nvim_tree_width.json",
   cached_width = nil, -- In-memory cache to reduce disk I/O
   dirty = false, -- Track if cache differs from disk
 
@@ -47,8 +48,9 @@ local nvim_tree_width = {
     if not self.dirty or not self.cached_width then
       return
     end
-    vim.fn.writefile({ vim.json.encode { width = self.cached_width } }, self.path)
-    self.dirty = false
+    if persist.save_lines(self.path, { vim.json.encode { width = self.cached_width } }) then
+      self.dirty = false
+    end
   end,
 }
 

@@ -33,10 +33,10 @@ return {
       --     vim.lsp.buf.format({ bufnr = bufnr })
       --     require("conform").format({ bufnr = bufnr })
       --   end
-      format_on_save = {
+      format_on_save = vim.g.enable_format_on_save == true and {
         timeout_ms = 500,
         lsp_fallback = true,
-      },
+      } or nil,
     },
   },
   {
@@ -58,6 +58,10 @@ return {
       },
     },
     config = function()
+      if vim.g.enable_lint_on_write ~= true then
+        return
+      end
+
       local lint = require "lint"
 
       lint.linters_by_ft = {

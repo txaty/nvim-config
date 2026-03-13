@@ -1,6 +1,6 @@
 # Neovim Configuration
 
-A modern, modular Neovim configuration focusing on **productivity, language support, and developer experience**.
+A modern, modular Neovim configuration focusing on **productivity, language support, and explicit trust boundaries**.
 
 ## Features
 
@@ -16,6 +16,31 @@ A modern, modular Neovim configuration focusing on **productivity, language supp
 - **Session Management**: Auto-save and restore sessions
 - **50+ Themes**: Dark, light, and custom ergonomic themes with smart switching
 - **Modular Language Toggle**: Enable/disable language tooling per-language
+
+## Security Model
+
+This configuration is hardened to prefer explicit trust over convenience.
+
+- No project-local `.nvim.lua` or `.exrc` files are executed.
+- Modelines are disabled.
+- Automatic plugin bootstrap is disabled.
+- Automatic plugin installation and build hooks are restricted.
+- Automatic session restore/save is disabled by default.
+- Automatic startup cleanup is disabled by default.
+- Automatic format-on-save and lint-on-write are disabled by default.
+- Automatic LSP startup is disabled by default.
+- AI integrations are disabled by default.
+- Mutable editor state is written only under Neovim `stdpath("data"|"state"|"cache")` directories.
+
+Opt-in flags for trusted environments:
+
+```lua
+vim.g.enable_session_persistence = true
+vim.g.enable_auto_cleanup = true
+vim.g.enable_lsp_automatic_start = true
+vim.g.enable_format_on_save = true
+vim.g.enable_lint_on_write = true
+```
 
 ## Quick Start
 
@@ -35,11 +60,13 @@ A modern, modular Neovim configuration focusing on **productivity, language supp
 # Clone configuration
 git clone https://github.com/yourusername/nvim ~/.config/nvim
 
-# Start Neovim (plugins will auto-install)
-nvim
+# Install lazy.nvim manually (automatic bootstrap is intentionally disabled)
+git clone --filter=blob:none https://github.com/folke/lazy.nvim.git \
+  --branch=stable ~/.local/share/nvim/lazy/lazy.nvim
 
-# Inside Neovim, sync plugins
-:Lazy sync
+# Start Neovim, then install plugins explicitly
+nvim
+# :Lazy sync
 
 # Install language servers and tools
 :Mason
@@ -55,6 +82,7 @@ After installation, verify everything works:
 :LspInfo               # Verify LSP servers are available
 :ConformInfo           # Check formatter configuration
 :Mason                 # Install required tools
+:TSUpdate              # Install/update treesitter parsers explicitly
 ```
 
 ## Usage Guide
@@ -198,6 +226,13 @@ Supported: Python, Go, Rust
 
 ### AI Assistance (Copilot)
 
+AI integrations are disabled by default. Enable them explicitly for trusted codebases:
+
+```
+:AIEnable
+# Restart Neovim
+```
+
 Chat with Copilot:
 
 ```
@@ -251,6 +286,20 @@ S             # Select code block by scope
 ---
 
 ## Troubleshooting
+
+### Security Defaults
+
+If you expect old convenience behavior, check these defaults first:
+
+```lua
+vim.g.enable_session_persistence = true
+vim.g.enable_auto_cleanup = true
+vim.g.enable_lsp_automatic_start = true
+vim.g.enable_format_on_save = true
+vim.g.enable_lint_on_write = true
+```
+
+These are intentionally off unless you opt in.
 
 ### LSP Not Attaching
 
@@ -309,6 +358,7 @@ S             # Select code block by scope
 **Resync plugins:**
 ```
 :Lazy sync
+:TSUpdate
 ```
 
 **Resolve conflicts:**
@@ -373,6 +423,26 @@ sudo apt install lazygit
 ```bash
 nvim --headless '+TSUpdateSync' +qa
 ```
+
+### Security Re-Audit After Plugin Updates
+
+After changing plugin specs or updating plugins, re-check these areas:
+
+1. Search for new external execution paths:
+   `rg -n "(vim\\.system|system\\(|jobstart|termopen|build\\s*=|run\\s*=|post_install|autocmd)" lua`
+2. Search for filesystem writes and deletes:
+   `rg -n "(writefile|fs_open\\(|fs_write\\(|delete\\()" lua`
+3. Search for new network/bootstrap behavior:
+   `rg -n "(git clone|checker|update\\(|MasonInstall|DistantInstall|Copilot|Octo)" lua`
+4. Review `lazy-lock.json` for newly added plugins and branch-based dependencies.
+
+## Shared Machine / Server Guidance
+
+- Keep AI disabled unless the host and codebase are explicitly trusted.
+- Leave automatic session restore/save disabled on shared hosts.
+- Leave automatic cleanup disabled unless you are comfortable with Neovim pruning its own state directories.
+- Prefer manual `:LspStart`, `:Mason`, `:Lazy sync`, and `:TSUpdate`.
+- Treat remote development commands and external viewers as privileged actions; this config asks for confirmation before launching them from keymaps.
 
 ---
 

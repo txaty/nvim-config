@@ -13,6 +13,43 @@ return {
       "DistantSystemInfo",
       "DistantClientVersion",
     },
+    init = function()
+      local security = require "core.security"
+
+      vim.keymap.set("n", "<leader>rc", function()
+        vim.ui.input({ prompt = "Remote connection (e.g., ssh://user@host): " }, function(input)
+          if input and input ~= "" then
+            if input:find "[|\n\r;`&$!#]" then
+              vim.notify("Invalid characters in connection string", vim.log.levels.ERROR)
+              return
+            end
+            if security.confirm_external("Connect to remote host?", input) then
+              vim.cmd { cmd = "DistantLaunch", args = { input } }
+            end
+          end
+        end)
+      end, { desc = "Remote: connect to server" })
+
+      vim.keymap.set("n", "<leader>ro", function()
+        vim.ui.input({ prompt = "Remote path to open: " }, function(input)
+          if input and input ~= "" then
+            if input:find "[|\n\r;`&$!#]" then
+              vim.notify("Invalid characters in path", vim.log.levels.ERROR)
+              return
+            end
+            if security.confirm_external("Open remote path?", input) then
+              vim.cmd { cmd = "DistantOpen", args = { input } }
+            end
+          end
+        end)
+      end, { desc = "Remote: open directory/file" })
+
+      vim.keymap.set("n", "<leader>rS", function()
+        if security.confirm_external "Open interactive remote shell?" then
+          vim.cmd "DistantShell"
+        end
+      end, { desc = "Remote: open shell" })
+    end,
     keys = {
       {
         "<leader>rc",
@@ -95,6 +132,9 @@ return {
         group = vim.api.nvim_create_augroup("DistantLspAttach", { clear = true }),
         pattern = "distant://*",
         callback = function()
+          if vim.g.enable_lsp_automatic_start ~= true then
+            return
+          end
           -- LSP should attach automatically to remote buffers
           -- distant.nvim handles the file system operations transparently
           vim.schedule(function()

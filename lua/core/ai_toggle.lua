@@ -10,12 +10,12 @@ local persist = require "core.persist"
 local config_path = vim.fn.stdpath "data" .. "/ai_config.json"
 
 -- Initialize cache immediately at module load
-persist.load_json(config_path, { enabled = true })
+persist.load_json(config_path, { enabled = false })
 
 --- Check if AI features are enabled
 --- @return boolean true if AI is enabled, false otherwise
 function M.is_enabled()
-  local config = persist.load_json(config_path, { enabled = true })
+  local config = persist.load_json(config_path, { enabled = false })
   return config.enabled ~= false
 end
 

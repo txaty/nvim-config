@@ -209,7 +209,12 @@ function M.run_sequence()
   end
 
   -- Step 3: Session (may change buffers/windows)
-  local session_restored = require("core.lifecycle.session").restore()
+  local session_restored = false
+  if vim.g.enable_session_persistence == true then
+    session_restored = require("core.lifecycle.session").restore()
+  else
+    log "session restore skipped (disabled by default)"
+  end
   log("session restore: " .. tostring(session_restored))
 
   -- Step 4: Apply dim state after Snacks has loaded (early priority plugin)
@@ -284,17 +289,21 @@ function M.run_sequence()
   -- Deferred 2s to avoid blocking startup. The cleanup module's own should_run()
   -- handles throttle checking — no duplication needed since the 2s defer already
   -- ensures this doesn't affect startup time.
-  vim.defer_fn(function()
-    local cleanup_ok, cleanup = pcall(require, "core.cleanup")
-    if cleanup_ok then
-      if cleanup.should_run() then
-        pcall(cleanup.auto_cleanup)
-        log "cleanup (deferred, executed)"
-      else
-        log "cleanup (deferred, skipped due to throttle)"
+  if vim.g.enable_auto_cleanup == true then
+    vim.defer_fn(function()
+      local cleanup_ok, cleanup = pcall(require, "core.cleanup")
+      if cleanup_ok then
+        if cleanup.should_run() then
+          pcall(cleanup.auto_cleanup)
+          log "cleanup (deferred, executed)"
+        else
+          log "cleanup (deferred, skipped due to throttle)"
+        end
       end
-    end
-  end, 2000)
+    end, 2000)
+  else
+    log "cleanup skipped (disabled by default)"
+  end
 
   log "run_sequence complete (sync portion)"
 

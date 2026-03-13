@@ -9,7 +9,7 @@ return {
     cmd = "Telescope",
     dependencies = {
       "nvim-lua/plenary.nvim",
-      { "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
+      { "nvim-telescope/telescope-fzf-native.nvim" },
     },
     opts = function()
       local actions = require "telescope.actions"

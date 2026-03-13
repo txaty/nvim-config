@@ -5,6 +5,7 @@ return {
     dir = vim.fn.stdpath "config",
     name = "image-keymaps",
     init = function()
+      local security = require "core.security"
       local IMAGE_EXTS = {
         "*.png",
         "*.jpg",
@@ -69,8 +70,13 @@ return {
               argv = { "cmd", "/c", "start", "", filepath }
             end
             if argv then
-              vim.system(argv, { detach = true })
-              vim.notify("Opened " .. vim.fn.fnamemodify(filepath, ":t") .. " in external viewer", vim.log.levels.INFO)
+              if security.confirm_external("Open file in external viewer?", filepath) then
+                vim.system(argv, { detach = true })
+                vim.notify(
+                  "Opened " .. vim.fn.fnamemodify(filepath, ":t") .. " in external viewer",
+                  vim.log.levels.INFO
+                )
+              end
             else
               vim.notify("Could not determine command to open file", vim.log.levels.ERROR)
             end

@@ -4,6 +4,7 @@ return {
     dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-tree/nvim-web-devicons" },
     ft = "markdown",
     init = function()
+      local security = require "core.security"
       vim.api.nvim_create_autocmd("FileType", {
         pattern = "markdown",
         callback = function(args)
@@ -27,8 +28,10 @@ return {
             end
 
             if argv then
-              vim.system(argv, { detach = true })
-              vim.notify("Opened " .. vim.fn.expand "%:t" .. " in external reader", vim.log.levels.INFO)
+              if security.confirm_external("Open markdown file in external reader?", filepath) then
+                vim.system(argv, { detach = true })
+                vim.notify("Opened " .. vim.fn.expand "%:t" .. " in external reader", vim.log.levels.INFO)
+              end
             else
               vim.notify("Could not determine command to open file", vim.log.levels.ERROR)
             end

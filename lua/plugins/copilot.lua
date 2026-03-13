@@ -132,7 +132,6 @@ return {
     cond = function()
       return require("core.ai_toggle").is_enabled()
     end,
-    build = "make",
     cmd = { "AvanteAsk", "AvanteChat", "AvanteToggle" },
     keys = {
       { "<leader>av", "<cmd>AvanteToggle<cr>", desc = "AI: Toggle Avante sidebar" },
