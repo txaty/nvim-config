@@ -15,9 +15,9 @@ return {
       },
     },
     opts = {
-      stiffness = 0.6,
-      trailing_stiffness = 0.3,
-      trailing_exponent = 0.1,
+      stiffness = 0.9,
+      trailing_stiffness = 0.7,
+      trailing_exponent = 0.3,
       distance_stop_animating = 0.3,
       hide_target_hack = false,
     },
