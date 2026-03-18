@@ -71,7 +71,7 @@ return {
         default = { layout = "diff2_horizontal" },
       },
       file_panel = {
-        listing_style = "flat",
+        listing_style = "list",
         win_config = { position = "left", width = 35 },
       },
     },
