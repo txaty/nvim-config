@@ -1,12 +1,20 @@
 local lazypath = vim.fn.stdpath "data" .. "/lazy/lazy.nvim"
 if not vim.uv.fs_stat(lazypath) then
-  vim.schedule(function()
-    vim.notify(
-      "lazy.nvim is not installed. Automatic bootstrap is disabled; install it manually before starting Neovim.",
-      vim.log.levels.ERROR
-    )
-  end)
-  return
+  local out = vim.fn.system {
+    "git",
+    "clone",
+    "--filter=blob:none",
+    "--branch=stable",
+    "https://github.com/folke/lazy.nvim.git",
+    lazypath,
+  }
+  if vim.v.shell_error ~= 0 then
+    vim.api.nvim_echo({
+      { "Failed to clone lazy.nvim:\n", "ErrorMsg" },
+      { out, "WarningMsg" },
+    }, true, {})
+    return
+  end
 end
 vim.opt.rtp:prepend(lazypath)
 
@@ -15,7 +23,7 @@ require("lazy").setup {
     { import = "plugins" },
   },
   defaults = { lazy = true },
-  install = { missing = false },
+  install = { missing = true },
   checker = { enabled = false }, -- disable auto-check for better performance (use :Lazy check)
   performance = {
     rtp = {
