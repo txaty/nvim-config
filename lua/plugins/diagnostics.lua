@@ -1,5 +1,9 @@
 -- tiny-inline-diagnostic.nvim: Styled inline diagnostics
 -- Replaces default virtual_text with prettier rendering
+--
+-- Load order: lsp.lua sets vim.diagnostic.config() at BufReadPre, then this
+-- plugin loads at LspAttach (which fires after BufReadPre) and conditionally
+-- overrides virtual_text when diagnostic_lines toggle is off.
 
 return {
   {

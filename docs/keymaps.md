@@ -82,6 +82,7 @@
 | `<leader>f/` | Search in current buffer |
 | `<leader>fs` | LSP symbols |
 | `<leader>fd` | Diagnostics |
+| `<leader>fm` | Marks |
 | `<leader>ft` | Find todos |
 | `<leader>fS` | Select scratch buffer |
 
@@ -246,6 +247,14 @@
 | `<leader>af` | Fix code using Copilot |
 | `<leader>ar` | Review code using Copilot |
 
+### Avante (Agentic AI Editing)
+| Keybinding | Description |
+|---|---|
+| `<leader>av` | Toggle Avante sidebar |
+| `<leader>ac` | Avante chat |
+| `<leader>aA` | Ask Avante with selection (normal/visual) |
+| `<leader>aR` | Refresh Avante |
+
 ### Copilot Inline Suggestions (Insert Mode)
 | Keybinding | Description |
 |---|---|
@@ -360,6 +369,8 @@
 | `<leader>gp` | Preview hunk |
 | `<leader>gb` | Blame line (show author/date) |
 | `<leader>gB` | Toggle line blame display |
+| `<leader>gI` | Toggle inline deleted text |
+| `<leader>gw` | Toggle word diff |
 | `<leader>gd` | Diff this file |
 | `<leader>gD` | Diff against HEAD |
 | `ih` (text object) | Select hunk (in visual/operator mode) |
@@ -370,6 +381,13 @@
 | `<leader>gdo` | Open Diffview |
 | `<leader>gdc` | Close Diffview |
 | `<leader>gdf` | Show file history |
+| `<leader>gds` | Show staged changes |
+| `<leader>gdb` | Compare with previous commit |
+
+### Git Browse
+| Keybinding | Description |
+|---|---|
+| `<leader>go` | Open file/selection in browser (GitHub/GitLab) |
 
 ### Git UI
 | Keybinding | Description |
@@ -404,6 +422,7 @@
 | `<leader>ts` | Run entire test suite |
 | `<leader>to` | Show test output |
 | `<leader>tt` | Toggle test summary window |
+| `<leader>tC` | Show test coverage summary |
 
 ---
 
@@ -788,6 +807,7 @@
 | `<leader>uD` | Toggle inline diagnostics mode | OFF |
 | `<leader>ut` | Toggle Treesitter context header | ON |
 | `<leader>uz` | Toggle zen mode | — |
+| `<leader>uC` | Toggle smear cursor animation | ON |
 | `<leader>ud` | Toggle dim mode | — |
 | `<leader>up` | Toggle profiler overlay | — |
 

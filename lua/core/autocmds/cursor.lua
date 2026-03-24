@@ -25,7 +25,8 @@ function M.setup()
   })
 
   -- View saving logic (folds only, excludes special buffers)
-  -- Debounced with a single reusable timer to avoid handle leaks
+  -- Debounced with a single reusable timer to avoid handle leaks.
+  -- Timer is intentionally long-lived (one per session); Neovim cleans it up on exit.
   local view_save_timer = vim.uv.new_timer()
   local DEBOUNCE_MS = 100
 

@@ -135,21 +135,28 @@ return {
 
       -- Defer language-specific DAP configs loading (only load when needed)
       -- These will be loaded on first debug session start via LspAttach or filetype
+      -- Respects lang_toggle: disabled languages skip their DAP config
       vim.api.nvim_create_autocmd("FileType", {
         group = vim.api.nvim_create_augroup("DapLangConfigs", { clear = true }),
         pattern = { "c", "cpp", "go", "javascript", "typescript" },
         once = true,
         callback = function()
           vim.schedule(function()
-            local function load_dap_config(name)
+            local function load_dap_config(name, lang)
+              if lang then
+                local lt_ok, lt = pcall(require, "core.lang_toggle")
+                if lt_ok and not lt.is_enabled(lang) then
+                  return
+                end
+              end
               local ok, err = pcall(require, "dap." .. name)
               if not ok and (type(err) ~= "string" or not err:match "module .* not found") then
                 vim.notify("DAP config error (" .. name .. "): " .. tostring(err), vim.log.levels.WARN)
               end
             end
-            load_dap_config "cpp"
-            load_dap_config "go"
-            load_dap_config "web"
+            load_dap_config("cpp", "cpp")
+            load_dap_config("go", "go")
+            load_dap_config("web", "web")
           end)
         end,
       })
