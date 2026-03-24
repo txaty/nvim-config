@@ -13,7 +13,7 @@ return {
     "akinsho/flutter-tools.nvim",
     dependencies = {
       "nvim-lua/plenary.nvim",
-      "stevearc/dressing.nvim", -- Recommended for UI
+      -- dressing.nvim removed; snacks.input provides vim.ui.input/select
     },
     ft = "dart",
     config = function()

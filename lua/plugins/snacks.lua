@@ -324,7 +324,7 @@ return {
       explorer = { enabled = false }, -- Keep nvim-tree
       terminal = { enabled = false }, -- Keep toggleterm
       lazygit = { enabled = false }, -- Keep lazygit.nvim
-      input = { enabled = false }, -- Keep dressing.nvim
+      input = { enabled = true },
       statuscolumn = { enabled = false },
     },
     keys = {
@@ -416,6 +416,14 @@ return {
           Snacks.picker.diagnostics()
         end,
         desc = "Diagnostics",
+      },
+      -- Marks
+      {
+        "<leader>fm",
+        function()
+          Snacks.picker.marks()
+        end,
+        desc = "Marks",
       },
       -- Dashboard (H = Home)
       {

@@ -5,6 +5,7 @@ return {
     dependencies = {
       "rcarriga/nvim-dap-ui",
       "nvim-neotest/nvim-nio",
+      "theHamsta/nvim-dap-virtual-text",
     },
     keys = {
       {
@@ -157,6 +158,12 @@ return {
   {
     "rcarriga/nvim-dap-ui",
     lazy = true, -- Loaded as dependency of nvim-dap
+  },
+  {
+    "theHamsta/nvim-dap-virtual-text",
+    lazy = true, -- Loaded as dependency of nvim-dap
+    dependencies = { "mfussenegger/nvim-dap", "nvim-treesitter/nvim-treesitter" },
+    opts = { commented = true },
   },
   -- JavaScript/TypeScript debug adapter
   {

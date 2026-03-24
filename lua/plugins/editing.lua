@@ -75,6 +75,39 @@ return {
     end,
   },
 
+  -- Split/Join code blocks (arrays, objects, params) via treesitter
+  {
+    "Wansmer/treesj",
+    keys = {
+      {
+        "<leader>j",
+        function()
+          require("treesj").toggle()
+        end,
+        desc = "Split/Join toggle",
+      },
+    },
+    dependencies = { "nvim-treesitter/nvim-treesitter" },
+    opts = { use_default_keymaps = false },
+  },
+
+  -- Docstring/annotation generator
+  {
+    "danymat/neogen",
+    cmd = "Neogen",
+    keys = {
+      {
+        "<leader>lg",
+        function()
+          require("neogen").generate()
+        end,
+        desc = "LSP: Generate docstring",
+      },
+    },
+    dependencies = { "nvim-treesitter/nvim-treesitter" },
+    opts = { snippet_engine = "nvim" },
+  },
+
   -- Yank ring: access previous/next yanks with [y / ]y after paste
   {
     "gbprod/yanky.nvim",

@@ -13,9 +13,7 @@ return {
         desc = "LSP: Incremental Rename",
       },
     },
-    opts = {
-      input_buffer_type = "dressing",
-    },
+    opts = {},
   },
 
   {
@@ -229,24 +227,6 @@ return {
     opts = {
       border = { enable = true },
       height = 20,
-    },
-  },
-
-  -- Code Lens: Show reference/implementation counts above functions
-  {
-    "VidocqH/lsp-lens.nvim",
-    event = "LspAttach",
-    keys = {
-      { "<leader>lL", "<cmd>LspLensToggle<cr>", desc = "LSP: Toggle code lens" },
-    },
-    opts = {
-      enable = true,
-      include_declaration = false,
-      sections = {
-        definition = false,
-        references = true,
-        implements = true,
-      },
     },
   },
 }

@@ -84,22 +84,5 @@ return {
   },
 
   -- nvim-notify replaced by snacks.notifier (lua/plugins/snacks.lua)
-
-  -- Better select/input UIs
-  {
-    "stevearc/dressing.nvim",
-    event = "VeryLazy",
-    opts = {
-      input = {
-        enabled = true,
-        default_prompt = "> ",
-        win_options = { winblend = 0 },
-      },
-      select = {
-        enabled = true,
-        backend = { "snacks", "telescope", "builtin" },
-        builtin = { win_options = { winblend = 0 } },
-      },
-    },
-  },
+  -- dressing.nvim replaced by snacks.input (lua/plugins/snacks.lua)
 }
