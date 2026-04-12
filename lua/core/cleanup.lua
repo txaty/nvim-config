@@ -37,6 +37,9 @@ local function is_older_than_days(path, days)
   return age_days > days
 end
 
+-- Accumulated errors from safe_delete calls within a clean_all() run
+local cleanup_errors = {}
+
 -- Helper: safe delete with path validation
 -- @param path string: path to delete
 -- @param expected_prefix string: directory the path must reside under
@@ -62,6 +65,9 @@ local function safe_delete(path, expected_prefix, flags)
       vim.fn.delete(path)
     end
   end)
+  if not ok then
+    table.insert(cleanup_errors, string.format("%s: %s", path, tostring(err)))
+  end
   return ok, err
 end
 
@@ -344,6 +350,8 @@ end
 
 -- Run all cleanup functions
 function M.clean_all(verbose)
+  cleanup_errors = {}
+
   local results = {
     logs = M.clean_logs(),
     swap = M.clean_swap(),
@@ -386,7 +394,18 @@ function M.clean_all(verbose)
       results.orphaned_dirs,
       total
     )
+    if #cleanup_errors > 0 then
+      msg = msg .. string.format("\n  - Errors: %d", #cleanup_errors)
+      for _, err in ipairs(cleanup_errors) do
+        msg = msg .. "\n    " .. err
+      end
+    end
     vim.notify(msg, vim.log.levels.INFO)
+  elseif #cleanup_errors > 0 then
+    vim.notify(
+      string.format("Cleanup: %d error(s). Run :CleanupNvim for details.", #cleanup_errors),
+      vim.log.levels.WARN
+    )
   end
 
   return results, total

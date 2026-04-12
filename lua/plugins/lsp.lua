@@ -96,6 +96,12 @@ return {
       -- LspAttach Autocmd for Keymaps
       -- Use a unique augroup name to avoid conflicts with other plugins
       -- The augroup is created once with clear=true to ensure a clean slate
+      --
+      -- Extensibility: These keymaps apply to all LSP clients. Language modules
+      -- that need different bindings should use their own LspAttach handler with
+      -- a client name check (e.g., rustaceanvim uses <leader>R* prefix). If a
+      -- per-buffer override mechanism is needed in the future, check for
+      -- vim.b.lsp_keymaps_override before setting each keymap.
       vim.api.nvim_create_autocmd("LspAttach", {
         group = vim.api.nvim_create_augroup("NvimConfig_LspKeymaps", { clear = true }),
         callback = function(ev)

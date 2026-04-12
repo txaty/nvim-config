@@ -20,19 +20,26 @@ M.languages = {
   typst = { name = "Typst", description = "typst-preview.nvim" },
 }
 
--- Initialize cache immediately at module load
-persist.load_json(config_path, { languages = {} })
+-- Module-scoped cache to avoid repeated disk I/O (mirrors ai_toggle pattern)
+local _lang_cache = nil
+local _sorted_langs_cache = nil
 
---- Load language config
+--- Load language config (cached)
 --- @return table<string, boolean>
 local function load_languages()
+  if _lang_cache then
+    return _lang_cache
+  end
   local config = persist.load_json(config_path, { languages = {} })
-  return config.languages or {}
+  _lang_cache = config.languages or {}
+  return _lang_cache
 end
 
---- Save language config
+--- Save language config and update cache
 --- @param languages table<string, boolean>
 local function save_languages(languages)
+  _lang_cache = languages
+  _sorted_langs_cache = nil -- Invalidate sorted cache on state change
   persist.save_json(config_path, { languages = languages })
 end
 
@@ -115,14 +122,18 @@ function M.get_status()
   return result
 end
 
---- Get sorted list of all language keys
+--- Get sorted list of all language keys (cached)
 --- @return string[]
 function M.get_all_languages()
+  if _sorted_langs_cache then
+    return _sorted_langs_cache
+  end
   local langs = {}
   for lang, _ in pairs(M.languages) do
     table.insert(langs, lang)
   end
   table.sort(langs)
+  _sorted_langs_cache = langs
   return langs
 end
 

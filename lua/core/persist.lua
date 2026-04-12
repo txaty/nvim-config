@@ -85,6 +85,9 @@ function M.load_json(filepath, default)
   end
 
   local ok, result = pcall(vim.json.decode, content)
+  if not ok then
+    vim.notify("persist: failed to decode " .. filepath .. " — " .. tostring(result), vim.log.levels.WARN)
+  end
   cache[filepath] = (ok and type(result) == "table") and result or (default or {})
   return cache[filepath]
 end

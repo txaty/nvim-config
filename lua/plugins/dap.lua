@@ -134,8 +134,13 @@ return {
       end
 
       -- Defer language-specific DAP configs loading (only load when needed)
-      -- These will be loaded on first debug session start via LspAttach or filetype
       -- Respects lang_toggle: disabled languages skip their DAP config
+      --
+      -- NOTE: This FileType autocmd fires once=true. For buffers opened before this
+      -- plugin loads (e.g., session-restored buffers), lifecycle/init.lua's
+      -- retrigger_buffer_events() emits synthetic FileType events to ensure DAP
+      -- configs are loaded. Without that retrigger, DAP configs would never load
+      -- for pre-existing buffers.
       vim.api.nvim_create_autocmd("FileType", {
         group = vim.api.nvim_create_augroup("DapLangConfigs", { clear = true }),
         pattern = { "c", "cpp", "go", "javascript", "typescript" },
