@@ -123,6 +123,7 @@ luacheck lua/                                     # Lint Lua
 - Run `stylua lua/` and `luacheck lua/` before committing
 
 ## Architecture Notes
+- **Comment non-obvious implementations**: When a change resolves a compatibility issue, plugin API migration, version-specific behavior, or any non-obvious problem, add a comment at the implementation site explaining (1) what problem it solves, (2) why this approach was chosen, and (3) version constraints or what breaks if reverted. Omit where intent is self-evident.
 - **No NvChad**: Do not reference or recreate NvChad patterns
 - **Self-Maintained**: All core settings in `lua/core/`, no framework dependencies
 - **Modular**: Each plugin self-contained with lazy-loading

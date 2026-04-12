@@ -46,6 +46,7 @@ Inside Neovim: `:Mason`, `:LspInfo`, `:ConformInfo`, `:Lazy profile`
 - Filenames: lowercase snake_case
 - Plugin specs in `lua/plugins/`; inline configs in `opts` or `config` functions
 - Formatting via conform.nvim: stylua (Lua), black/isort (Python), goimports/gofmt (Go), rustfmt (Rust), prettier (JS/TS/HTML/CSS)
+- **Comment non-obvious implementations**: When a change resolves a compatibility issue, plugin API migration, version-specific behavior, or any non-obvious problem, add a comment explaining (1) what problem it solves, (2) why this approach was chosen, and (3) version constraints or what breaks if reverted. Omit comments where intent is self-evident.
 
 ## Testing Guidelines
 - Manual: Open files (py, go, rs, ts, tex, lua), verify LSP (`:LspInfo`), formatting, linting

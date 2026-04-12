@@ -175,6 +175,38 @@ Plugins declare dependencies to ensure load order:
 }
 ```
 
+## Code Documentation
+
+### Commenting Non-Obvious Implementations
+When a change resolves a known compatibility issue, version-specific behavior, plugin API migration, or any non-obvious problem, **add a comment at the implementation site** that explains:
+1. **What** problem it solves (e.g., "Neovim 0.12 changed match tables from single nodes to arrays")
+2. **Why** this specific approach was chosen over alternatives
+3. **Constraints** — relevant version requirements, caveats, or what breaks if this is reverted
+
+This applies to:
+- Version guards (`vim.fn.has "nvim-0.11"`)
+- Plugin branch/API migrations (e.g., nvim-treesitter master→main)
+- Workarounds for upstream bugs or breaking changes
+- Architectural decisions whose rationale is not self-evident from the code
+
+**Example** (from `init.lua`):
+```lua
+-- Require Neovim 0.11+: vim.lsp.config() API and nvim-treesitter main branch
+-- both require 0.11. Without this guard, users on older versions get cryptic
+-- crashes deep in plugin code instead of a clear, actionable error message.
+if vim.fn.has "nvim-0.11" == 0 then ...
+```
+
+**Example** (from `treesitter.lua`):
+```lua
+-- nvim-treesitter main branch (not master): master is archived and its
+-- query_predicates.lua is incompatible with Neovim 0.12's changed match
+-- table format (arrays of nodes instead of single nodes). The main branch
+-- removes query_predicates.lua entirely, resolving the conceal_line error.
+```
+
+Omit comments where the code is self-explanatory. The bar is: *would a competent Neovim/Lua developer understand why this exists without the comment?*
+
 ## Common Development Workflows
 
 ### Adding Language Support
