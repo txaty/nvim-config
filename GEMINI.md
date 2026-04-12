@@ -28,9 +28,10 @@ Custom, self-maintained Neovim configuration using `lazy.nvim` for plugins and `
 - `.luacheckrc` — Lua linter (Lua 5.1, vim globals)
 - `lua/core/` — Core settings and bootstrap
   - `init.lua`, `options.lua`, `keymaps.lua`, `autocmds.lua`, `lazy.lua`
-  - `lifecycle/` — VimEnter orchestration (colorscheme, session, nvim_tree)
+  - `lifecycle/` — VimEnter orchestration via declarative `steps` table (colorscheme, session, nvim_tree, reconcile)
   - `commands/` — User commands (ai, lang, cleanup, ui)
-  - `theme.lua`, `theme_txaty.lua` — Theme registry and custom theme
+  - `theme.lua` — Theme registry (use `get_themes()` / `get_theme_info()`)
+  - `theme_txaty.lua` + `theme_txaty_colors.lua` + `theme_txaty_highlights.lua` — Custom theme split: entry / palette / highlight groups
   - `ai_toggle.lua`, `lang_toggle.lua`, `ui_toggle.lua` — Feature toggles
   - `lang_utils.lua`, `lsp_capabilities.lua`, `persist.lua` — Source-of-truth shared utilities
   - `cleanup.lua` — Automatic cleanup

@@ -553,15 +553,17 @@ return {
 │   │   ├── keymaps.lua      # Global keybindings
 │   │   ├── autocmds.lua     # Core autocommands (lifecycle handled by lifecycle/)
 │   │   ├── lazy.lua         # Lazy.nvim bootstrap
-│   │   ├── theme.lua        # Theme registry (50+ themes)
-│   │   ├── theme_txaty.lua  # Custom ergonomic theme
+│   │   ├── theme.lua                 # Theme registry (50+ themes; use get_themes/get_theme_info)
+│   │   ├── theme_txaty.lua           # Custom theme entry point (apply, get_palette)
+│   │   ├── theme_txaty_colors.lua    # Custom theme palette (edit colors here)
+│   │   ├── theme_txaty_highlights.lua # Custom theme highlight groups
 │   │   ├── ai_toggle.lua    # AI features toggle
 │   │   ├── lang_toggle.lua  # Language support toggle
 │   │   ├── lang_utils.lua   # Language utilities
 │   │   ├── buffers.lua      # Buffer close/management
 │   │   ├── cleanup.lua      # Automatic temp file cleanup
 │   │   ├── ui_toggle.lua    # UI toggle persistence
-│   │   ├── lifecycle/       # VimEnter orchestration
+│   │   ├── lifecycle/       # VimEnter orchestration (declarative steps table)
 │   │   │   ├── init.lua     # Lifecycle orchestrator
 │   │   │   ├── colorscheme.lua
 │   │   │   ├── session.lua
@@ -644,6 +646,7 @@ nvim --headless '+checkhealth' +qa
 - **In-editor help**: Press `<leader>` to see available commands
 - **Health check**: Run `:checkhealth` in Neovim
 - **Configuration**: See `CLAUDE.md` for architecture details
+- **Change history**: See `CHANGELOG.md` for notable changes and migration notes
 
 ---
 

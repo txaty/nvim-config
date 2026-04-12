@@ -102,16 +102,20 @@ Plugin Load Layers (deterministic):
   F. VeryLazy:      lualine, bufferline, noice, which-key, treesitter-context
   G. InsertEnter:   blink.cmp, copilot, mini.pairs
 
-VimEnter Lifecycle (deterministic order):
-  1. colorscheme.lua  (theme restore FIRST)
-  2. ui_toggle.init() (initialize vim.g.ui_* BEFORE session/plugins read them)
-  3. session.lua      (session restore, scope.nvim loads as dependency)
-  4. ui_toggle.apply_dim() (Snacks dim state)
-  5. retrigger_buffer_events() (ASYNC - triggers BufReadPre/Post/FileType)
-     └─ on_complete: ui_toggle.apply_all() + nvim_tree.lua
-  6. commands/init.lua (register user commands)
-  7. reconcile.lua    (focus fix, waits for VeryLazy)
-  8. cleanup.lua      (deferred 2s, low priority)
+VimEnter Lifecycle (deterministic order, declared via `steps` table in lifecycle/init.lua):
+  Each step has `mode` ∈ {sync, scheduled, very_lazy, deferred}, optional `condition` and `needs_session` gates.
+  1. colorscheme        (sync, theme restore FIRST)
+  2. ui_toggle init     (sync, initialize vim.g.ui_* BEFORE session/plugins read them)
+  3. session restore    (sync, scope.nvim loads as dependency)
+  4. ui_toggle apply_dim (sync, Snacks dim state)
+  5. buffer events + UI (sync; retrigger_buffer_events ASYNC inside, then ui_toggle.apply_all + nvim_tree)
+  6. commands           (scheduled, register user commands)
+  7. keymap audit       (sync, gated on vim.g.debug_keymaps)
+  8. reconcile          (very_lazy, focus fix; needs_session)
+  9. cleanup            (deferred 2s, gated on vim.g.enable_auto_cleanup)
+ 10. verify load order  (deferred 100ms, debug mode only)
+
+To add/remove a lifecycle step, edit the `steps` table in `lua/core/lifecycle/init.lua` — no control-flow changes needed.
 ```
 
 ### Directory Structure
@@ -119,8 +123,10 @@ VimEnter Lifecycle (deterministic order):
   - `autocmds/` — Core autocmds split by concern (filetype, cursor, word_highlight, persistence, ui_state)
   - `lifecycle/` — VimEnter orchestration (colorscheme, session, nvim_tree, reconcile)
   - `commands/` — User commands (ai, lang, cleanup, ui)
-  - `theme.lua` — Unified theme registry with 50+ themes
-  - `theme_txaty.lua` — Custom ergonomic theme (dark/light variants)
+  - `theme.lua` — Unified theme registry with 50+ themes (use `get_themes()` / `get_theme_info()`; legacy `M.themes` still works via `__index`)
+  - `theme_txaty.lua` — Custom ergonomic theme entry point (`apply`, `get_palette`)
+  - `theme_txaty_colors.lua` — Palette definitions only (edit colors here)
+  - `theme_txaty_highlights.lua` — Highlight group definitions (edit highlight groups here)
   - `lang_utils.lua`, `lsp_capabilities.lua`, `persist.lua` — Shared helpers
   - `ai_toggle.lua`, `lang_toggle.lua`, `ui_toggle.lua` — Feature toggles
   - `cleanup.lua` — Automatic cleanup for temporary/cache files
@@ -300,6 +306,11 @@ See `docs/keymaps.md` for complete reference.
 - `<leader>cn/cN` — Cycle themes
 
 **Custom txaty theme:** Factory pattern with ergonomic design (low saturation 15-25%, warm neutrals, WCAG 2.1 AA compliant). Theme preference saved to `$XDG_DATA_HOME/theme_config.json`.
+
+**Txaty theme file layout** — to edit the custom theme, modify the right file:
+- `core/theme_txaty_colors.lua` — palette values (dark/light hex codes)
+- `core/theme_txaty_highlights.lua` — highlight group definitions (takes palette, calls `vim.api.nvim_set_hl`)
+- `core/theme_txaty.lua` — entry point wiring the two together (`apply(variant)`, `get_palette(variant)`)
 
 ## Session Management
 

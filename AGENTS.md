@@ -5,9 +5,10 @@
 - `lua/core/` — Fundamental settings and bootstrap:
   - `init.lua` — Loads core modules, then lazy bootstrap
   - `options.lua`, `keymaps.lua`, `autocmds.lua`, `lazy.lua`
-  - `lifecycle/` — VimEnter orchestration (colorscheme, session, nvim_tree)
+  - `lifecycle/` — VimEnter orchestration via declarative `steps` table (see `run_sequence()` in `lifecycle/init.lua`; add/remove steps by editing the table)
   - `commands/` — User commands (ai, lang, cleanup, ui)
-  - `theme.lua`, `theme_txaty.lua` — Theme registry and custom theme
+  - `theme.lua` — Theme registry (prefer `get_themes()` / `get_theme_info()`; `M.themes` still works via `__index`)
+  - `theme_txaty.lua`, `theme_txaty_colors.lua`, `theme_txaty_highlights.lua` — Custom theme split into entry point / palette / highlight groups
   - `ai_toggle.lua`, `lang_toggle.lua`, `ui_toggle.lua` — Feature toggles
   - `lang_utils.lua`, `lsp_capabilities.lua`, `persist.lua`, `cleanup.lua` (source-of-truth modules)
 - `lua/plugins/` — Self-contained plugin specs with inlined configs:
