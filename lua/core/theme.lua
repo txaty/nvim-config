@@ -692,17 +692,36 @@ local function build_theme_info()
   return info_map
 end
 
--- Lazy init: build on first access, then cache as regular fields
+-- Lazy-initialized caches (built on first access, then reused)
+local _themes_cache
+local _theme_info_cache
+
+--- Get categorized theme lists (dark/light), lazily built from registry
+---@return {dark: string[], light: string[]}
+function M.get_themes()
+  if not _themes_cache then
+    _themes_cache = build_themes()
+  end
+  return _themes_cache
+end
+
+--- Get theme info map, lazily built from registry
+---@return table<string, {variant: string, description: string}>
+function M.get_theme_info()
+  if not _theme_info_cache then
+    _theme_info_cache = build_theme_info()
+  end
+  return _theme_info_cache
+end
+
+-- Backward compatibility: M.themes and M.theme_info as lazy properties
+-- Uses metatable __index so existing callers (M.themes.dark, etc.) still work
 setmetatable(M, {
-  __index = function(t, k)
+  __index = function(_, k)
     if k == "themes" then
-      local v = build_themes()
-      rawset(t, k, v)
-      return v
+      return M.get_themes()
     elseif k == "theme_info" then
-      local v = build_theme_info()
-      rawset(t, k, v)
-      return v
+      return M.get_theme_info()
     end
   end,
 })
