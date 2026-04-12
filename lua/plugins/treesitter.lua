@@ -1,16 +1,21 @@
 return {
   {
+    -- branch = "main" (not "master"): the master branch is archived and its
+    -- query_predicates.lua is incompatible with Neovim 0.12+, which changed
+    -- match tables from single TSNodes to arrays of TSNodes. This caused the
+    -- "attempt to call method 'range' (a nil value)" conceal_line error on
+    -- every markdown open. The main branch removes query_predicates.lua
+    -- entirely (directives upstreamed to Neovim core) and requires Neovim 0.11+.
+    -- API change: require("nvim-treesitter").setup() + .install() replaces the
+    -- old require("nvim-treesitter.configs").setup(opts) pattern.
+    -- lazy = false: the main branch README explicitly states it does not support
+    -- lazy-loading.
     "nvim-treesitter/nvim-treesitter",
-    version = false, -- last release is way too old and doesn't support all parsers
-    event = { "BufReadPost", "BufNewFile" },
-    dependencies = {
-      "nvim-treesitter/nvim-treesitter-textobjects",
-      -- treesitter-context removed from dependencies: loads independently on VeryLazy
-      -- This defers ~0.3ms from BufReadPost to after first paint
-    },
+    version = false,
+    branch = "main",
+    lazy = false,
+    build = ":TSUpdate",
     opts = {
-      highlight = { enable = true },
-      indent = { enable = true },
       ensure_installed = {
         "bash",
         "c",
@@ -19,7 +24,6 @@ return {
         "javascript",
         "jsdoc",
         "json",
-        "jsonc",
         "lua",
         "luadoc",
         "luap",
@@ -35,62 +39,112 @@ return {
         "vimdoc",
         "yaml",
       },
-      incremental_selection = {
-        enable = true,
-        keymaps = {
-          init_selection = "<C-space>",
-          node_incremental = "<C-space>",
-          scope_incremental = false,
-          node_decremental = "<bs>",
-        },
-      },
-      textobjects = {
-        select = {
-          enable = true,
-          lookahead = true,
-          keymaps = {
-            ["af"] = "@function.outer",
-            ["if"] = "@function.inner",
-            ["ac"] = "@class.outer",
-            ["ic"] = "@class.inner",
-            ["aa"] = "@parameter.outer",
-            ["ia"] = "@parameter.inner",
-          },
-        },
-        move = {
-          enable = true,
-          goto_next_start = {
-            ["]f"] = "@function.outer",
-            ["]c"] = "@class.outer",
-            ["]a"] = "@parameter.inner",
-          },
-          goto_next_end = {
-            ["]F"] = "@function.outer",
-            ["]C"] = "@class.outer",
-          },
-          goto_previous_start = {
-            ["[f"] = "@function.outer",
-            ["[c"] = "@class.outer",
-            ["[a"] = "@parameter.inner",
-          },
-          goto_previous_end = {
-            ["[F"] = "@function.outer",
-            ["[C"] = "@class.outer",
-          },
-        },
-        swap = {
-          enable = true,
-          swap_next = { ["<leader>sa"] = "@parameter.inner" },
-          swap_previous = { ["<leader>sA"] = "@parameter.inner" },
-        },
-      },
     },
     config = function(_, opts)
-      require("nvim-treesitter.configs").setup(opts)
+      require("nvim-treesitter").setup()
+
+      -- Install parsers (base + language extensions, non-blocking)
+      if opts.ensure_installed and #opts.ensure_installed > 0 then
+        require("nvim-treesitter").install(opts.ensure_installed)
+      end
+
+      -- Enable treesitter highlighting and indentation for all filetypes
+      vim.api.nvim_create_autocmd("FileType", {
+        callback = function()
+          pcall(vim.treesitter.start)
+          vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+        end,
+      })
+
       -- Set folding after treesitter loads (deferred from options.lua for faster startup)
       -- Use native Neovim 0.11+ foldexpr (faster than vimscript nvim_treesitter#foldexpr)
       vim.opt.foldmethod = "expr"
       vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+    end,
+  },
+
+  -- Treesitter textobjects.
+  -- branch = "main": the main branch is a full rewrite. Config is no longer
+  -- nested under nvim-treesitter.configs — it is a standalone plugin with an
+  -- explicit setup() call and direct vim.keymap.set() calls per operation,
+  -- replacing the old declarative opts.textobjects table.
+  {
+    "nvim-treesitter/nvim-treesitter-textobjects",
+    branch = "main",
+    event = { "BufReadPost", "BufNewFile" },
+    dependencies = { "nvim-treesitter/nvim-treesitter" },
+    config = function()
+      local select = require "nvim-treesitter-textobjects.select"
+      local move = require "nvim-treesitter-textobjects.move"
+      local swap = require "nvim-treesitter-textobjects.swap"
+
+      require("nvim-treesitter-textobjects").setup {
+        select = { lookahead = true },
+      }
+
+      -- Select textobjects
+      for _, map in ipairs {
+        { "af", "@function.outer" },
+        { "if", "@function.inner" },
+        { "ac", "@class.outer" },
+        { "ic", "@class.inner" },
+        { "aa", "@parameter.outer" },
+        { "ia", "@parameter.inner" },
+      } do
+        vim.keymap.set({ "x", "o" }, map[1], function()
+          select.select_textobject(map[2], "textobjects")
+        end, { desc = "Select " .. map[2] })
+      end
+
+      -- Move: goto next start
+      for _, map in ipairs {
+        { "]f", "@function.outer" },
+        { "]c", "@class.outer" },
+        { "]a", "@parameter.inner" },
+      } do
+        vim.keymap.set({ "n", "x", "o" }, map[1], function()
+          move.goto_next_start(map[2], "textobjects")
+        end, { desc = "Next " .. map[2] .. " start" })
+      end
+
+      -- Move: goto next end
+      for _, map in ipairs {
+        { "]F", "@function.outer" },
+        { "]C", "@class.outer" },
+      } do
+        vim.keymap.set({ "n", "x", "o" }, map[1], function()
+          move.goto_next_end(map[2], "textobjects")
+        end, { desc = "Next " .. map[2] .. " end" })
+      end
+
+      -- Move: goto previous start
+      for _, map in ipairs {
+        { "[f", "@function.outer" },
+        { "[c", "@class.outer" },
+        { "[a", "@parameter.inner" },
+      } do
+        vim.keymap.set({ "n", "x", "o" }, map[1], function()
+          move.goto_previous_start(map[2], "textobjects")
+        end, { desc = "Prev " .. map[2] .. " start" })
+      end
+
+      -- Move: goto previous end
+      for _, map in ipairs {
+        { "[F", "@function.outer" },
+        { "[C", "@class.outer" },
+      } do
+        vim.keymap.set({ "n", "x", "o" }, map[1], function()
+          move.goto_previous_end(map[2], "textobjects")
+        end, { desc = "Prev " .. map[2] .. " end" })
+      end
+
+      -- Swap parameters
+      vim.keymap.set("n", "<leader>sa", function()
+        swap.swap_next "@parameter.inner"
+      end, { desc = "Swap next parameter" })
+      vim.keymap.set("n", "<leader>sA", function()
+        swap.swap_previous "@parameter.inner"
+      end, { desc = "Swap prev parameter" })
     end,
   },
 
