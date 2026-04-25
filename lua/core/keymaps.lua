@@ -54,6 +54,9 @@ map("n", "<leader>sc", "<cmd>nohlsearch<cr>", { desc = "Search: clear highlights
 map("n", "<leader>fW", "<cmd>w<cr>", { desc = "Files: save" })
 map("n", "<leader>qq", "<cmd>q<cr>", { desc = "Quit window" })
 map("n", "<leader>qQ", "<cmd>qa!<cr>", { desc = "Quit all" })
+map("n", "<leader>qp", function()
+  require("core.session_toggle").toggle()
+end, { desc = "Session: toggle auto persistence" })
 
 -- Files & Finding (Telescope)
 -- Core telescope keymaps defined in lua/plugins/telescope.lua for lazy-loading

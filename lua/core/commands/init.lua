@@ -7,6 +7,7 @@ local command_modules = {
   "core.commands.lang",
   "core.commands.cleanup",
   "core.commands.ui",
+  "core.commands.session",
 }
 
 --- Register all user commands

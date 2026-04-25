@@ -521,6 +521,11 @@
 | `<leader>qS` | Select session to load |
 | `<leader>ql` | Restore last session |
 | `<leader>qd` | Don't save current session |
+| `<leader>qp` | Toggle session auto-persistence (persisted across restarts) |
+
+Auto-restore and auto-save are gated by a persisted toggle (default: enabled).
+Use `:SessionToggle` / `:SessionEnable` / `:SessionDisable` / `:SessionStatus` or
+`<leader>qp`. State is stored in `$XDG_DATA_HOME/nvim/session_config.json`.
 
 ---
 

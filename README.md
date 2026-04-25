@@ -41,7 +41,7 @@ This configuration is hardened to prefer explicit trust over convenience.
 Opt-in flags for trusted environments:
 
 ```lua
-vim.g.enable_session_persistence = true
+vim.g.enable_session_persistence = true  -- default enabled; toggle with :SessionToggle or <leader>qp
 vim.g.enable_auto_cleanup = true
 vim.g.enable_lsp_automatic_start = true
 vim.g.enable_format_on_save = true
@@ -302,14 +302,14 @@ S             # Select code block by scope
 If you expect old convenience behavior, check these defaults first:
 
 ```lua
-vim.g.enable_session_persistence = true
+vim.g.enable_session_persistence = true  -- default enabled; toggle with :SessionToggle or <leader>qp
 vim.g.enable_auto_cleanup = true
 vim.g.enable_lsp_automatic_start = true
 vim.g.enable_format_on_save = true
 vim.g.enable_lint_on_write = true
 ```
 
-These are intentionally off unless you opt in.
+All are off unless opted in, except `enable_session_persistence`, which defaults to **enabled** via `core/session_toggle.lua` (state persisted in `$XDG_DATA_HOME/nvim/session_config.json`). Disable with `:SessionDisable`.
 
 ### LSP Not Attaching
 

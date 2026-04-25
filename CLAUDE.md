@@ -314,10 +314,11 @@ See `docs/keymaps.md` for complete reference.
 
 ## Session Management
 
-- **Auto-save**: Sessions save on VimLeavePre only when `vim.g.enable_session_persistence = true`
-- **Auto-restore**: Sessions restore on startup only when persistence is enabled
+- **Auto-save**: Sessions save on VimLeavePre when `vim.g.enable_session_persistence = true`
+- **Auto-restore**: Sessions restore on startup when persistence is enabled
+- **Toggle** (default enabled): `:SessionToggle` / `:SessionEnable` / `:SessionDisable` / `:SessionStatus`, or `<leader>qp`. State persists in `$XDG_DATA_HOME/nvim/session_config.json` via `core/session_toggle.lua`, applied by `core/init.lua` before the lifecycle session step reads the flag.
 - **Per-directory**: Each workspace maintains its own session state
-- **Manual**: `<leader>qs` (restore current-dir session), `<leader>ql` (load last), `<leader>qS` (select)
+- **Manual** (always available, bypasses the toggle): `<leader>qs` (restore current-dir session), `<leader>ql` (load last), `<leader>qS` (select)
 
 **Note:** Global variables (vim.g.*) are NOT in sessions. UI state persisted separately via JSON config files to maintain single source of truth.
 
