@@ -6,8 +6,9 @@ return {
     -- "attempt to call method 'range' (a nil value)" conceal_line error on
     -- every markdown open. The main branch removes query_predicates.lua
     -- entirely (directives upstreamed to Neovim core) and requires Neovim 0.11+.
-    -- API change: require("nvim-treesitter").setup() + .install() replaces the
-    -- old require("nvim-treesitter.configs").setup(opts) pattern.
+    -- API change: require("nvim-treesitter").setup(opts) replaces the old
+    -- require("nvim-treesitter.configs").setup(opts) pattern. ensure_installed
+    -- is passed directly to setup(); the .install() method no longer exists.
     -- lazy = false: the main branch README explicitly states it does not support
     -- lazy-loading.
     "nvim-treesitter/nvim-treesitter",
@@ -41,12 +42,8 @@ return {
       },
     },
     config = function(_, opts)
-      require("nvim-treesitter").setup()
-
-      -- Install parsers (base + language extensions, non-blocking)
-      if opts.ensure_installed and #opts.ensure_installed > 0 then
-        require("nvim-treesitter").install(opts.ensure_installed)
-      end
+      -- setup() accepts ensure_installed directly in the main branch API
+      require("nvim-treesitter").setup(opts)
 
       -- Enable treesitter highlighting and indentation for all filetypes
       vim.api.nvim_create_autocmd("FileType", {
