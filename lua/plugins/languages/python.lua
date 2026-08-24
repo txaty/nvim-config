@@ -36,7 +36,7 @@ return {
       "mfussenegger/nvim-dap",
     },
     config = function()
-      require("dap.python").setup()
+      require("dap_configs.python").setup()
     end,
   },
 

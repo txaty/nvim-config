@@ -1,6 +1,6 @@
 -- Python DAP configuration
 -- This sets up debugpy for Python debugging
--- Note: This is called from lua/plugins/python.lua (venv-selector config)
+-- Note: called from lua/plugins/languages/python.lua (nvim-dap-python spec)
 
 local M = {}
 
