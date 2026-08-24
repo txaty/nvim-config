@@ -9,6 +9,7 @@ function M.setup()
   require("core.autocmds.word_highlight").setup()
   require("core.autocmds.persistence").setup()
   require("core.autocmds.ui_state").setup()
+  require("core.autocmds.images").setup()
 end
 
 return M

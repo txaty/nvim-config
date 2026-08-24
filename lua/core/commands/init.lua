@@ -8,6 +8,7 @@ local command_modules = {
   "core.commands.cleanup",
   "core.commands.ui",
   "core.commands.session",
+  "core.commands.theme",
 }
 
 --- Register all user commands

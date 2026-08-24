@@ -1,103 +1,39 @@
+-- General (non-plugin) keymaps.
+--
+-- Scope rule: a mapping lives here only when it needs no plugin. Anything that
+-- drives a plugin belongs in that plugin's `keys` spec so the plugin stays
+-- lazy-loaded. Mappings that drive a core.* module live here and require the
+-- module inside the callback, so the module is only loaded when the key is used.
+--
+-- Conflicts across all sources are reported by core.keymap_audit on VeryLazy.
 local map = vim.keymap.set
 
--- General Mappings
+--------------------------------------
+-- Insert-mode navigation
+--------------------------------------
 map("i", "<C-b>", "<ESC>^i", { desc = "Move beginning of line" })
 map("i", "<C-e>", "<End>", { desc = "Move end of line" })
 map("i", "<C-h>", "<Left>", { desc = "Move left" })
 map("i", "<C-l>", "<Right>", { desc = "Move right" })
 map("i", "<C-j>", "<Down>", { desc = "Move down" })
 map("i", "<C-k>", "<Up>", { desc = "Move up" })
+map("i", "jk", "<Esc>", { desc = "Exit insert mode" })
 
--- Note: <Esc> → noh is handled in multicursor.lua (falls through when no cursors active)
+--------------------------------------
+-- Windows and buffers
+--------------------------------------
+-- Note: <Esc> → :noh is owned by multicursor.lua (it falls through to noh when
+-- no extra cursors are active), so it is deliberately not mapped here.
 map("n", "<C-h>", "<C-w>h", { desc = "Switch Window left" })
 map("n", "<C-l>", "<C-w>l", { desc = "Switch Window right" })
 map("n", "<C-j>", "<C-w>j", { desc = "Switch Window down" })
 map("n", "<C-k>", "<C-w>k", { desc = "Switch Window up" })
 
-map("n", "<C-s>", "<cmd>w<CR>", { desc = "General Save file" })
-map("n", "<C-c>", "<cmd>%y+<CR>", { desc = "General Copy whole file" })
-
--- UI/Display toggles (session-persistent via vim.g.ui_*)
--- Note: ui_toggle is loaded on-demand to avoid startup cost
-map("n", "<leader>uw", function()
-  require("core.ui_toggle").toggle "wrap"
-end, { desc = "UI: Toggle line wrap" })
-map("n", "<leader>us", function()
-  require("core.ui_toggle").toggle "spell"
-end, { desc = "UI: Toggle spell check" })
-map("n", "<leader>un", function()
-  require("core.ui_toggle").toggle "number"
-end, { desc = "UI: Toggle line numbers" })
-map("n", "<leader>ur", function()
-  require("core.ui_toggle").toggle "relativenumber"
-end, { desc = "UI: Toggle relative numbers" })
-map("n", "<leader>uc", function()
-  require("core.ui_toggle").toggle "conceallevel"
-end, { desc = "UI: Toggle conceal" })
-map("n", "<leader>ug", function()
-  require("core.ui_toggle").toggle "tree_git"
-end, { desc = "UI: Toggle nvim-tree git status" })
-map("n", "<leader>ud", function()
-  require("core.ui_toggle").toggle "dim"
-end, { desc = "UI: Toggle dim" })
-map("n", "<leader>uD", function()
-  require("core.ui_toggle").toggle "diagnostic_lines"
-end, { desc = "UI: Toggle inline diagnostics" })
-
--- User Mappings from mappings.lua
-map("n", ";", ":", { desc = "Command mode" })
-map("i", "jk", "<Esc>", { desc = "Exit insert mode" })
+map("n", "<TAB>", "<cmd>bnext<CR>", { desc = "Buffer Next" })
+map("n", "<S-TAB>", "<cmd>bprev<CR>", { desc = "Buffer Prev" })
+-- <leader>b{d,D,o,x} are owned by lua/plugins/ui.lua (Snacks.bufdelete)
 map("n", "<leader>ba", "gg<S-v>G", { desc = "Buffer: select entire buffer" })
--- Note: <C-m> is equivalent to <CR> in terminals, avoid remapping it
--- Use <C-o>/<C-i> directly for jumplist navigation
-map("n", "<leader>sc", "<cmd>nohlsearch<cr>", { desc = "Search: clear highlights" })
-map("n", "<leader>fW", "<cmd>w<cr>", { desc = "Files: save" })
-map("n", "<leader>qq", "<cmd>q<cr>", { desc = "Quit window" })
-map("n", "<leader>qQ", "<cmd>qa!<cr>", { desc = "Quit all" })
-map("n", "<leader>qp", function()
-  require("core.session_toggle").toggle()
-end, { desc = "Session: toggle auto persistence" })
 
--- Files & Finding (Telescope)
--- Core telescope keymaps defined in lua/plugins/telescope.lua for lazy-loading
-
--- File Explorer (NvimTree)
--- <leader>fe follows Files group convention
--- <C-n> is defined in lua/plugins/ui.lua for lazy-loading
-map("n", "<leader>fe", "<cmd>NvimTreeToggle<cr>", { desc = "Files: toggle explorer" })
-
--- Copy file path to clipboard
-map("n", "<leader>fy", function()
-  local path = vim.fn.expand "%:p"
-  if path ~= "" then
-    vim.fn.setreg("+", path)
-    vim.notify("Copied: " .. path, vim.log.levels.INFO)
-  else
-    vim.notify("No file in current buffer", vim.log.levels.WARN)
-  end
-end, { desc = "Files: yank absolute path" })
-
-map("n", "<leader>fY", function()
-  local path = vim.fn.expand "%:."
-  if path ~= "" then
-    vim.fn.setreg("+", path)
-    vim.notify("Copied: " .. path, vim.log.levels.INFO)
-  else
-    vim.notify("No file in current buffer", vim.log.levels.WARN)
-  end
-end, { desc = "Files: yank relative path" })
-
-map("n", "<leader>fN", function()
-  local name = vim.fn.expand "%:t"
-  if name ~= "" then
-    vim.fn.setreg("+", name)
-    vim.notify("Copied: " .. name, vim.log.levels.INFO)
-  else
-    vim.notify("No file in current buffer", vim.log.levels.WARN)
-  end
-end, { desc = "Files: yank filename" })
-
--- Window Split and Layout
 map("n", "<leader>ws", "<cmd>split<cr>", { desc = "Window: horizontal split" })
 map("n", "<leader>wv", "<cmd>vsplit<cr>", { desc = "Window: vertical split" })
 map("n", "<leader>w=", "<C-w>=", { desc = "Window: equalize sizes" })
@@ -113,34 +49,101 @@ map("n", "<leader>wz", function()
   end
 end, { desc = "Window: toggle zoom" })
 
--- Buffer navigation
-map("n", "<TAB>", "<cmd>bnext<CR>", { desc = "Buffer Next" })
-map("n", "<S-TAB>", "<cmd>bprev<CR>", { desc = "Buffer Prev" })
--- <leader>bd is defined in lua/plugins/ui.lua (centralized buffer close)
+--------------------------------------
+-- Editor basics
+--------------------------------------
+map("n", ";", ":", { desc = "Command mode" })
+map("n", "<C-s>", "<cmd>w<CR>", { desc = "General Save file" })
+map("n", "<C-c>", "<cmd>%y+<CR>", { desc = "General Copy whole file" })
+map("n", "<leader>sc", "<cmd>nohlsearch<cr>", { desc = "Search: clear highlights" })
 
--- AI Feature Toggle (Lua function avoids race with VimEnter command registration)
-map("n", "<leader>ai", function()
-  local ok, ai = pcall(require, "core.ai_toggle")
-  if ok then
-    ai.toggle()
-  else
-    vim.notify("Failed to load ai_toggle module", vim.log.levels.ERROR)
+--------------------------------------
+-- Files
+--------------------------------------
+-- <C-n> (toggle explorer) is owned by lua/plugins/ui.lua for lazy-loading.
+map("n", "<leader>fe", "<cmd>NvimTreeToggle<cr>", { desc = "Files: toggle explorer" })
+map("n", "<leader>fW", "<cmd>w<cr>", { desc = "Files: save" })
+
+---Copy a modifier-expanded form of the current file's name to the clipboard.
+---@param modifier string vim filename modifier, e.g. ":p", ":.", ":t"
+---@param label string what to call it in the notification
+local function yank_path(modifier, label)
+  return function()
+    local path = vim.fn.expand("%" .. modifier)
+    if path == "" then
+      vim.notify("No file in current buffer", vim.log.levels.WARN)
+      return
+    end
+    vim.fn.setreg("+", path)
+    vim.notify(string.format("Copied %s: %s", label, path), vim.log.levels.INFO)
   end
+end
+
+map("n", "<leader>fy", yank_path(":p", "absolute path"), { desc = "Files: yank absolute path" })
+map("n", "<leader>fY", yank_path(":.", "relative path"), { desc = "Files: yank relative path" })
+map("n", "<leader>fN", yank_path(":t", "filename"), { desc = "Files: yank filename" })
+
+--------------------------------------
+-- UI/Display toggles (persisted in ui_config.json)
+--------------------------------------
+---@param opt string key in core.ui_toggle's `defaults`
+local function ui_toggle(opt)
+  return function()
+    require("core.ui_toggle").toggle(opt)
+  end
+end
+
+map("n", "<leader>uw", ui_toggle "wrap", { desc = "UI: Toggle line wrap" })
+map("n", "<leader>us", ui_toggle "spell", { desc = "UI: Toggle spell check" })
+map("n", "<leader>un", ui_toggle "number", { desc = "UI: Toggle line numbers" })
+map("n", "<leader>ur", ui_toggle "relativenumber", { desc = "UI: Toggle relative numbers" })
+map("n", "<leader>uc", ui_toggle "conceallevel", { desc = "UI: Toggle conceal" })
+map("n", "<leader>ug", ui_toggle "tree_git", { desc = "UI: Toggle nvim-tree git status" })
+map("n", "<leader>ud", ui_toggle "dim", { desc = "UI: Toggle dim" })
+map("n", "<leader>uD", ui_toggle "diagnostic_lines", { desc = "UI: Toggle inline diagnostics" })
+
+--------------------------------------
+-- Colorscheme (core.ui.theme_picker)
+--------------------------------------
+-- These call the module directly rather than the :Theme* commands: commands are
+-- registered from the VimEnter lifecycle, so a keypress during startup would
+-- otherwise hit a command that does not exist yet.
+---@param method string function name on core.ui.theme_picker
+---@param arg? any single argument forwarded to that function
+local function theme_picker(method, arg)
+  return function()
+    require("core.ui.theme_picker")[method](arg)
+  end
+end
+
+map("n", "<leader>cc", theme_picker "open", { desc = "Color: choose colorscheme" })
+map("n", "<leader>cd", theme_picker "dark", { desc = "Color: switch to dark" })
+map("n", "<leader>cl", theme_picker "light", { desc = "Color: switch to light" })
+map("n", "<leader>cp", theme_picker "txaty", { desc = "Color: switch to txaty" })
+map("n", "<leader>cn", theme_picker("cycle", 1), { desc = "Color: next theme" })
+map("n", "<leader>cN", theme_picker("cycle", -1), { desc = "Color: previous theme" })
+
+--------------------------------------
+-- Session / quit
+--------------------------------------
+-- <leader>q{s,S,l,d} are owned by lua/plugins/session.lua (persistence.nvim).
+map("n", "<leader>qq", "<cmd>q<cr>", { desc = "Quit window" })
+map("n", "<leader>qQ", "<cmd>qa!<cr>", { desc = "Quit all" })
+map("n", "<leader>qp", function()
+  require("core.session_toggle").toggle()
+end, { desc = "Session: toggle auto persistence" })
+
+--------------------------------------
+-- Feature toggles (AI / language support)
+--------------------------------------
+map("n", "<leader>ai", function()
+  require("core.ai_toggle").toggle()
 end, { desc = "AI: Toggle AI features" })
 
--- Language Support Panel (uses capital L to avoid conflict with <leader>l* LSP keymaps)
--- Lua functions avoid race with VimEnter command registration
+-- Capital L so the language panel does not collide with the <leader>l* LSP group.
 map("n", "<leader>Lp", function()
-  local ok = pcall(vim.cmd, "LangPanel")
-  if not ok then
-    vim.notify("LangPanel not yet available, try again shortly", vim.log.levels.WARN)
-  end
+  require("core.ui.lang_panel").open()
 end, { desc = "Language: toggle panel" })
 map("n", "<leader>Ls", function()
-  local ok, lang = pcall(require, "core.lang_toggle")
-  if ok then
-    lang.show_all_status()
-  else
-    vim.notify("Failed to load lang_toggle module", vim.log.levels.ERROR)
-  end
+  require("core.lang_toggle").show_all_status()
 end, { desc = "Language: show status" })
