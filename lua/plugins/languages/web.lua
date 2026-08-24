@@ -28,7 +28,9 @@ return {
   },
   {
     "windwp/nvim-ts-autotag",
-    event = { "BufReadPre", "BufNewFile" },
+    -- `ft` only. It also declared BufReadPre/BufNewFile, and lazy.nvim ORs its
+    -- triggers together — so the filetype list was decorative and the plugin
+    -- loaded for every buffer, including ones with no tags to close.
     ft = { "html", "javascript", "javascriptreact", "typescript", "typescriptreact", "svelte", "vue", "xml" },
     opts = {},
   },

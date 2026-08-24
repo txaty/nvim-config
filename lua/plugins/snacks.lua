@@ -511,14 +511,14 @@ return {
       },
     },
     init = function()
-      -- Global kill switch for all snacks animations if issues arise
-      -- vim.g.snacks_animate = false
-
-      -- Set up vim.notify replacement after snacks loads
+      -- Global kill switch for all snacks animations if issues arise:
+      --   vim.g.snacks_animate = false
       vim.api.nvim_create_autocmd("User", {
         pattern = "VeryLazy",
+        once = true,
         callback = function()
-          -- Warn once if imagemagick is absent; only PNG files will render without it.
+          -- Warn once per session if imagemagick is absent; without it
+          -- snacks.image can only render PNG inline.
           if vim.fn.executable "magick" == 0 and vim.fn.executable "convert" == 0 then
             vim.notify(
               "snacks.image: imagemagick not found — only PNG files will render inline.",
@@ -526,7 +526,8 @@ return {
             )
           end
 
-          -- Override vim.notify with snacks.notifier
+          -- Debug helpers. Note this does NOT touch vim.notify: `notifier` is
+          -- disabled above because noice.nvim owns messages.
           _G.dd = function(...)
             Snacks.debug.inspect(...)
           end

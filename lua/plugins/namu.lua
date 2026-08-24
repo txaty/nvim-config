@@ -1,7 +1,9 @@
 return {
   {
     "bassamsdata/namu.nvim",
-    event = { "BufReadPost", "BufNewFile" },
+    -- keys only, deliberately no `event`: this is an on-demand symbol picker.
+    -- It previously also declared BufReadPost/BufNewFile, which loaded it into
+    -- every buffer at open time and made the `keys` entries redundant.
     keys = {
       { "<leader>ss", "<cmd>Namu symbols<CR>", desc = "Jump to symbol" },
       { "<leader>sS", "<cmd>Namu workspace<CR>", desc = "Jump to workspace symbol" },

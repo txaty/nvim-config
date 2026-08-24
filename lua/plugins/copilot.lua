@@ -132,6 +132,14 @@ return {
     cond = function()
       return require("core.ai_toggle").is_enabled()
     end,
+    -- avante ships native (Rust) helpers that must be compiled; without a build
+    -- step the plugin errors on first use instead of failing at install time.
+    -- Only reachable when AI is enabled, so this path is normally dormant.
+    build = vim.fn.has "win32" == 1 and "powershell -ExecutionPolicy Bypass -File Build.ps1 -BuildFromSource false"
+      or "make",
+    -- Upstream explicitly warns against `version = "*"`: tags lag the Lua API
+    -- and a tagged checkout gets paired with freshly built binaries.
+    version = false,
     cmd = { "AvanteAsk", "AvanteChat", "AvanteToggle" },
     keys = {
       { "<leader>av", "<cmd>AvanteToggle<cr>", desc = "AI: Toggle Avante sidebar" },
