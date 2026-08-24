@@ -21,10 +21,19 @@ local function prompt_remote_input(prompt, error_message, title, command)
   end
 end
 
+---Run `callback` only when a distant client is actually connected.
+---
+---The previous check was `pcall(require, "distant")`, which tested whether the
+---*module* loads — it always does, and under lazy.nvim requiring it even loads
+---the plugin. So the guard never fired and <leader>rf/<leader>rg silently ran a
+---local search while pretending to be remote. distant:active_client_id() is the
+---connection state.
+---@param callback fun()
+---@return fun()
 local function with_remote_connection(callback)
   return function()
-    local ok = pcall(require, "distant")
-    if not ok then
+    local ok, distant = pcall(require, "distant")
+    if not ok or not distant:is_initialized() or not distant:active_client_id() then
       vim.notify("Not connected to a remote server. Use <leader>rc to connect.", vim.log.levels.WARN)
       return
     end
