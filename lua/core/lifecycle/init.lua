@@ -304,20 +304,15 @@ local steps = {
     name = "cleanup",
     mode = "deferred",
     delay_ms = 2000,
-    -- Deferred 2s to avoid blocking startup. The cleanup module's own should_run()
-    -- handles throttle checking.
-    condition = function()
-      return vim.g.enable_auto_cleanup == true
-    end,
+    -- Deferred 2s to keep it off the startup path. core.cleanup.auto_cleanup()
+    -- owns both gates (the vim.g.enable_auto_cleanup opt-in and the 24h
+    -- throttle) and reports whether it actually ran; duplicating either check
+    -- here is what let the enable/disable flags drift apart previously.
     fn = function()
-      local cleanup_ok, cleanup = pcall(require, "core.cleanup")
-      if cleanup_ok then
-        if cleanup.should_run() then
-          pcall(cleanup.auto_cleanup)
-          log "cleanup executed"
-        else
-          log "cleanup skipped (throttle)"
-        end
+      local ok, cleanup = pcall(require, "core.cleanup")
+      if ok then
+        local ran = cleanup.auto_cleanup()
+        log(ran and "cleanup executed" or "cleanup skipped (disabled or throttled)")
       end
     end,
   },
