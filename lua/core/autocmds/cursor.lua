@@ -24,52 +24,49 @@ function M.setup()
     end,
   })
 
-  -- View saving logic (folds only, excludes special buffers)
-  -- Debounced with a single reusable timer to avoid handle leaks.
-  -- Timer is intentionally long-lived (one per session); Neovim cleans it up on exit.
-  local view_save_timer = vim.uv.new_timer()
-  local DEBOUNCE_MS = 100
+  -- View (fold) save/load.
+  --
+  -- Only folds are persisted; `viewoptions` is set to "folds" in options.lua and
+  -- the cursor is restored from shada by the autocmd above.
+  --
+  -- These run synchronously. An earlier version debounced :mkview through a
+  -- 100ms timer, which was silently wrong: :mkview always acts on the *current*
+  -- window and buffer, so by the time the timer fired it saved whichever buffer
+  -- happened to be focused then — not the one that triggered BufWinLeave. The
+  -- has_folds() guard below is what keeps the disk I/O rare.
+
+  ---Should this buffer participate in view save/load at all?
+  ---Special buffers (trees, help, terminals) and unnamed buffers have no
+  ---meaningful view to persist.
+  ---@return boolean
+  local function is_view_candidate()
+    local ft = vim.bo.filetype
+    return vim.fn.expand "%" ~= "" and vim.bo.buftype == "" and ft ~= "NvimTree" and ft ~= "help"
+  end
+
+  ---Does the current buffer have any folds worth persisting?
+  ---With a computed foldmethod (treesitter sets "expr") assume yes. With manual
+  ---folds, scan a bounded prefix rather than the whole buffer.
+  ---@return boolean
+  local function has_folds()
+    if vim.wo.foldmethod ~= "manual" then
+      return true
+    end
+    for i = 1, math.min(vim.fn.line "$", 500) do
+      if vim.fn.foldlevel(i) > 0 then
+        return true
+      end
+    end
+    return false
+  end
 
   autocmd("BufWinLeave", {
     group = augroup "view_saving",
     pattern = "*",
     callback = function()
-      local bufname = vim.fn.expand "%"
-      local buftype = vim.bo.buftype
-      local filetype = vim.bo.filetype
-      if bufname == "" or buftype ~= "" or filetype == "NvimTree" or filetype == "help" then
-        return
+      if is_view_candidate() and has_folds() then
+        pcall(vim.cmd, "mkview")
       end
-
-      -- OPT-4: Only save views for buffers with folds (reduces unnecessary disk I/O)
-      local foldmethod = vim.wo.foldmethod
-      local has_folds = false
-      if foldmethod ~= "manual" then
-        has_folds = true
-      else
-        -- For manual foldmethod, check if any folds exist
-        local line_count = vim.fn.line "$"
-        for i = 1, math.min(line_count, 100) do -- Sample first 100 lines for performance
-          if vim.fn.foldlevel(i) > 0 then
-            has_folds = true
-            break
-          end
-        end
-      end
-
-      if not has_folds then
-        return
-      end
-
-      -- Debounce: restart the single timer (stop + start avoids handle leak)
-      view_save_timer:stop()
-      view_save_timer:start(
-        DEBOUNCE_MS,
-        0,
-        vim.schedule_wrap(function()
-          pcall(vim.cmd, "mkview")
-        end)
-      )
     end,
   })
 
@@ -77,10 +74,7 @@ function M.setup()
     group = augroup "view_loading",
     pattern = "*",
     callback = function()
-      local bufname = vim.fn.expand "%"
-      local buftype = vim.bo.buftype
-      local filetype = vim.bo.filetype
-      if bufname == "" or buftype ~= "" or filetype == "NvimTree" or filetype == "help" then
+      if not is_view_candidate() then
         return
       end
       vim.cmd "silent! loadview"
