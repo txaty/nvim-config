@@ -26,7 +26,21 @@ return {
       "neovim/nvim-lspconfig", -- Ensure lspconfig is loaded first
     },
     init = function()
-      -- Configure rustaceanvim before plugin loads
+      -- Configure rustaceanvim before plugin loads.
+      --
+      -- Setting names below are validated against `rust-analyzer
+      -- --print-config-schema`. rust-analyzer silently ignores unknown keys, so
+      -- a stale name is invisible at runtime — the feature just never turns on.
+      -- Several keys here were renamed upstream and have been migrated:
+      --   cargo.allFeatures      -> cargo.features = "all"
+      --   cargo.runBuildScripts  -> cargo.buildScripts.enable
+      --   cargo.loadOutDirMacros -> (removed; covered by buildScripts.enable)
+      --   checkOnSave = {table}  -> checkOnSave = <boolean> + check.*
+      --   hover.documentation    -> hover.documentation.enable
+      --   hover.actions.enabled  -> hover.actions.enable
+      --   inlayHints.showParameterNames -> inlayHints.parameterHints.enable
+      -- Inlay-hint prefixes/alignment are no longer server settings at all;
+      -- rendering is the client's job (`vim.lsp.inlay_hint`).
       vim.g.rustaceanvim = {
         -- LSP configuration
         server = {
@@ -43,10 +57,10 @@ return {
 
               -- Cargo configuration
               cargo = {
-                allFeatures = true, -- Analyze all feature combinations
-                loadOutDirMacros = true, -- Load OUT_DIR macros
-                runBuildScripts = true, -- Run build scripts (build.rs)
-                features = "all", -- Check all features
+                features = "all", -- Analyze all feature combinations
+                buildScripts = {
+                  enable = true, -- Run build scripts (build.rs) for accurate analysis
+                },
               },
 
               -- Proc macro support
@@ -63,27 +77,25 @@ return {
                 warningsAsInfo = {},
               },
 
-              -- Check on save
-              checkOnSave = {
-                enable = true,
-                command = "clippy", -- Use clippy instead of check
+              -- Check on save: the flag is a boolean; the command it runs lives
+              -- under `check.*`. Passing a table to checkOnSave makes
+              -- rust-analyzer reject the whole block, so clippy never ran.
+              checkOnSave = true,
+              check = {
+                command = "clippy",
                 extraArgs = { "--all-targets", "--all-features" },
               },
 
               -- Hover actions
               hover = {
-                documentation = true,
-                actions = {
-                  enabled = true,
-                },
+                documentation = { enable = true },
+                actions = { enable = true },
               },
 
               -- Inlay hints
               inlayHints = {
-                enable = true,
-                showParameterNames = true,
-                parameterHintsPrefix = "← ",
-                chainingHintsPrefix = "→ ",
+                parameterHints = { enable = true },
+                chainingHints = { enable = true },
               },
 
               -- Completion
@@ -113,27 +125,17 @@ return {
         -- Let rustaceanvim handle the default setup, mason-nvim-dap installs codelldb
         dap = {},
 
-        -- Tools (will be configured by rustaceanvim)
+        -- rustaceanvim's own `tools` table. Keys here are rustaceanvim options,
+        -- NOT rust-tools.nvim ones — the old `enable_all_diagnostics` and the
+        -- `tools.inlay_hints` block were rust-tools leftovers that rustaceanvim
+        -- ignores (inlay hints are server settings + vim.lsp.inlay_hint now).
         tools = {
           float_win_config = {
             -- Configuration for floating windows (e.g., hover, method signature)
             border = "rounded",
           },
           enable_clippy = true,
-          enable_all_diagnostics = true,
           reload_workspace_from_cargo_toml = true,
-          inlay_hints = {
-            auto = true,
-            only_current_line = false,
-            show_parameter_hints = true,
-            parameter_hints_prefix = "← ",
-            other_hints_prefix = "→ ",
-            max_len_align = false,
-            max_len_align_padding = 1,
-            right_align = false,
-            right_align_padding = 7,
-            highlight = "Comment",
-          },
         },
       }
     end,
@@ -212,14 +214,17 @@ return {
         lsp = {
           enabled = true,
           on_attach = function(_client, bufnr)
-            local map = vim.keymap.set
-            local opts = { noremap = true, silent = true, buffer = bufnr }
-            map("n", "<leader>Cv", crates.show_versions_popup, opts)
-            map("n", "<leader>Cf", crates.show_features_popup, opts)
-            map("n", "<leader>Cd", crates.show_dependencies_popup, opts)
-            map("n", "<leader>Cu", crates.upgrade_crate, opts)
-            map("v", "<leader>Cu", crates.upgrade_crates, opts)
-            map("n", "<leader>CA", crates.upgrade_all_crates, opts)
+            -- desc is required, not optional: which-key renders the <leader>C
+            -- group from these, and an entry without a desc shows up blank.
+            local function map(mode, lhs, rhs, desc)
+              vim.keymap.set(mode, lhs, rhs, { noremap = true, silent = true, buffer = bufnr, desc = desc })
+            end
+            map("n", "<leader>Cv", crates.show_versions_popup, "Crates: show versions")
+            map("n", "<leader>Cf", crates.show_features_popup, "Crates: show features")
+            map("n", "<leader>Cd", crates.show_dependencies_popup, "Crates: show dependencies")
+            map("n", "<leader>Cu", crates.upgrade_crate, "Crates: upgrade crate")
+            map("v", "<leader>Cu", crates.upgrade_crates, "Crates: upgrade selected crates")
+            map("n", "<leader>CA", crates.upgrade_all_crates, "Crates: upgrade all crates")
           end,
         },
       }

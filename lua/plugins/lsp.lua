@@ -114,27 +114,35 @@ return {
           map("n", "K", vim.lsp.buf.hover, { buffer = ev.buf, desc = "LSP: Hover documentation" })
           map("n", "gi", vim.lsp.buf.implementation, { buffer = ev.buf, desc = "LSP: Go to implementation" })
           map("n", "<leader>ls", vim.lsp.buf.signature_help, { buffer = ev.buf, desc = "LSP: Signature help" })
+
+          -- Workspace folders live under <leader>lw*, not <leader>w*.
+          -- <leader>w is registered with which-key as the "Windows" group
+          -- (splits, zoom, equalise); three LSP entries hiding in there were
+          -- undiscoverable and mislabelled.
           map(
             "n",
-            "<leader>wa",
+            "<leader>lwa",
             vim.lsp.buf.add_workspace_folder,
             { buffer = ev.buf, desc = "LSP: Add workspace folder" }
           )
           map(
             "n",
-            "<leader>wr",
+            "<leader>lwr",
             vim.lsp.buf.remove_workspace_folder,
             { buffer = ev.buf, desc = "LSP: Remove workspace folder" }
           )
-          map("n", "<leader>wl", function()
-            print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
+          map("n", "<leader>lwl", function()
+            vim.notify(vim.inspect(vim.lsp.buf.list_workspace_folders()), vim.log.levels.INFO)
           end, { buffer = ev.buf, desc = "LSP: List workspace folders" })
+
           map("n", "<leader>D", vim.lsp.buf.type_definition, { buffer = ev.buf, desc = "LSP: Type definition" })
-          -- Note: <leader>lr is mapped to inc-rename.nvim at the top-level (keys table)
-          -- This provides a fallback if inc-rename is not loaded
-          if not pcall(require, "inc_rename") then
-            map("n", "<leader>lr", vim.lsp.buf.rename, { buffer = ev.buf, desc = "LSP: Rename symbol" })
-          end
+          -- <leader>lr is owned by inc-rename.nvim's `keys` spec above.
+          -- There used to be a `pcall(require, "inc_rename")` fallback here.
+          -- It never fired and was actively harmful: lazy.nvim hooks `require`,
+          -- so probing the module *loads the plugin* — defeating its own
+          -- lazy-loading on every single LspAttach, then reporting success so
+          -- the fallback was dead code either way. inc-rename is pinned in
+          -- lazy-lock.json and always present, so no fallback is needed.
           map("n", "<leader>la", vim.lsp.buf.code_action, { buffer = ev.buf, desc = "LSP: Code action" })
           map("n", "gr", vim.lsp.buf.references, { buffer = ev.buf, desc = "LSP: Show references" })
           map("n", "<leader>lf", function()
