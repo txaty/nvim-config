@@ -19,7 +19,7 @@ Custom, self-maintained Neovim configuration using `lazy.nvim` for plugins and `
 - **Navigation**: `flash.nvim`
 - **Session**: `persistence.nvim`
 - **Remote**: `distant.nvim`
-- **Themes**: 50+ themes (25+ dark, 20+ light, 2 custom txaty)
+- **Themes**: 78 themes (50 dark, 26 light, 2 custom txaty)
 
 ## Directory Structure
 - `init.lua` — Entry point, loads `lua/core/init.lua`
@@ -27,21 +27,26 @@ Custom, self-maintained Neovim configuration using `lazy.nvim` for plugins and `
 - `.stylua.toml` — Lua formatter (120 column, 2-space indent)
 - `.luacheckrc` — Lua linter (Lua 5.1, vim globals)
 - `lua/core/` — Core settings and bootstrap
-  - `init.lua`, `options.lua`, `keymaps.lua`, `autocmds.lua`, `lazy.lua`
+  - `init.lua`, `options.lua`, `keymaps.lua`, `lazy.lua`
+  - `autocmds/` — Core autocmds by concern (filetype, cursor, word_highlight, persistence, ui_state, images)
   - `lifecycle/` — VimEnter orchestration via declarative `steps` table (colorscheme, session, nvim_tree, reconcile)
-  - `commands/` — User commands (ai, lang, cleanup, ui)
-  - `theme.lua` — Theme registry (use `get_themes()` / `get_theme_info()`)
+  - `commands/` — User commands (ai, lang, cleanup, ui, session, theme)
+  - `ui/` — Config-owned UI that owns no plugin (`theme_picker.lua`, `lang_panel.lua`)
+  - `theme.lua` — Theme registry (`get_themes()`, `get_theme_info()`, `get_registry_entry(name)`)
   - `theme_txaty.lua` + `theme_txaty_colors.lua` + `theme_txaty_highlights.lua` — Custom theme split: entry / palette / highlight groups
-  - `ai_toggle.lua`, `lang_toggle.lua`, `ui_toggle.lua` — Feature toggles
+  - `ai_toggle.lua`, `session_toggle.lua`, `lang_toggle.lua`, `ui_toggle.lua` — Feature toggles
+  - `persist_flag.lua` — Factory behind the persisted boolean toggles
   - `lang_utils.lua`, `lsp_capabilities.lua`, `persist.lua` — Source-of-truth shared utilities
   - `cleanup.lua` — Automatic cleanup
-- `lua/plugins/` — Self-contained plugin specs
+- `lua/plugins/` — Self-contained plugin specs. `import` is NOT recursive:
+  `core/lazy.lua` lists `plugins` and `plugins.languages` explicitly, and a new
+  subdirectory needs its own entry or is silently ignored.
   - `lsp.lua`, `tools.lua`, `cmp.lua`, `treesitter.lua`
   - `ui.lua`, `snacks.lua`, `telescope.lua`
   - `git.lua`, `lazygit.lua`, `remote.lua`
   - `copilot.lua`, `session.lua`, `dap.lua`, `test.lua`
   - `languages/` — python.lua, rust.lua, go.lua, web.lua, flutter.lua
-- `lua/dap/` — Language-specific DAP configs
+- `lua/dap_configs/` — Language-specific DAP configs (not `lua/dap/`, which collides with nvim-dap's require namespace)
 - `docs/` — User documentation (keymaps.md)
 
 ## Commands
@@ -72,7 +77,7 @@ luacheck lua/                                     # Lint Lua
 - `<leader>cc` — Interactive picker
 - `<leader>cd/cl/cp` — Dark/light/txaty
 - `<leader>cn/cN` — Cycle themes
-- 50+ themes, preference saved to `$XDG_DATA_HOME/theme_config.json`
+- 78 themes, preference saved to `$XDG_DATA_HOME/theme_config.json`
 
 ### AI (`<leader>a*`)
 - `<leader>ai` — Toggle AI (requires restart)
@@ -81,8 +86,9 @@ luacheck lua/                                     # Lint Lua
 - Copilot: `<M-l>` (accept)
 
 ### Session Management
-- Session persistence is opt-in via `vim.g.enable_session_persistence = true`
-- `<leader>qs` (restore current-dir session), `<leader>ql` (load last), `<leader>qS` (select)
+- Auto save/restore defaults to **enabled**, persisted in `$XDG_DATA_HOME/nvim/session_config.json`
+- Toggle with `:SessionToggle` / `<leader>qp` (mirrored into `vim.g.enable_session_persistence`)
+- Manual, independent of the toggle: `<leader>qs` (restore current-dir session), `<leader>ql` (load last), `<leader>qS` (select)
 
 ### Language Toggle
 - `<leader>Lp` or `:LangPanel` — Telescope panel

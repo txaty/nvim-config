@@ -58,18 +58,20 @@ nvim --headless --cmd "let g:debug_plugin_load=1" \
      -c "qa!" \
      /tmp/nvim_test.lua > /tmp/load_order.log 2>&1
 
-if grep -q "nvim-navic" /tmp/load_order.log && grep -q "nvim-lspconfig" /tmp/load_order.log; then
-    # Extract positions
-    NAVIC_POS=$(grep -n "nvim-navic" /tmp/load_order.log | head -1 | cut -d: -f1)
-    LSPCONFIG_POS=$(grep -n "nvim-lspconfig" /tmp/load_order.log | head -1 | cut -d: -f1)
-
-    if [ "$NAVIC_POS" -lt "$LSPCONFIG_POS" ]; then
-        test_result 0 "navic loads before lspconfig (pos $NAVIC_POS < $LSPCONFIG_POS)"
+# snacks.nvim must be among the first plugins loaded (priority=1000, lazy=false)
+# so the theme and UI primitives exist before anything renders. nvim-navic is
+# gone — dropbar replaced it, and dropbar registers its own LspAttach handler,
+# so there is no ordering requirement against lspconfig any more.
+if grep -q "snacks.nvim" /tmp/load_order.log; then
+    SNACKS_POS=$(grep -n "snacks.nvim" /tmp/load_order.log | head -1 | cut -d: -f1)
+    FIRST_POS=$(grep -n "+.*ms" /tmp/load_order.log | head -1 | cut -d: -f1)
+    if [ "$((SNACKS_POS - FIRST_POS))" -le 3 ]; then
+        test_result 0 "snacks.nvim loads early (offset $((SNACKS_POS - FIRST_POS)) from first plugin)"
     else
-        test_result 1 "navic loads before lspconfig (pos $NAVIC_POS >= $LSPCONFIG_POS)"
+        test_result 1 "snacks.nvim loads early (offset $((SNACKS_POS - FIRST_POS)) from first plugin)"
     fi
 else
-    echo -e "${YELLOW}⚠ SKIP${NC}: Could not verify navic/lspconfig order (plugins may not have loaded)"
+    echo -e "${YELLOW}⚠ SKIP${NC}: Could not verify snacks load position (plugins may not have loaded)"
 fi
 echo ""
 
@@ -104,11 +106,12 @@ else
     test_result 1 "mason-lspconfig has explicit plugin spec"
 fi
 
-# Check that navic has detailed comment
-if grep -q "CRITICAL ORDERING" lua/plugins/lsp.lua; then
-    test_result 0 "navic dependency has detailed documentation"
+# Language specs are in a subdirectory, and lazy.nvim's import is not recursive.
+# Without this entry the entire lua/plugins/languages/ tree is silently dropped.
+if grep -q 'import = "plugins.languages"' lua/core/lazy.lua; then
+    test_result 0 "plugins.languages is explicitly imported"
 else
-    test_result 1 "navic dependency has detailed documentation"
+    test_result 1 "plugins.languages is explicitly imported"
 fi
 
 # Check that blink.cmp has known limitation comment

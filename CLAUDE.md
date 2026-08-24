@@ -60,7 +60,19 @@ nvim --cmd "let g:debug_keymaps=1"                                       # Keyma
 ### 3. Lazy-Loading by Default
 - All plugins have `defaults = { lazy = true }` in lazy.nvim setup
 - New plugins must specify load triggers: `event`, `cmd`, `ft`, or `keys`
-- Exception: colorscheme plugins load immediately with `lazy = false` and `priority = 1000`
+- Do **not** combine an `event` with `ft`/`keys` unless the plugin genuinely needs
+  both: lazy.nvim ORs triggers, so an `event` makes the narrower ones decorative
+  and the plugin loads eagerly
+- Exceptions that load at startup: `snacks.nvim` (`lazy = false`, `priority = 1000`)
+  and `nvim-treesitter` (`lazy = false`; its `main` branch does not support
+  lazy-loading). Colorscheme plugins are `lazy = true` with no trigger — they are
+  pulled in on demand by `core.theme` via `lazy.load()`.
+
+### 3a. Adding a plugin subdirectory
+`lazy.nvim`'s `import` is **not recursive**. `lua/core/lazy.lua` lists each
+importable module explicitly (`plugins`, `plugins.languages`). A new
+subdirectory under `lua/plugins/` needs its own `{ import = ... }` entry there,
+otherwise its specs are silently ignored — no error, the plugins just never exist.
 
 ### 4. Performance Optimizations (2026-02)
 Recent optimizations reduced startup time by 40.6% (42.6ms → 25.3ms):
@@ -112,7 +124,7 @@ VimEnter Lifecycle (deterministic order, declared via `steps` table in lifecycle
   6. commands           (scheduled, register user commands)
   7. keymap audit       (sync, gated on vim.g.debug_keymaps)
   8. reconcile          (very_lazy, focus fix; needs_session)
-  9. cleanup            (deferred 2s, gated on vim.g.enable_auto_cleanup)
+  9. cleanup            (deferred 2s; core.cleanup.auto_cleanup() owns the opt-in + throttle gates)
  10. verify load order  (deferred 100ms, debug mode only)
 
 To add/remove a lifecycle step, edit the `steps` table in `lua/core/lifecycle/init.lua` — no control-flow changes needed.
@@ -120,18 +132,20 @@ To add/remove a lifecycle step, edit the `steps` table in `lua/core/lifecycle/in
 
 ### Directory Structure
 - `lua/core/` — Fundamental Neovim settings, bootstrap, and orchestration
-  - `autocmds/` — Core autocmds split by concern (filetype, cursor, word_highlight, persistence, ui_state)
+  - `autocmds/` — Core autocmds split by concern (filetype, cursor, word_highlight, persistence, ui_state, images)
   - `lifecycle/` — VimEnter orchestration (colorscheme, session, nvim_tree, reconcile)
-  - `commands/` — User commands (ai, lang, cleanup, ui)
-  - `theme.lua` — Unified theme registry with 50+ themes (use `get_themes()` / `get_theme_info()`; legacy `M.themes` still works via `__index`)
+  - `commands/` — User commands (ai, lang, cleanup, ui, session, theme; `flag_commands.lua` is the shared factory)
+  - `ui/` — Config-owned UI that is not a plugin (`theme_picker.lua`, `lang_panel.lua`)
+  - `theme.lua` — Unified theme registry (use `get_themes()` for the dark/light lists, `get_theme_info()` for the name→metadata map, `get_registry_entry(name)` for one entry; legacy `M.themes` / `M.theme_info` still work via `__index`)
   - `theme_txaty.lua` — Custom ergonomic theme entry point (`apply`, `get_palette`)
   - `theme_txaty_colors.lua` — Palette definitions only (edit colors here)
   - `theme_txaty_highlights.lua` — Highlight group definitions (edit highlight groups here)
   - `lang_utils.lua`, `lsp_capabilities.lua`, `persist.lua` — Shared helpers
-  - `ai_toggle.lua`, `lang_toggle.lua`, `ui_toggle.lua` — Feature toggles
+  - `persist_flag.lua` — Factory for a persisted boolean flag; `ai_toggle.lua` and `session_toggle.lua` are instances of it
+  - `ai_toggle.lua`, `session_toggle.lua`, `lang_toggle.lua`, `ui_toggle.lua` — Feature toggles
   - `cleanup.lua` — Automatic cleanup for temporary/cache files
   - `keymap_audit.lua` — Keymap conflict detection (VeryLazy)
-- `lua/plugins/` — Self-contained plugin specs (all `.lua` files auto-imported)
+- `lua/plugins/` — Self-contained plugin specs (`.lua` files here are auto-imported; subdirectories are not — see 3a)
   - `lsp.lua` — Mason + vim.lsp.config with LspAttach autocmd and installed-server enable loop
   - `tools.lua` — conform.nvim (formatting) + nvim-lint
   - `ui.lua` — nvim-tree, lualine, bufferline, hlslens
@@ -140,8 +154,8 @@ To add/remove a lifecycle step, edit the `steps` table in `lua/core/lifecycle/in
   - `copilot.lua` — GitHub Copilot (respects AI toggle)
   - `session.lua` — persistence.nvim with opt-in save/restore
   - `remote.lua` — Distant.nvim for remote development
-  - `languages/` — Language-specific configs (python, rust, go, web, flutter)
-- `lua/dap/` — Language-specific debug adapter configurations
+  - `languages/` — Language-specific configs (python, rust, go, web, flutter). Imported via its own `{ import = "plugins.languages" }` entry in `core/lazy.lua`
+- `lua/dap_configs/` — Language-specific debug adapter configurations. **Not** `lua/dap/`: that path shares a require namespace with nvim-dap's own `lua/dap/` tree, so both would feed the same `dap.*` module path
 - `docs/` — User documentation (keymaps reference)
 - `.stylua.toml` — Lua formatter (120 column width, 2-space indent)
 - `.luacheckrc` — Lua linter (Lua 5.1 std, vim globals)
@@ -219,7 +233,7 @@ Omit comments where the code is self-explanatory. The bar is: *would a competent
 1. Create `lua/plugins/languages/<language>.lua`
 2. Use `lang_utils` helpers to extend treesitter, mason, conform, and lspconfig
 3. Add language-specific plugins with `ft = "<language>"` lazy-loading
-4. If needed, create DAP config in `lua/dap/<language>.lua`
+4. If needed, create DAP config in `lua/dap_configs/<language>.lua` and load it from the `DapLangConfigs` autocmd in `lua/plugins/dap.lua`
 
 ### Modifying Keymaps
 - **General**: Edit `lua/core/keymaps.lua`
@@ -275,8 +289,8 @@ nvim --cmd "let g:debug_lifecycle=1" --cmd "let g:debug_plugin_load=1" test.lua
 - `<leader>` is Space
 - `<leader>f*` — Files (find, grep, tree)
 - `<leader>b*` — Buffers (next, prev, delete)
-- `<leader>l*` — LSP (rename, format, diagnostics)
-- `<leader>g*` — Git (stage, reset, blame, diffview)
+- `<leader>l*` — LSP (rename, format, diagnostics, refactoring); `<leader>lw*` — workspace folders
+- `<leader>g*` — Git (stage, reset, blame); `<leader>gv*` — Diffview
 - `<leader>d*` — Debug (breakpoints, step, REPL)
 - `<leader>t*` — Testing (nearest, file, suite)
 - `<leader>p*` — Python (venv selector)
@@ -289,8 +303,9 @@ nvim --cmd "let g:debug_lifecycle=1" --cmd "let g:debug_plugin_load=1" test.lua
 - `<leader>u*` — UI/Display toggles (session-persistent)
 - `<leader>q*` — Session/Quit
 - `<leader>x*` — Diagnostics/Trouble
+- `<leader>o*` — Tasks (overseer)
+- `<leader>i*` — Image/PDF buffers
 - `<leader>S` — Search & Replace (grug-far)
-- `<leader>M*` — Minimap
 - `s/S` — Flash navigation
 - `<C-n>` — Toggle nvim-tree
 
@@ -298,7 +313,9 @@ See `docs/keymaps.md` for complete reference.
 
 ## Theme System
 
-50+ themes: 25+ dark, 20+ light, 2 custom (txaty ergonomic dark/light).
+78 themes registered in `core/theme.lua`: 50 dark, 26 light, 2 custom (txaty ergonomic dark/light).
+Counts come from `M.registry`; verify with
+`:lua local t=require("core.theme") print(#t.get_all_themes())`.
 
 **Usage:**
 - `<leader>cc` — Open interactive theme picker
@@ -336,7 +353,9 @@ Runs on startup (throttled to once per 24 hours) to minimize disk footprint:
 
 Shada size is also capped via `opt.shada = "'100,<50,s10,h"` (100 file marks, 50 lines/register, skip >10KB items).
 
-Manual trigger: `:CleanupNvim`. Opt-out: `vim.g.disable_auto_cleanup = true`
+Startup cleanup is **opt-in**: it runs only when `vim.g.enable_auto_cleanup = true`.
+`core.cleanup.auto_cleanup()` owns both that check and the 24h throttle.
+Manual trigger (always runs): `:CleanupNvim`.
 
 ## Language-Specific Notes
 
@@ -384,14 +403,14 @@ Different tools for different workflows — intentionally kept all three.
 ## Formatting & Linting
 
 ### Conform.nvim
-- Format on save with `lsp_fallback = true`
-- Manual format: `<leader>lf`
+- Format on save is **opt-in**: it is wired up only when `vim.g.enable_format_on_save = true`. Without that flag, formatting is manual only.
+- Manual format: `<leader>lf` (always available)
 - Formatters: stylua (Lua), black/isort (Python), goimports/gofmt (Go), rustfmt (Rust), prettier (JS/TS/HTML/CSS)
 
 **Format Priority:** Only conform runs when configured; LSP fallback only if no conform formatter.
 
 ### nvim-lint
-- Runs on `BufWritePost`, `InsertLeave`
+- **Opt-in**: the `BufWritePost` / `InsertLeave` autocmd is registered only when `vim.g.enable_lint_on_write = true`; otherwise `config()` returns early and nothing lints.
 - Language mappings managed via Mason
 
 ## Security Model
