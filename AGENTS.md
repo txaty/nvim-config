@@ -4,21 +4,28 @@
 - Root: `init.lua` (entry), `lazy-lock.json` (plugin lockfile), `.stylua.toml` (Lua formatting), `.luacheckrc` (Lua linter)
 - `lua/core/` — Fundamental settings and bootstrap:
   - `init.lua` — Loads core modules, then lazy bootstrap
-  - `options.lua`, `keymaps.lua`, `autocmds.lua`, `lazy.lua`
+  - `options.lua`, `keymaps.lua`, `lazy.lua`
+  - `autocmds/` — Core autocmds split by concern (filetype, cursor, word_highlight, persistence, ui_state, images)
+  - `ui/` — Config-owned UI that owns no plugin (`theme_picker.lua`, `lang_panel.lua`)
   - `lifecycle/` — VimEnter orchestration via declarative `steps` table (see `run_sequence()` in `lifecycle/init.lua`; add/remove steps by editing the table)
-  - `commands/` — User commands (ai, lang, cleanup, ui)
-  - `theme.lua` — Theme registry (prefer `get_themes()` / `get_theme_info()`; `M.themes` still works via `__index`)
+  - `commands/` — User commands (ai, lang, cleanup, ui, session, theme; `flag_commands.lua` is the shared factory)
+  - `theme.lua` — Theme registry (`get_themes()` for the dark/light lists, `get_theme_info()` for the name→metadata map, `get_registry_entry(name)` for one entry; `M.themes` / `M.theme_info` still work via `__index`)
   - `theme_txaty.lua`, `theme_txaty_colors.lua`, `theme_txaty_highlights.lua` — Custom theme split into entry point / palette / highlight groups
   - `ai_toggle.lua`, `lang_toggle.lua`, `ui_toggle.lua` — Feature toggles
   - `lang_utils.lua`, `lsp_capabilities.lua`, `persist.lua`, `cleanup.lua` (source-of-truth modules)
-- `lua/plugins/` — Self-contained plugin specs with inlined configs:
+  - `persist_flag.lua` — Factory behind `ai_toggle.lua` and `session_toggle.lua`
+- `lua/plugins/` — Self-contained plugin specs with inlined configs.
+  **`import` is not recursive**: `core/lazy.lua` lists `plugins` and
+  `plugins.languages` explicitly; a new subdirectory needs its own entry there
+  or its specs are silently ignored.
   - `lsp.lua` — Mason + vim.lsp.config (Neovim 0.11+ API), enables installed servers via `mason-lspconfig.get_installed_servers()`
   - `tools.lua` — conform.nvim + nvim-lint
   - `cmp.lua`, `treesitter.lua`, `ui.lua`, `snacks.lua`, `telescope.lua`
   - `git.lua`, `lazygit.lua`, `remote.lua`, `copilot.lua`, `session.lua`
-  - `dap.lua`, `test.lua`, `minimap.lua`
+  - `dap.lua`, `test.lua`, `tasks.lua`
   - `languages/` — python.lua, rust.lua, go.lua, web.lua, flutter.lua
-- `lua/dap/` — Language-specific DAP configs
+- `lua/dap_configs/` — Language-specific DAP configs. Not `lua/dap/`: that path
+  collides with nvim-dap's own `dap.*` require namespace.
 - **Note**: `lua/configs/` and NvChad directories removed. All config inlined in plugin specs.
 
 ## Build, Test, and Development Commands
@@ -38,7 +45,8 @@ Inside Neovim: `:Mason`, `:LspInfo`, `:ConformInfo`, `:Lazy profile`
 - Language: `:LangPanel`, `<leader>Lp` (panel), `<leader>Ls` (status)
 - UI: `<leader>u*` (`uw` wrap, `us` spell, `un` numbers, `ur` relative, `uc` conceal)
 - Keymaps: conflict audit auto-runs on `VeryLazy`; use `:lua require("core.keymap_audit").full_audit()` for manual checks
-- Cleanup: `:CleanupNvim` (manual; startup cleanup only runs when `vim.g.enable_auto_cleanup = true`)
+- Cleanup: `:CleanupNvim` (manual, always runs; startup cleanup only when `vim.g.enable_auto_cleanup = true`)
+- Session: `:SessionToggle` / `<leader>qp` (default enabled, persisted)
 - Rust: `<leader>R*` (runnables, testables, Cargo.toml via rustaceanvim)
 - Crates: `<leader>C*` in Cargo.toml (upgrade, versions, features)
 
@@ -56,7 +64,6 @@ Inside Neovim: `:Mason`, `:LspInfo`, `:ConformInfo`, `:Lazy profile`
 - Theme: Test `:ThemeSwitch`, `<leader>cc`, verify persistence
 - Session: Test restore/save behavior only after enabling `vim.g.enable_session_persistence = true`
 - UI Toggles: Test `<leader>u*`, verify persistence via `:UIStatus`
-- Minimap: `<leader>MM` toggle
 
 ## Commit & Pull Request Guidelines
 - Conventional Commits: `feat:`, `fix:`, `refactor:`, `chore:`
@@ -78,8 +85,8 @@ Inside Neovim: `:Mason`, `:LspInfo`, `:ConformInfo`, `:Lazy profile`
 - **Self-Maintained**: All functionality in `lua/core/` and `lua/plugins/`
 - **Modular**: Each plugin self-contained with config, keymaps, dependencies inlined
 - **Performance**: lazy.nvim with custom settings, disabled runtime plugins, sub-30ms startup
-- **Startup**: `lifecycle/init.lua` handles VimEnter (theme → session → UI state → nvim-tree → commands)
-- **Theme System**: 50+ themes (25+ dark, 20+ light, 2 custom txaty). Factory pattern for custom theme.
+- **Startup**: `lifecycle/init.lua` handles VimEnter via a declarative `steps` table (theme → UI state → session → buffer events → nvim-tree → commands → reconcile → cleanup)
+- **Theme System**: 78 themes (50 dark, 26 light, 2 custom txaty). Factory pattern for custom theme.
 - **Session**: Restore/save logic exists, but persistence remains opt-in via `vim.g.enable_session_persistence = true`
 - **LSP Migration**: `vim.lsp.config()` API, Rust via `rustaceanvim`
 - **AI Toggle**: Copilot disabled entirely when off, state persisted

@@ -10,16 +10,17 @@
 |-----------|---------|---------|
 | `<leader>a*` | **AI & Copilot** | `<leader>ai` = toggle AI, `<leader>aa` = chat |
 | `<leader>b*` | **Buffers** | `<leader>bd` = delete buffer, `<leader>ba` = select all |
-| `<leader>c*` | **Color/Colorscheme** | `<leader>cc` = choose theme (50+) |
+| `<leader>c*` | **Color/Colorscheme** | `<leader>cc` = choose theme (78) |
 | `<leader>d*` | **Debug** (DAP) | `<leader>db` = toggle breakpoint |
 | `<leader>f*` | **Files & Finding** | `<leader>ff` = find files, `<leader>fS` = scratch select |
 | `<leader>F*` | **Flutter** (language) | `<leader>FR` = run Flutter app |
-| `<leader>g*` | **Git** | `<leader>gs` = stage hunk |
-| `<leader>l*` | **LSP & Language** | `<leader>lr` = rename symbol |
+| `<leader>g*` | **Git** | `<leader>gs` = stage hunk, `<leader>gv*` = Diffview |
+| `<leader>i*` | **Images/PDF** | `<leader>io` = open in external viewer |
+| `<leader>l*` | **LSP & Language** | `<leader>lr` = rename symbol, `<leader>lw*` = workspace folders |
 | `<leader>L*` | **Language Support** | `<leader>Lp` = toggle language panel |
-| `<leader>m*` | **Bookmarks & Markdown** | `<leader>ma` = toggle bookmark, `<leader>mo` = open in Typora |
-| `<leader>M*` | **Minimap** | `<leader>MM` = toggle minimap |
+| `<leader>m*` | **Markdown** | `<leader>mo` = open in external reader |
 | `<leader>n*` | **Notifications** | `<leader>nl` = show last message |
+| `<leader>o*` | **Tasks** (overseer) | `<leader>or` = run a task |
 | `<leader>p*` | **Python** (venv) | `<leader>pv` = select virtualenv |
 | `<leader>q*` | **Quit/Session** | `<leader>qq` = quit window |
 | `<leader>r*` | **Remote Development** | `<leader>rc` = connect to server |
@@ -114,6 +115,9 @@
 | Keybinding | Description |
 |---|---|
 | `<leader>fW` | Save file |
+| `<leader>fy` | Yank absolute path of current file |
+| `<leader>fY` | Yank path relative to cwd |
+| `<leader>fN` | Yank filename only |
 
 ---
 
@@ -157,7 +161,10 @@
 |---|---|
 | `<TAB>` | Next buffer |
 | `<S-TAB>` | Previous buffer |
-| `<leader>bd` | Delete/close buffer |
+| `<leader>bd` | Delete/close buffer (keeps window layout) |
+| `<leader>bD` | Wipe out buffer |
+| `<leader>bo` | Close all other buffers |
+| `<leader>bx` | Close all buffers |
 | `<leader>ba` | Select entire buffer |
 
 ---
@@ -179,11 +186,13 @@
 | `<leader>wz` | Toggle zoom (maximize/restore) |
 
 ### LSP Workspace Folders
+Under `<leader>lw*`, not `<leader>w*`: `<leader>w` is the Windows group.
+
 | Keybinding | Description |
 |---|---|
-| `<leader>wa` | Add workspace folder |
-| `<leader>wr` | Remove workspace folder |
-| `<leader>wl` | List workspace folders |
+| `<leader>lwa` | Add workspace folder |
+| `<leader>lwr` | Remove workspace folder |
+| `<leader>lwl` | List workspace folders |
 
 ---
 
@@ -206,7 +215,18 @@
 | `<leader>lf` | Format document (via conform) |
 | `<leader>lF` | Format injected languages |
 | `<leader>ls` | Show signature help |
+| `<leader>lb` | Pick a breadcrumb component (dropbar) |
+| `<leader>lg` | Generate docstring/annotation (neogen) |
+| `<leader>lo` | Toggle code outline |
 | `<leader>D` | Go to type definition |
+
+### Refactoring (refactoring.nvim)
+| Keybinding | Description |
+|---|---|
+| `<leader>le` | Extract function (visual) |
+| `<leader>lE` | Extract variable (visual) |
+| `<leader>li` | Inline variable |
+| `<leader>lR` | Open the refactoring menu |
 
 ### Diagnostics
 | Keybinding | Description |
@@ -375,14 +395,19 @@
 | `<leader>gD` | Diff against HEAD |
 | `ih` (text object) | Select hunk (in visual/operator mode) |
 
-### Diffview
+### Diffview (`<leader>gv*`)
+Prefixed `gv` ("git view") so it does not collide with gitsigns' `<leader>gd`.
+A mapping that is also a prefix of longer mappings can only fire after
+`timeoutlen`, so sharing `gd` made "diff this" feel laggy.
+
 | Keybinding | Description |
 |---|---|
-| `<leader>gdo` | Open Diffview |
-| `<leader>gdc` | Close Diffview |
-| `<leader>gdf` | Show file history |
-| `<leader>gds` | Show staged changes |
-| `<leader>gdb` | Compare with previous commit |
+| `<leader>gvo` | Open Diffview |
+| `<leader>gvc` | Close Diffview |
+| `<leader>gvf` | Show file history (current file) |
+| `<leader>gvh` | Show repo history |
+| `<leader>gvs` | Show staged changes |
+| `<leader>gvb` | Compare with previous commit |
 
 ### Git Browse
 | Keybinding | Description |
@@ -422,7 +447,9 @@
 | `<leader>ts` | Run entire test suite |
 | `<leader>to` | Show test output |
 | `<leader>tt` | Toggle test summary window |
+| `<leader>tc` | Toggle coverage signs |
 | `<leader>tC` | Show test coverage summary |
+| `<leader>tL` | Load coverage data |
 
 ---
 
@@ -509,6 +536,38 @@
 |---|---|
 | `<leader>sc` | Clear search highlights |
 
+### Symbols & Parameters
+| Keybinding | Description |
+|---|---|
+| `<leader>ss` | Jump to document symbol (namu) |
+| `<leader>sS` | Jump to workspace symbol (namu) |
+| `<leader>sa` | Swap with next parameter |
+| `<leader>sA` | Swap with previous parameter |
+
+---
+
+## Tasks (`<leader>o*`)
+
+overseer.nvim — the VS Code `tasks.json` equivalent, with built-in
+make/npm/cargo/go templates.
+
+| Keybinding | Description |
+|---|---|
+| `<leader>or` | Run a task |
+| `<leader>ot` | Toggle the task panel |
+| `<leader>ol` | Restart the last task |
+| `<leader>oa` | Task action menu |
+
+---
+
+## Images & PDFs (`<leader>i*`)
+
+Snacks renders these inline and sets filetype `image`.
+
+| Keybinding | Description |
+|---|---|
+| `<leader>io` | Open the current image/PDF in the system viewer (asks first) |
+
 ---
 
 ## Session Management (`<leader>q*`)
@@ -536,14 +595,14 @@ Use `:SessionToggle` / `:SessionEnable` / `:SessionDisable` / `:SessionStatus` o
 ### Theme Selection
 | Keybinding | Description |
 |---|---|
-| `<leader>cc` | Open interactive theme picker (all 50+ themes) |
+| `<leader>cc` | Open interactive theme picker (all 78 themes) |
 | `<leader>cd` | Switch to last-used dark theme (smart) |
 | `<leader>cl` | Switch to last-used light theme (smart) |
 | `<leader>cp` | Switch to custom "txaty" theme |
 | `<leader>cn` | Cycle to next theme in rotation |
 | `<leader>cN` | Cycle to previous theme in rotation |
 
-### Available Themes (50+)
+### Available Themes (78)
 
 **Dark Themes (25+):**
 - `tokyonight` — Modern Tokyo night with vibrant colors
@@ -701,31 +760,6 @@ Use `:SessionToggle` / `:SessionEnable` / `:SessionDisable` / `:SessionStatus` o
 
 ---
 
-## Bookmarks (`<leader>m*`)
-
-| Keybinding | Description |
-|---|---|
-| `<leader>ma` | Toggle bookmark at line |
-| `<leader>mn` | Jump to next bookmark |
-| `<leader>mp` | Jump to previous bookmark |
-| `<leader>ml` | Show all bookmarks |
-| `<leader>mi` | Annotate bookmark with comment |
-| `<leader>md` | Clear bookmarks in buffer |
-| `<leader>mC` | Clear all bookmarks |
-
----
-
-## Minimap (`<leader>M*`)
-
-| Keybinding | Description |
-|---|---|
-| `<leader>MM` | Toggle minimap display |
-| `<leader>Mo` | Enable minimap |
-| `<leader>Mc` | Disable minimap |
-| `<leader>Mr` | Refresh minimap |
-
----
-
 ## Notifications & Messages (`<leader>n*`)
 
 | Keybinding | Description |
@@ -753,6 +787,19 @@ Use `:SessionToggle` / `:SessionEnable` / `:SessionDisable` / `:SessionStatus` o
 ---
 
 ## Editing Enhancements
+
+### Split/Join (treesj)
+| Keybinding | Description |
+|---|---|
+| `<leader>j` | Toggle a block between one line and many |
+
+### Multi-Cursor (multicursor.nvim)
+| Keybinding | Description |
+|---|---|
+| `<C-Up>` / `<C-Down>` | Add a cursor on the line above/below |
+| `gb` / `gB` | Add a cursor at the next/previous match |
+| `<leader>va` | Add cursors at all matches |
+| `<Esc>` | Clear extra cursors, or clear search highlight when there are none |
 
 ### Smart Increment/Decrement (dial.nvim)
 | Keybinding | Description |
@@ -854,11 +901,12 @@ Use `:SessionToggle` / `:SessionEnable` / `:SessionDisable` / `:SessionStatus` o
 | `<leader>a*` | "A" for AI - clear mnemonic, resolves Copilot/Flutter conflicts |
 | `<leader>c*` | "C" for Color/Colorscheme - theme switching and UI color management |
 | `<leader>F*` | Capital F for Flutter - language-specific like Python, easy distinction from file ops |
-| `<leader>M*` | Capital M for Minimap - less frequent UI feature, prioritizes lowercase `m*` for bookmarks |
-| `<leader>l*` | "L" for LSP - consolidates all language server operations including Mason |
+| `<leader>l*` | "L" for LSP - all language server operations including Mason; workspace folders nest under `<leader>lw*` |
 | `<leader>f*` | "F" for Files - includes Snacks picker discovery + file explorer |
-| `<leader>g*` | "G" for Git - includes hunk operations + diffview + lazygit |
-| `<leader>m*` | "M" for Markers/Markdown - includes bookmarks and markdown file operations |
+| `<leader>g*` | "G" for Git - hunk operations + lazygit; Diffview nests under `<leader>gv*` |
+| `<leader>m*` | "M" for Markdown - markdown file operations |
+| `<leader>i*` | "I" for Image - image/PDF buffer operations |
+| `<leader>o*` | "O" for Overseer - task runner operations |
 | `<leader>x*` | "X" for eXtensions - diagnostics, trouble, quickfix management |
 | `<leader>d*` | "D" for Debug - DAP operations for all supported languages |
 | `<leader>t*` | "T" for Testing - test runner operations across all languages |
@@ -872,20 +920,23 @@ Use `:SessionToggle` / `:SessionEnable` / `:SessionDisable` / `:SessionStatus` o
 
 ---
 
-## Migration Notes (From Old Config)
+## Recent Keymap Changes
 
-The following keymaps have changed to resolve conflicts and improve organization:
+Changes made to resolve real conflicts. Everything else is unchanged.
 
-| Old Keymap | New Keymap | Reason |
+| Old | New | Reason |
 |---|---|---|
-| `<leader>r*` (Rust) | `<leader>R*` | Moved to capital R to avoid collision with Remote (`<leader>r*`) |
-| `<leader>nr` | `<leader>ur` | Moved to UI namespace for relative number toggle |
-| `<leader>cm` | `<leader>lm` | Moved to LSP namespace |
-| `<leader>cc/cq/ce/ct/cf/cr` | `<leader>aa/aq/ae/at/af/ar` | Copilot now in AI namespace |
-| `<leader>cF/cq/cr/cR/cd/ce/co/cl` | `<leader>FR/Fq/Fr/Fl/Fd/Fe/Fo/FL` | Flutter now in separate namespace |
-| `<leader>cf` (Copilot) | `<leader>lF` | Format injected langs in LSP |
-| `<leader>mc` (bookmarks) | `<leader>md` | Freed minimap collision |
-| `<leader>mm/mo/mc/mr` (minimap) | `<leader>MM/Mo/Mc/Mr` | Uppercase to avoid bookmark collision |
+| `<leader>gd{o,c,f,s,b}` (Diffview) | `<leader>gv{o,c,f,s,b}` | `<leader>gd` (gitsigns "diff this") was a prefix of these, so it could only fire after `timeoutlen` (400ms). Separate prefixes make both immediate. `<leader>gvh` (repo history) is now documented too. |
+| `<leader>w{a,r,l}` (LSP workspace folders) | `<leader>lw{a,r,l}` | `<leader>w` is registered with which-key as the Windows group; three LSP mappings hidden in it were mislabelled and undiscoverable. |
+
+Removed, because the plugins behind them are no longer in the config:
+
+| Removed | Plugin |
+|---|---|
+| `<leader>M*` (minimap) | neominimap.nvim |
+| `<leader>m{a,n,p,l,i,d,C}` (bookmarks) | bookmarks.nvim |
+
+`<leader>m*` is now Markdown-only (`<leader>mo`).
 
 ---
 

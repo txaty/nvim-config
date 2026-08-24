@@ -225,7 +225,9 @@ Supported: Python, Go, Rust
 ```
 <leader>gd    # Diff current file
 <leader>gD    # Diff against HEAD
-<leader>gdo   # Open Diffview
+<leader>gvo   # Open Diffview
+<leader>gvf   # File history
+<leader>gvh   # Repo history
 ```
 
 **Launch Git UI:**
@@ -513,7 +515,7 @@ Changes require Neovim restart to take effect. State persisted across sessions.
 <leader>cN    # Cycle to previous theme
 ```
 
-**50+ themes available:**
+**78 themes available (50 dark, 26 light, 2 custom):**
 - **Dark (25+):** tokyonight, kanagawa, catppuccin, rose-pine, nightfox, onedark, cyberdream, gruvbox, nord, dracula, github_dark variants, everforest, material, vscode, and more
 - **Light (20+):** tokyonight-day, rose-pine-dawn, kanagawa-lotus, onelight, ayu-light, papercolor, github_light variants, and more
 - **Custom:** txaty (ergonomic dark), txaty-light (ergonomic light)
@@ -550,44 +552,60 @@ return {
 │   ├── core/               # Fundamental settings
 │   │   ├── init.lua         # Bootstrap loader
 │   │   ├── options.lua      # Vim options
-│   │   ├── keymaps.lua      # Global keybindings
-│   │   ├── autocmds.lua     # Core autocommands (lifecycle handled by lifecycle/)
-│   │   ├── lazy.lua         # Lazy.nvim bootstrap
-│   │   ├── theme.lua                 # Theme registry (50+ themes; use get_themes/get_theme_info)
+│   │   ├── keymaps.lua      # Global keybindings (non-plugin only)
+│   │   ├── lazy.lua         # Lazy.nvim bootstrap + spec imports
+│   │   ├── theme.lua                 # Theme registry (78 themes)
 │   │   ├── theme_txaty.lua           # Custom theme entry point (apply, get_palette)
 │   │   ├── theme_txaty_colors.lua    # Custom theme palette (edit colors here)
 │   │   ├── theme_txaty_highlights.lua # Custom theme highlight groups
+│   │   ├── persist.lua      # JSON config read/write with path validation
+│   │   ├── persist_flag.lua # Factory for persisted boolean toggles
 │   │   ├── ai_toggle.lua    # AI features toggle
+│   │   ├── session_toggle.lua # Session persistence toggle
 │   │   ├── lang_toggle.lua  # Language support toggle
-│   │   ├── lang_utils.lua   # Language utilities
-│   │   ├── buffers.lua      # Buffer close/management
-│   │   ├── cleanup.lua      # Automatic temp file cleanup
 │   │   ├── ui_toggle.lua    # UI toggle persistence
+│   │   ├── lang_utils.lua   # Language spec helpers
+│   │   ├── cleanup.lua      # Automatic temp file cleanup
+│   │   ├── keymap_audit.lua # Keymap conflict detection
+│   │   ├── autocmds/        # Core autocommands, split by concern
+│   │   │   ├── init.lua     # setup() orchestrator
+│   │   │   ├── filetype.lua
+│   │   │   ├── cursor.lua
+│   │   │   ├── word_highlight.lua
+│   │   │   ├── persistence.lua
+│   │   │   ├── ui_state.lua
+│   │   │   └── images.lua
 │   │   ├── lifecycle/       # VimEnter orchestration (declarative steps table)
 │   │   │   ├── init.lua     # Lifecycle orchestrator
 │   │   │   ├── colorscheme.lua
 │   │   │   ├── session.lua
 │   │   │   ├── reconcile.lua
 │   │   │   └── nvim_tree.lua
+│   │   ├── ui/              # Config-owned UI (owns no plugin)
+│   │   │   ├── theme_picker.lua
+│   │   │   └── lang_panel.lua
 │   │   └── commands/        # User command definitions
 │   │       ├── init.lua     # Command registry
+│   │       ├── flag_commands.lua # Shared Toggle/Enable/Disable/Status factory
 │   │       ├── ai.lua
+│   │       ├── session.lua
 │   │       ├── lang.lua
+│   │       ├── theme.lua
 │   │       ├── cleanup.lua
 │   │       └── ui.lua
 │   └── plugins/            # Plugin specifications
 │       ├── lsp.lua          # LSP + Mason
-│       ├── colorscheme.lua  # 40+ theme plugins
-│       ├── theme_switcher.lua
+│       ├── colorscheme.lua  # Theme plugins (lazy, loaded on demand by core.theme)
 │       ├── copilot.lua      # AI (respects toggle)
 │       ├── remote.lua       # Remote development
-│       └── languages/       # Language-specific
+│       └── languages/       # Language-specific (needs its own import entry in core/lazy.lua)
 │           ├── python.lua
 │           ├── go.lua
 │           ├── rust.lua
 │           ├── flutter.lua
 │           └── web.lua
-├── lua/dap/                # Debug configurations
+├── lua/dap_configs/        # Debug adapter configs (not lua/dap/ — that name
+│                           # collides with nvim-dap's require namespace)
 ├── docs/
 │   └── keymaps.md          # Keybinding reference
 ├── lazy-lock.json          # Plugin versions (auto-updated)
