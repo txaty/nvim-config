@@ -20,14 +20,26 @@ local defaults = {
 -- JSON config file path
 local config_path = vim.fn.stdpath "data" .. "/ui_config.json"
 
--- Throttle apply() calls to avoid excessive work during rapid window operations
-local last_apply_time = 0
-local APPLY_THROTTLE_MS = 50 -- Minimum ms between apply() calls
+-- The subset of `defaults` that maps 1:1 onto window-local vim options.
+-- `tree_git`, `dim` and `diagnostic_lines` are excluded: they are not window
+-- options and are applied through their own code paths.
+local WINDOW_OPTIONS = { "wrap", "spell", "number", "relativenumber", "conceallevel" }
 
 -- Note: load is called lazily in init() or on first access
 -- This avoids disk I/O at require-time for faster startup
 
 local initialized = false
+
+---Is an nvim-tree window currently visible?
+---@return boolean
+local function is_tree_open()
+  for _, win in ipairs(vim.api.nvim_list_wins()) do
+    if vim.bo[vim.api.nvim_win_get_buf(win)].filetype == "NvimTree" then
+      return true
+    end
+  end
+  return false
+end
 
 --- Initialize UI state from JSON config, session globals, or defaults
 --- Precedence: JSON file > vim.g global (session) > default
@@ -51,31 +63,25 @@ function M.init()
   end
 end
 
---- Apply current UI state to a window (throttled to avoid excessive calls)
+--- Apply the current UI state to one window.
+---
+--- No time-based throttle: an earlier version skipped any call landing within
+--- 50ms of the previous one, which meant a window opened during a burst (a
+--- split, or session restore) kept stale settings until the next event. The
+--- per-option equality check below is what actually avoids redundant work —
+--- writing a window option is only done when the value really differs.
 ---@param win? number Window handle (0 for current window)
 function M.apply(win)
-  -- Throttle rapid calls (e.g., during session restore with many windows)
-  local now = vim.uv.now()
-  if now - last_apply_time < APPLY_THROTTLE_MS then
-    return
-  end
-  last_apply_time = now
-
   win = win or 0
-  if vim.wo[win].wrap ~= vim.g.ui_wrap then
-    vim.wo[win].wrap = vim.g.ui_wrap
+  if not initialized then
+    M.init()
   end
-  if vim.wo[win].spell ~= vim.g.ui_spell then
-    vim.wo[win].spell = vim.g.ui_spell
-  end
-  if vim.wo[win].number ~= vim.g.ui_number then
-    vim.wo[win].number = vim.g.ui_number
-  end
-  if vim.wo[win].relativenumber ~= vim.g.ui_relativenumber then
-    vim.wo[win].relativenumber = vim.g.ui_relativenumber
-  end
-  if vim.wo[win].conceallevel ~= vim.g.ui_conceallevel then
-    vim.wo[win].conceallevel = vim.g.ui_conceallevel
+
+  for _, opt in ipairs(WINDOW_OPTIONS) do
+    local want = vim.g["ui_" .. opt]
+    if want ~= nil and vim.wo[win][opt] ~= want then
+      vim.wo[win][opt] = want
+    end
   end
 end
 
@@ -139,40 +145,21 @@ function M.toggle(opt)
   cached_config[opt] = new_value
   persist.save_json(config_path, cached_config)
 
-  -- Special handling for tree_git: reload nvim-tree with new config
+  -- Special handling for tree_git.
+  -- nvim-tree reads the git setting once, in setup(); there is no runtime API
+  -- to flip it. A tree.reload() refreshes the rendered entries so the change is
+  -- partially visible immediately, but the flag itself only takes full effect
+  -- on the next nvim-tree setup() — hence the wording of the notification.
   if opt == "tree_git" then
-    local ok, nvim_tree = pcall(require, "nvim-tree")
-    if ok and nvim_tree then
-      -- Get current nvim-tree state
-      local api_ok, api = pcall(require, "nvim-tree.api")
-      if not api_ok then
-        return
-      end
-      local tree_winid = nil
-      for _, win in ipairs(vim.api.nvim_list_wins()) do
-        local buf = vim.api.nvim_win_get_buf(win)
-        if vim.bo[buf].filetype == "NvimTree" then
-          tree_winid = win
-          break
-        end
-      end
-
-      -- Reload nvim-tree configuration with new git setting
-      -- Note: We defer the setup to avoid conflicts during toggle
+    local api_ok, api = pcall(require, "nvim-tree.api")
+    if api_ok and is_tree_open() then
       vim.schedule(function()
-        -- Get the opts function from the plugin spec
-        local config_ok, _ = pcall(require, "nvim-tree")
-        if config_ok then
-          -- Trigger a refresh if tree is open
-          if tree_winid and vim.api.nvim_win_is_valid(tree_winid) then
-            api.tree.reload()
-          end
-        end
+        pcall(api.tree.reload)
       end)
     end
 
     local display = new_value and "on" or "off"
-    vim.notify(string.format("UI: tree git status = %s (reload nvim-tree to apply)", display), vim.log.levels.INFO)
+    vim.notify(string.format("UI: tree git status = %s (restart Neovim to fully apply)", display), vim.log.levels.INFO)
     return
   end
 
@@ -227,6 +214,16 @@ function M.set_dim(enabled, opts)
   end
 end
 
+--- Every toggleable option name, sorted.
+--- Derived from `defaults` so callers (e.g. :UIStatus) cannot drift out of sync
+--- with the actual set of options the way a hand-maintained list did.
+---@return string[]
+function M.option_names()
+  local names = vim.tbl_keys(defaults)
+  table.sort(names)
+  return names
+end
+
 --- Get current state of an option
 --- Auto-initializes on first access if init() hasn't been called yet
 ---@param opt string Option name
@@ -238,21 +235,18 @@ function M.get(opt)
   return vim.g["ui_" .. opt]
 end
 
---- Apply UI state to ALL windows (used after session restore)
---- Resets throttle after completion to allow immediate subsequent apply() calls
+--- Apply UI state to ALL windows (used after session restore).
+---
+--- Delegates to M.apply so there is exactly one definition of "what the UI
+--- state means for a window". The previous inline version used
+--- `vim.g.ui_number or true`, which evaluates to `true` whenever the user had
+--- turned the option off — silently resurrecting disabled options on restore.
 function M.apply_all()
   for _, win in ipairs(vim.api.nvim_list_wins()) do
     if vim.api.nvim_win_is_valid(win) then
-      vim.wo[win].wrap = vim.g.ui_wrap or false
-      vim.wo[win].spell = vim.g.ui_spell or false
-      vim.wo[win].number = vim.g.ui_number or true
-      vim.wo[win].relativenumber = vim.g.ui_relativenumber or true
-      vim.wo[win].conceallevel = vim.g.ui_conceallevel or 2
+      M.apply(win)
     end
   end
-
-  -- Reset throttle after batch apply to allow immediate window-specific applies
-  last_apply_time = vim.uv.now()
 end
 
 --- Apply dim state based on persisted preference

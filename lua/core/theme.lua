@@ -1015,8 +1015,15 @@ function M.get_themes_by_variant(variant)
   end
 end
 
--- Get registry entry for a theme (new API)
-function M.get_theme_info(theme_name)
+--- Get the full registry entry for one theme.
+--- Deliberately NOT named get_theme_info: that name belongs to the zero-arg
+--- accessor above that returns the {name -> {variant, description}} map backing
+--- `M.theme_info`. Defining both under one name silently shadowed the accessor,
+--- leaving `theme.theme_info` nil and erroring the ColorScheme autocmd on every
+--- theme change.
+---@param theme_name string
+---@return table|nil
+function M.get_registry_entry(theme_name)
   return M.registry[theme_name]
 end
 
