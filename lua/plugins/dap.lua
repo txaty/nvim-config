@@ -136,6 +136,11 @@ return {
       -- Defer language-specific DAP configs loading (only load when needed)
       -- Respects lang_toggle: disabled languages skip their DAP config
       --
+      -- Modules live in lua/dap_configs/, not lua/dap/. The latter shares a
+      -- require namespace with nvim-dap's own lua/dap/ tree, so both
+      -- directories fed the same `dap.*` module path and resolution depended on
+      -- runtimepath order — fine only for as long as no filename collided.
+      --
       -- NOTE: This FileType autocmd fires once=true. For buffers opened before this
       -- plugin loads (e.g., session-restored buffers), lifecycle/init.lua's
       -- retrigger_buffer_events() emits synthetic FileType events to ensure DAP
@@ -154,7 +159,7 @@ return {
                   return
                 end
               end
-              local ok, err = pcall(require, "dap." .. name)
+              local ok, err = pcall(require, "dap_configs." .. name)
               if not ok and (type(err) ~= "string" or not err:match "module .* not found") then
                 vim.notify("DAP config error (" .. name .. "): " .. tostring(err), vim.log.levels.WARN)
               end
