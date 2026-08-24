@@ -15,13 +15,19 @@ return {
       local actions = require "telescope.actions"
       local action_state = require "telescope.actions.state"
 
+      -- Uses Snacks.bufdelete, the same layout-preserving close that
+      -- <leader>b{d,D,o,x} and bufferline's close buttons use. This used to call
+      -- a hand-rolled core.buffers module that reimplemented the same
+      -- window-reassignment dance — one behaviour, two implementations, only one
+      -- of which got fixes. Snacks loads eagerly (priority 1000, lazy = false)
+      -- so it is always available here.
       local function delete_buffer(prompt_bufnr)
         local picker = action_state.get_current_picker(prompt_bufnr)
         local selection = action_state.get_selected_entry()
         if not selection or not selection.bufnr then
           return
         end
-        require("core.buffers").close(selection.bufnr, { force = true })
+        Snacks.bufdelete { buf = selection.bufnr, force = true }
         picker:refresh(picker.finder, { reset_prompt = false })
       end
 

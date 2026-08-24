@@ -72,6 +72,9 @@ local function safe_delete(path, expected_prefix, flags)
 end
 
 -- Helper: list files in directory with pattern
+---@param dir string
+---@param pattern string? Lua pattern matched against the file name
+---@return string[]
 local function list_files(dir, pattern)
   local files = {}
   local handle = vim.uv.fs_scandir(dir)
@@ -190,67 +193,42 @@ function M.clean_views()
   return cleaned
 end
 
--- Clean luac cache files older than 30 days
+-- Sweep a directory of files older than `days`.
+-- clean_luac_cache/clean_undo/clean_sessions were four copies of this loop that
+-- differed only in directory, age limit, and filename pattern.
+---@param dir string Directory to sweep; also the prefix safe_delete validates against
+---@param days number Delete files whose mtime is older than this many days
+---@param pattern string? Lua pattern the file name must match (nil = all files)
+---@return integer cleaned Number of files removed
+local function sweep_older_than(dir, days, pattern)
+  if vim.fn.isdirectory(dir) ~= 1 then
+    return 0
+  end
+
+  local cleaned = 0
+  for _, file in ipairs(list_files(dir, pattern)) do
+    if is_older_than_days(file, days) then
+      if safe_delete(file, dir) then
+        cleaned = cleaned + 1
+      end
+    end
+  end
+  return cleaned
+end
+
+-- Clean luac cache files
 function M.clean_luac_cache()
-  local luac_dir = cache_path .. "/luac"
-  if vim.fn.isdirectory(luac_dir) ~= 1 then
-    return 0
-  end
-
-  local luac_files = list_files(luac_dir, "%.luac$")
-  local cleaned = 0
-
-  for _, luac_file in ipairs(luac_files) do
-    if is_older_than_days(luac_file, config.luac_max_age_days) then
-      local ok = safe_delete(luac_file, luac_dir)
-      if ok then
-        cleaned = cleaned + 1
-      end
-    end
-  end
-  return cleaned
+  return sweep_older_than(cache_path .. "/luac", config.luac_max_age_days, "%.luac$")
 end
 
--- Clean undo files older than 30 days
+-- Clean undo files
 function M.clean_undo()
-  local undo_dir = state_path .. "/undo"
-  if vim.fn.isdirectory(undo_dir) ~= 1 then
-    return 0
-  end
-
-  local undo_files = list_files(undo_dir, nil)
-  local cleaned = 0
-
-  for _, undo_file in ipairs(undo_files) do
-    if is_older_than_days(undo_file, config.undo_max_age_days) then
-      local ok = safe_delete(undo_file, undo_dir)
-      if ok then
-        cleaned = cleaned + 1
-      end
-    end
-  end
-  return cleaned
+  return sweep_older_than(state_path .. "/undo", config.undo_max_age_days)
 end
 
--- Clean session files older than 90 days
+-- Clean session files
 function M.clean_sessions()
-  local sessions_dir = state_path .. "/sessions"
-  if vim.fn.isdirectory(sessions_dir) ~= 1 then
-    return 0
-  end
-
-  local session_files = list_files(sessions_dir, "%.vim$")
-  local cleaned = 0
-
-  for _, session_file in ipairs(session_files) do
-    if is_older_than_days(session_file, config.session_max_age_days) then
-      local ok = safe_delete(session_file, sessions_dir)
-      if ok then
-        cleaned = cleaned + 1
-      end
-    end
-  end
-  return cleaned
+  return sweep_older_than(state_path .. "/sessions", config.session_max_age_days, "%.vim$")
 end
 
 -- Clean orphaned directories (NvChad remnants, tmp dirs)
@@ -335,16 +313,21 @@ local function save_cleanup_time()
   persist.save_lines(timestamp_file, { tostring(os.time()) })
 end
 
--- Check if cleanup should run (throttled)
+--- Is startup cleanup both enabled and outside its throttle window?
+---
+--- Single owner of that decision. It used to be spread over three places — a
+--- `condition` in the lifecycle step, an `enable_auto_cleanup` check inside
+--- auto_cleanup(), and a `disable_auto_cleanup` opt-out here — with the two
+--- flags pointing in opposite directions. `vim.g.enable_auto_cleanup` is the
+--- documented opt-in and is now the only flag; a config that never sets it
+--- never runs startup cleanup, which is what the old opt-out was for.
+---@return boolean
 function M.should_run()
-  -- Check opt-out
-  if vim.g.disable_auto_cleanup then
+  if vim.g.enable_auto_cleanup ~= true then
     return false
   end
 
-  local last_run = get_last_cleanup_time()
-  local now = os.time()
-  local hours_since = (now - last_run) / (60 * 60)
+  local hours_since = (os.time() - get_last_cleanup_time()) / (60 * 60)
   return hours_since >= config.throttle_hours
 end
 
@@ -411,18 +394,17 @@ function M.clean_all(verbose)
   return results, total
 end
 
--- Auto cleanup (called on startup, throttled)
+--- Auto cleanup (called on startup). Opt-in and throttled via should_run().
+---@return boolean ran
 function M.auto_cleanup()
-  if vim.g.enable_auto_cleanup ~= true then
-    return
-  end
   if not M.should_run() then
-    return
+    return false
   end
 
   -- Run cleanup silently
   pcall(M.clean_all, false)
   save_cleanup_time()
+  return true
 end
 
 -- Manual cleanup command (always runs, shows summary)
